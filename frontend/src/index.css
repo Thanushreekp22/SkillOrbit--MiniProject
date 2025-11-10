@@ -1,16 +1,75 @@
+/* SkillOrbit Global Styles - Modern, Clean, Futuristic */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
+:root {
+  /* Primary Colors */
+  --color-primary: #6366F1;
+  --color-primary-light: #818CF8;
+  --color-primary-dark: #4F46E5;
+  
+  /* Secondary Colors */
+  --color-secondary: #0EA5E9;
+  --color-secondary-light: #38BDF8;
+  
+  /* Accent Colors */
+  --color-success: #10B981;
+  --color-success-light: #D1FAE5;
+  --color-error: #EF4444;
+  --color-error-light: #FEE2E2;
+  --color-warning: #F59E0B;
+  --color-info: #3B82F6;
+  
+  /* Neutral Colors */
+  --color-background: #F9FAFB;
+  --color-card: #FFFFFF;
+  --color-border: #E5E7EB;
+  
+  /* Text Colors */
+  --color-text-primary: #1E293B;
+  --color-text-secondary: #64748B;
+  --color-text-disabled: #94A3B8;
+  
+  /* Gradients */
+  --gradient-primary: linear-gradient(90deg, #6366F1 0%, #0EA5E9 100%);
+  --gradient-success: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  
+  /* Shadows */
+  --shadow-sm: 0px 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0px 2px 6px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0px 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-card: 0px 2px 6px rgba(0, 0, 0, 0.08);
+  --shadow-card-hover: 0px 4px 12px rgba(99, 102, 241, 0.15);
+  
+  /* Border Radius */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  
+  /* Transitions */
+  --transition-fast: 150ms ease-in-out;
+  --transition-normal: 250ms ease-in-out;
+  --transition-slow: 350ms ease-in-out;
+}
+
 body {
-  margin: 0;
-  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+  line-height: 1.5;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--color-text-primary);
 }
 
 code {
@@ -18,60 +77,75 @@ code {
     monospace;
 }
 
-#root {
-  min-height: 100vh;
+/* Material-UI overrides */
+.MuiContainer-root {
+  padding-top: 2rem !important;
+  padding-bottom: 2rem !important;
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar - Modern Design */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: var(--color-background);
+  border-radius: var(--radius-md);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 4px;
+  background: linear-gradient(180deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+  border-radius: var(--radius-md);
+  border: 2px solid var(--color-background);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: var(--color-primary-dark);
 }
 
-/* Smooth transitions */
-* {
-  transition: background-color 0.3s ease, color 0.3s ease;
+/* Utility Classes */
+.gradient-primary {
+  background: var(--gradient-primary);
 }
 
-/* Loading spinner container */
-.loading-container {
+.gradient-text {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.card-hover {
+  transition: var(--transition-normal);
+  cursor: pointer;
+}
+
+.card-hover:hover {
+  transform: scale(1.02);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.text-gradient {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
+}
+
+/* Loading animation */
+.loading {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
+  height: 200px;
 }
 
-/* Toast container customization */
-.Toastify__toast {
-  border-radius: 8px;
-  font-family: 'Roboto', sans-serif;
-}
-
-.Toastify__toast--success {
-  background-color: #4caf50;
-}
-
-.Toastify__toast--error {
-  background-color: #f44336;
-}
-
-.Toastify__toast--info {
-  background-color: #2196f3;
-}
-
-.Toastify__toast--warning {
-  background-color: #ff9800;
+/* Responsive design helpers */
+@media (max-width: 600px) {
+  .MuiContainer-root {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
 }

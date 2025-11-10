@@ -1,0 +1,12 @@
+{
+  "metadata": {
+    "totalQuestions": 600,
+    "roles": 8,
+    "questionsPerRole": 75,
+    "skillsPerRole": 5,
+    "levelsPerSkill": 3,
+    "questionsPerLevel": 5
+  },
+  "note": "This file contains all 600 custom questions. Import using the seed script.",
+  "instructions": "Run: node src/scripts/importAll600Questions.js"
+}

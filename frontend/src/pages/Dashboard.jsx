@@ -1,75 +1,33 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   Container,
   Grid,
-  Card,
-  CardContent,
-  CardActionArea,
+  Paper,
   Typography,
   Box,
-  LinearProgress,
+  Card,
+  CardContent,
   CircularProgress,
-  Paper,
-  Chip,
+  LinearProgress,
 } from '@mui/material';
 import {
-  School,
-  Analytics,
-  Assessment,
-  MenuBook,
+  Psychology,
   TrendingUp,
-  EmojiEvents,
-  Timeline,
-  Category,
+  Assessment,
+  School,
 } from '@mui/icons-material';
-import {
-  BarChart,
-  Bar,
-  LineChart,
-  Line,
-  PieChart,
-  Pie,
-  Cell,
-  RadarChart,
-  Radar,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from 'recharts';
-import { useAuth } from '../context/AuthContext.jsx';
-import axiosInstance from '../api/axios';
-import { toast } from 'react-toastify';
+import { useAuth } from '../context/AuthContext';
+import api from '../api/axios';
 
 const Dashboard = () => {
-  const navigate = useNavigate();
   const { user } = useAuth();
-  const [loading, setLoading] = useState(true);
-  const [dashboardData, setDashboardData] = useState({
-    readinessScore: 0,
+  const [stats, setStats] = useState({
     totalSkills: 0,
     masteredSkills: 0,
     inProgressSkills: 0,
-    skillsData: [],
-    skillsByCategory: [],
-    weeklyProgress: [],
-    proficiencyDistribution: [],
+    averageProficiency: 0,
   });
-
-  // Professional colors for charts
-  const COLORS = ['#1e3a8a', '#3b82f6', '#059669', '#d97706', '#dc2626', '#0891b2'];
-  const CATEGORY_COLORS = {
-    Frontend: '#3b82f6',
-    Backend: '#1e3a8a',
-    DevOps: '#d97706',
-    Cloud: '#059669',
-  };
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchDashboardData();
@@ -77,386 +35,454 @@ const Dashboard = () => {
 
   const fetchDashboardData = async () => {
     try {
-      setLoading(true);
-      // Fetch student dashboard data
-      const response = await axiosInstance.get(`/students/${user.id}/dashboard`);
-      setDashboardData(response.data);
+      const response = await api.get(`/users/${user._id}/dashboard`);
+      setStats(response.data);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
-      // Set default values if API fails
-      setDashboardData({
-        readinessScore: 0,
-        totalSkills: 0,
-        masteredSkills: 0,
-        inProgressSkills: 0,
-      });
     } finally {
       setLoading(false);
     }
   };
 
-  const quickActions = [
-    {
-      title: 'My Skills',
-      description: 'Manage and update your skills',
-      icon: <School sx={{ fontSize: 40 }} />,
-      color: '#1e3a8a',
-      path: '/skills',
-    },
-    {
-      title: 'Gap Analysis',
-      description: 'Analyze readiness for job roles',
-      icon: <Analytics sx={{ fontSize: 40 }} />,
-      color: '#dc2626',
-      path: '/analysis',
-    },
-    {
-      title: 'Learning Path',
-      description: 'Get personalized recommendations',
-      icon: <MenuBook sx={{ fontSize: 40 }} />,
-      color: '#059669',
-      path: '/learning-path',
-    },
-    {
-      title: 'Reports',
-      description: 'Download readiness reports',
-      icon: <Assessment sx={{ fontSize: 40 }} />,
-      color: '#d97706',
-      path: '/reports',
-    },
-  ];
+  const StatCard = ({ title, value, icon, color, subtitle }) => (
+    <Card sx={{ height: '100%' }}>
+      <CardContent>
+        <Box display="flex" alignItems="center" justifyContent="space-between">
+          <Box>
+            <Typography color="textSecondary" gutterBottom variant="h6">
+              {title}
+            </Typography>
+            <Typography variant="h4" component="h2" color={color}>
+              {value}
+            </Typography>
+            {subtitle && (
+              <Typography color="textSecondary" variant="body2">
+                {subtitle}
+              </Typography>
+            )}
+          </Box>
+          <Box sx={{ color: color, fontSize: 40 }}>
+            {icon}
+          </Box>
+        </Box>
+      </CardContent>
+    </Card>
+  );
 
   if (loading) {
     return (
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          minHeight: '80vh',
-        }}
-      >
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
         <CircularProgress />
       </Box>
     );
   }
 
   return (
-    <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
-      {/* Welcome Section with Animation */}
-      <Box sx={{ mb: 4 }}>
-        <Typography 
-          variant="h3" 
-          gutterBottom 
-          sx={{ 
-            fontWeight: 700,
-            color: 'primary.main',
-          }}
-        >
-          Welcome back, {user?.name}!
-        </Typography>
-        <Typography variant="h6" color="text.secondary">
-          Track your skills, analyze gaps, and accelerate your career growth
-        </Typography>
-      </Box>
+    <Container maxWidth="lg">
+      <Typography variant="h4" gutterBottom>
+        Welcome back, {user?.name}!
+      </Typography>
+      <Typography variant="subtitle1" color="textSecondary" gutterBottom>
+        Here's your skill development overview
+      </Typography>
 
-      {/* Top Stats Row with Gradient Cards */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        {/* Readiness Score - Large Card */}
-        <Grid item xs={12} md={6}>
-          <Card
-            sx={{
-              borderRadius: '12px',
-              bgcolor: 'primary.main',
-              color: 'white',
-              height: '100%',
-            }}
-          >
-            <CardContent sx={{ p: 4 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <EmojiEvents sx={{ fontSize: 40, mr: 2 }} />
-                <Typography variant="h5" fontWeight="bold">
-                  Overall Readiness
-                </Typography>
+      <Grid container spacing={3} sx={{ mt: 2 }}>
+        {/* Stats Cards */}
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard
+            title="Total Skills"
+            value={stats.totalSkills}
+            icon={<Psychology />}
+            color="primary.main"
+          />
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard
+            title="Mastered Skills"
+            value={stats.masteredSkills}
+            icon={<TrendingUp />}
+            color="success.main"
+          />
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard
+            title="In Progress"
+            value={stats.inProgressSkills}
+            icon={<School />}
+            color="warning.main"
+          />
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard
+            title="Avg Proficiency"
+            value={`${stats.averageProficiency}%`}
+            icon={<Assessment />}
+            color="info.main"
+          />
+        </Grid>
+
+        {/* Progress Overview */}
+        <Grid item xs={12} md={8}>
+          <Paper sx={{ p: 3 }}>
+            <Typography variant="h6" gutterBottom>
+              Skill Development Progress
+            </Typography>
+            <Box sx={{ mt: 2 }}>
+              <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+                <Typography variant="body2">Overall Progress</Typography>
+                <Typography variant="body2">{stats.averageProficiency}%</Typography>
               </Box>
-              <Box sx={{ display: 'flex', alignItems: 'baseline', mb: 3 }}>
-                <Typography variant="h1" fontWeight="bold" sx={{ mr: 1 }}>
-                  {dashboardData.readinessScore}
-                </Typography>
-                <Typography variant="h4">%</Typography>
-              </Box>
-              <LinearProgress
-                variant="determinate"
-                value={dashboardData.readinessScore}
-                sx={{
-                  height: 12,
-                  borderRadius: 6,
-                  backgroundColor: 'rgba(255,255,255,0.3)',
-                  '& .MuiLinearProgress-bar': {
-                    backgroundColor: 'white',
-                    borderRadius: 6,
-                  },
-                }}
+              <LinearProgress 
+                variant="determinate" 
+                value={stats.averageProficiency} 
+                sx={{ height: 8, borderRadius: 4 }}
               />
-              <Typography variant="body2" sx={{ mt: 2, opacity: 0.9 }}>
-                Keep learning to reach 100% readiness!
-              </Typography>
+            </Box>
+            <Box sx={{ mt: 3 }}>
+              <Typography variant="body2" color="textSecondary">
+                You have {stats.totalSkills} skills in your portfolio. 
+                {stats.masteredSkills > 0 && ` You've mastered ${stats.masteredSkills} skills!`}
+        </Grid>
+
+        <Grid item xs={12} sm={6} md={3}>
+          <Card elevation={3}>
+            <CardContent>
+              <Box display="flex" alignItems="center" justifyContent="space-between">
+                <Box>
+                  <Typography color="text.secondary" gutterBottom>
+                    Avg Proficiency
+                  </Typography>
+                  <Typography variant="h3">
+                    {Math.round(dashboardData?.avgProficiency || 0)}%
+                  </Typography>
+                </Box>
+                <Avatar sx={{ bgcolor: 'success.main', width: 56, height: 56 }}>
+                  <Speed fontSize="large" />
+                </Avatar>
+              </Box>
             </CardContent>
           </Card>
         </Grid>
 
-        {/* Stats Mini Cards */}
-        <Grid item xs={12} md={6}>
-          <Grid container spacing={3}>
-            <Grid item xs={12} sm={6}>
-              <Card 
-                sx={{ 
-                  borderRadius: '12px',
-                  bgcolor: 'info.main',
-                  color: 'white',
-                }}
-              >
-                <CardContent sx={{ p: 3 }}>
-                  <School sx={{ fontSize: 36, mb: 1 }} />
-                  <Typography variant="h3" fontWeight="bold">
-                    {dashboardData.totalSkills}
+        <Grid item xs={12} sm={6} md={3}>
+          <Card elevation={3}>
+            <CardContent>
+              <Box display="flex" alignItems="center" justifyContent="space-between">
+                <Box>
+                  <Typography color="text.secondary" gutterBottom>
+                    Assessments
                   </Typography>
-                  <Typography variant="body1">Total Skills</Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <Card 
-                sx={{ 
-                  borderRadius: '12px',
-                  bgcolor: 'success.main',
-                  color: 'white',
-                }}
-              >
-                <CardContent sx={{ p: 3 }}>
-                  <TrendingUp sx={{ fontSize: 36, mb: 1 }} />
-                  <Typography variant="h3" fontWeight="bold">
-                    {dashboardData.masteredSkills}
+                  <Typography variant="h3">
+                    {assessmentStats?.overallStats?.totalAssessments || 0}
                   </Typography>
-                  <Typography variant="body1">Mastered</Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={12}>
-              <Card 
-                sx={{ 
-                  borderRadius: '12px',
-                  bgcolor: 'warning.main',
-                  color: 'white',
-                }}
-              >
-                <CardContent sx={{ p: 3 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Box>
-                      <Typography variant="h3" fontWeight="bold">
-                        {dashboardData.inProgressSkills}
-                      </Typography>
-                      <Typography variant="body1">In Progress</Typography>
-                    </Box>
-                    <Timeline sx={{ fontSize: 48 }} />
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
+                </Box>
+                <Avatar sx={{ bgcolor: 'info.main', width: 56, height: 56 }}>
+                  <Assessment fontSize="large" />
+                </Avatar>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} sm={6} md={3}>
+          <Card elevation={3}>
+            <CardContent>
+              <Box display="flex" alignItems="center" justifyContent="space-between">
+                <Box>
+                  <Typography color="text.secondary" gutterBottom>
+                    Avg Score
+                  </Typography>
+                  <Typography variant="h3">
+                    {Math.round(assessmentStats?.overallStats?.averageScore || 0)}%
+                  </Typography>
+                </Box>
+                <Avatar sx={{ bgcolor: 'warning.main', width: 56, height: 56 }}>
+                  <EmojiEvents fontSize="large" />
+                </Avatar>
+              </Box>
+            </CardContent>
+          </Card>
         </Grid>
       </Grid>
 
-      {/* Charts Section */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        {/* Skills Proficiency Bar Chart */}
-        <Grid item xs={12} lg={8}>
-          <Card sx={{ borderRadius: '12px' }}>
-            <CardContent sx={{ p: 3 }}>
-              <Typography variant="h6" gutterBottom fontWeight="bold">
-                Skills Proficiency Overview
+      {/* Charts Row */}
+      <Grid container spacing={3} mb={4}>
+        {/* Skill Radar Chart */}
+        <Grid item xs={12} md={6}>
+          <Card elevation={3}>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Skill Proficiency Overview
               </Typography>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={dashboardData.skillsData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip 
-                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                  />
-                  <Bar dataKey="proficiency" fill="#1e3a8a" radius={[8, 8, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* Proficiency Distribution Pie Chart */}
-        <Grid item xs={12} lg={4}>
-          <Card sx={{ borderRadius: '12px' }}>
-            <CardContent sx={{ p: 3 }}>
-              <Typography variant="h6" gutterBottom fontWeight="bold">
-                Skill Levels
-              </Typography>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={dashboardData.proficiencyDistribution}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ level, count }) => `${count}`}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="count"
+              {skillRadarData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={300}>
+                  <RadarChart data={skillRadarData}>
+                    <PolarGrid />
+                    <PolarAngleAxis dataKey="skill" />
+                    <PolarRadiusAxis angle={90} domain={[0, 100]} />
+                    <Radar
+                      name="Proficiency"
+                      dataKey="proficiency"
+                      stroke="#8884d8"
+                      fill="#8884d8"
+                      fillOpacity={0.6}
+                    />
+                    <RechartsTooltip />
+                  </RadarChart>
+                </ResponsiveContainer>
+              ) : (
+                <Box textAlign="center" py={4}>
+                  <Typography color="text.secondary">
+                    No skills added yet. Add your first skill to see the chart!
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    startIcon={<Add />}
+                    onClick={() => navigate('/app/skills')}
+                    sx={{ mt: 2 }}
                   >
-                    {dashboardData.proficiencyDistribution.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
+                    Add Skills
+                  </Button>
+                </Box>
+              )}
             </CardContent>
           </Card>
         </Grid>
 
-        {/* Weekly Progress Line Chart */}
-        <Grid item xs={12} lg={6}>
-          <Card sx={{ borderRadius: '12px' }}>
-            <CardContent sx={{ p: 3 }}>
-              <Typography variant="h6" gutterBottom fontWeight="bold">
-                Weekly Progress
-              </Typography>
-              <ResponsiveContainer width="100%" height={250}>
-                <LineChart data={dashboardData.weeklyProgress}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="day" />
-                  <YAxis />
-                  <Tooltip 
-                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="skills" 
-                    stroke="#1e3a8a" 
-                    strokeWidth={3}
-                    dot={{ fill: '#1e3a8a', r: 6 }}
-                    activeDot={{ r: 8 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* Skills by Category */}
-        <Grid item xs={12} lg={6}>
-          <Card sx={{ borderRadius: '12px' }}>
-            <CardContent sx={{ p: 3 }}>
-              <Typography variant="h6" gutterBottom fontWeight="bold">
+        {/* Category Distribution */}
+        <Grid item xs={12} md={6}>
+          <Card elevation={3}>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
                 Skills by Category
               </Typography>
-              <Box sx={{ mt: 2 }}>
-                {dashboardData.skillsByCategory.map((cat, index) => (
-                  <Box key={index} sx={{ mb: 3 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Category sx={{ color: CATEGORY_COLORS[cat.category] || '#666' }} />
-                        <Typography variant="body1" fontWeight="600">
-                          {cat.category}
-                        </Typography>
-                        <Chip 
-                          label={`${cat.count} skills`} 
-                          size="small" 
-                          sx={{ bgcolor: `${CATEGORY_COLORS[cat.category]}20` }}
-                        />
-                      </Box>
-                      <Typography variant="body1" fontWeight="bold" color="primary">
-                        {cat.avgProficiency.toFixed(0)}%
+              {categoryData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={categoryData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="category" />
+                    <YAxis />
+                    <RechartsTooltip />
+                    <Legend />
+                    <Bar dataKey="count" fill="#8884d8" name="Skill Count" />
+                    <Bar dataKey="avgProficiency" fill="#82ca9d" name="Avg Proficiency" />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <Box textAlign="center" py={4}>
+                  <Typography color="text.secondary">
+                    No category data available yet.
+                  </Typography>
+                </Box>
+              )}
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+
+      {/* Assessment Performance */}
+      {assessmentTrendData.length > 0 && (
+        <Card elevation={3} sx={{ mb: 4 }}>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              Assessment Performance Trends
+            </Typography>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={assessmentTrendData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="skill" />
+                <YAxis domain={[0, 100]} />
+                <RechartsTooltip />
+                <Legend />
+                <Line
+                  type="monotone"
+                  dataKey="avgScore"
+                  stroke="#8884d8"
+                  name="Average Score"
+                  strokeWidth={2}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="bestScore"
+                  stroke="#82ca9d"
+                  name="Best Score"
+                  strokeWidth={2}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Recent Skills */}
+      <Card elevation={3} sx={{ mb: 4 }}>
+        <CardContent>
+          <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+            <Typography variant="h6">
+              Your Skills
+            </Typography>
+            <Button
+              variant="outlined"
+              startIcon={<Add />}
+              onClick={() => navigate('/app/skills')}
+            >
+              Manage Skills
+            </Button>
+          </Box>
+          <Grid container spacing={2}>
+            {dashboardData?.skills?.slice(0, 6).map((skill, index) => (
+              <Grid item xs={12} sm={6} md={4} key={index}>
+                <Paper elevation={2} sx={{ p: 2 }}>
+                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+                    <Typography variant="subtitle1" fontWeight="bold">
+                      {skill.name}
+                    </Typography>
+                    <Chip
+                      label={skill.category}
+                      size="small"
+                      color="primary"
+                      variant="outlined"
+                    />
+                  </Box>
+                  <Box mb={1}>
+                    <Box display="flex" justifyContent="space-between" mb={0.5}>
+                      <Typography variant="body2" color="text.secondary">
+                        Proficiency
+                      </Typography>
+                      <Typography variant="body2" fontWeight="bold">
+                        {skill.proficiency}%
                       </Typography>
                     </Box>
                     <LinearProgress
                       variant="determinate"
-                      value={cat.avgProficiency}
+                      value={skill.proficiency}
                       sx={{
-                        height: 10,
-                        borderRadius: 5,
-                        backgroundColor: '#f0f0f0',
+                        height: 8,
+                        borderRadius: 4,
+                        bgcolor: 'grey.200',
                         '& .MuiLinearProgress-bar': {
-                          backgroundColor: CATEGORY_COLORS[cat.category] || '#666',
-                          borderRadius: 5,
+                          borderRadius: 4,
+                          bgcolor:
+                            skill.proficiency >= 80
+                              ? 'success.main'
+                              : skill.proficiency >= 50
+                              ? 'warning.main'
+                              : 'error.main',
                         },
                       }}
                     />
                   </Box>
-                ))}
+                </Paper>
+              </Grid>
+            ))}
+          </Grid>
+          {(!dashboardData?.skills || dashboardData.skills.length === 0) && (
+            <Box textAlign="center" py={4}>
+              <Typography color="text.secondary" gutterBottom>
+                You haven't added any skills yet.
+              </Typography>
+              <Button
+                variant="contained"
+                startIcon={<Add />}
+                onClick={() => navigate('/app/skills')}
+                sx={{ mt: 2 }}
+              >
+                Add Your First Skill
+              </Button>
+            </Box>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Quick Actions */}
+      <Grid container spacing={3}>
+        <Grid item xs={12} md={4}>
+          <Card
+            elevation={3}
+            sx={{
+              cursor: 'pointer',
+              transition: 'transform 0.2s',
+              '&:hover': { transform: 'translateY(-4px)' },
+            }}
+            onClick={() => navigate('/app/assessment')}
+          >
+            <CardContent>
+              <Box display="flex" alignItems="center" mb={2}>
+                <Avatar sx={{ bgcolor: 'primary.main', mr: 2 }}>
+                  <Assessment />
+                </Avatar>
+                <Typography variant="h6">Take Assessment</Typography>
+              </Box>
+              <Typography variant="body2" color="text.secondary">
+                Test your knowledge and get objective skill evaluation
+              </Typography>
+              <Box mt={2} display="flex" justifyContent="flex-end">
+                <IconButton color="primary">
+                  <ArrowForward />
+                </IconButton>
               </Box>
             </CardContent>
           </Card>
         </Grid>
-      </Grid>
 
-      {/* Quick Actions */}
-      <Typography variant="h5" gutterBottom sx={{ mb: 3, fontWeight: 700 }}>
-        Quick Actions
-      </Typography>
-      <Grid container spacing={3}>
-        {quickActions.map((action) => (
-          <Grid item xs={12} sm={6} md={3} key={action.title}>
-            <Card
-              sx={{
-                borderRadius: '16px',
-                height: '100%',
-                transition: 'all 0.3s ease',
-                cursor: 'pointer',
-                '&:hover': {
-                  transform: 'translateY(-8px) scale(1.02)',
-                  boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
-                },
-              }}
-            >
-              <CardActionArea
-                onClick={() => navigate(action.path)}
-                sx={{ height: '100%', p: 3 }}
-              >
-                <CardContent>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      textAlign: 'center',
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        width: 70,
-                        height: 70,
-                        borderRadius: '50%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        bgcolor: `${action.color}15`,
-                        color: action.color,
-                        mb: 2,
-                      }}
-                    >
-                      {action.icon}
-                    </Box>
-                    <Typography variant="h6" gutterBottom fontWeight="600">
-                      {action.title}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {action.description}
-                    </Typography>
-                  </Box>
-                </CardContent>
-              </CardActionArea>
-            </Card>
-          </Grid>
-        ))}
+        <Grid item xs={12} md={4}>
+          <Card
+            elevation={3}
+            sx={{
+              cursor: 'pointer',
+              transition: 'transform 0.2s',
+              '&:hover': { transform: 'translateY(-4px)' },
+            }}
+            onClick={() => navigate('/app/analysis')}
+          >
+            <CardContent>
+              <Box display="flex" alignItems="center" mb={2}>
+                <Avatar sx={{ bgcolor: 'success.main', mr: 2 }}>
+                  <TrendingUp />
+                </Avatar>
+                <Typography variant="h6">Gap Analysis</Typography>
+              </Box>
+              <Typography variant="body2" color="text.secondary">
+                Identify skill gaps and get personalized recommendations
+              </Typography>
+              <Box mt={2} display="flex" justifyContent="flex-end">
+                <IconButton color="success">
+                  <ArrowForward />
+                </IconButton>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} md={4}>
+          <Card
+            elevation={3}
+            sx={{
+              cursor: 'pointer',
+              transition: 'transform 0.2s',
+              '&:hover': { transform: 'translateY(-4px)' },
+            }}
+            onClick={() => navigate('/app/learning-path')}
+          >
+            <CardContent>
+              <Box display="flex" alignItems="center" mb={2}>
+                <Avatar sx={{ bgcolor: 'info.main', mr: 2 }}>
+                  <School />
+                </Avatar>
+                <Typography variant="h6">Learning Path</Typography>
+              </Box>
+              <Typography variant="body2" color="text.secondary">
+                Get curated learning resources for your skill development
+              </Typography>
+              <Box mt={2} display="flex" justifyContent="flex-end">
+                <IconButton color="info">
+                  <ArrowForward />
+                </IconButton>
+              </Box>
+            </CardContent>
+          </Card>
+          </Paper>
+        </Grid>
       </Grid>
     </Container>
   );

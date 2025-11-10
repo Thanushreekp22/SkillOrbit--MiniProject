@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   Container,
   Paper,
@@ -7,72 +7,62 @@ import {
   Button,
   Typography,
   Box,
+  Alert,
+  CircularProgress,
   InputAdornment,
   IconButton,
-  CircularProgress,
+  Divider,
+  Fade,
+  Slide,
 } from '@mui/material';
-import { Visibility, VisibilityOff, Login as LoginIcon } from '@mui/icons-material';
-import { useAuth } from '../context/AuthContext.jsx';
-import SkillOrbitLogo from '../components/SkillOrbitLogo.jsx';
+import {
+  Email,
+  Lock,
+  Visibility,
+  VisibilityOff,
+  Login as LoginIcon,
+  ArrowBack,
+  Rocket,
+} from '@mui/icons-material';
+import { useAuth } from '../context/AuthContext';
+import { toast } from 'react-toastify';
+import SkillOrbitLogo from '../components/SkillOrbitLogo';
 
 const Login = () => {
-  const navigate = useNavigate();
-  const { login } = useAuth();
-  
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
-  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState({});
+  const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-    // Clear error for this field
-    if (errors[name]) {
-      setErrors((prev) => ({
-        ...prev,
-        [name]: '',
-      }));
-    }
-  };
-
-  const validate = () => {
-    const newErrors = {};
-    
-    if (!formData.email) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
-    }
-    
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+    setError('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!validate()) {
-      return;
-    }
-    
     setLoading(true);
+    setError('');
+
     const result = await login(formData.email, formData.password);
-    setLoading(false);
     
     if (result.success) {
-      navigate('/dashboard');
+      toast.success('Login successful!');
+      navigate('/app/dashboard');
+    } else {
+      setError(result.error);
     }
+    
+    setLoading(false);
   };
 
   return (
@@ -82,151 +72,277 @@ const Login = () => {
         display: 'flex',
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
         position: 'relative',
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.05"%3E%3Cpath d="M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
-        },
+        overflow: 'hidden',
       }}
     >
-      <Container maxWidth="sm" sx={{ position: 'relative', zIndex: 1 }}>
+      {/* Animated Background Elements */}
+      <Box
+        sx={{
+          position: 'absolute',
+          width: '100%',
+          height: '100%',
+          overflow: 'hidden',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            width: '400px',
+            height: '400px',
+            borderRadius: '50%',
+            background: 'rgba(255, 255, 255, 0.1)',
+            top: '-200px',
+            left: '-200px',
+            animation: 'float 6s ease-in-out infinite',
+          },
+          '&::after': {
+            content: '""',
+            position: 'absolute',
+            width: '300px',
+            height: '300px',
+            borderRadius: '50%',
+            background: 'rgba(255, 255, 255, 0.1)',
+            bottom: '-150px',
+            right: '-150px',
+            animation: 'float 8s ease-in-out infinite',
+          },
+          '@keyframes float': {
+            '0%, 100%': { transform: 'translateY(0px)' },
+            '50%': { transform: 'translateY(-20px)' },
+          },
+        }}
+      />
+
+      <Container component="main" maxWidth="sm" sx={{ position: 'relative', zIndex: 1 }}>
         <Box
           sx={{
             minHeight: '100vh',
             display: 'flex',
+            flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
             py: 4,
           }}
         >
-          <Paper
-            elevation={24}
-            sx={{
-              p: 5,
-              width: '100%',
-              borderRadius: '24px',
-              background: 'rgba(255, 255, 255, 0.95)',
-              backdropFilter: 'blur(10px)',
-            }}
-          >
-            <Box sx={{ textAlign: 'center', mb: 4 }}>
-              <Box
-                sx={{
-                  width: 100,
-                  height: 100,
-                  borderRadius: '24px',
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  margin: '0 auto 20px',
-                  boxShadow: '0 12px 32px rgba(102, 126, 234, 0.5)',
-                }}
-              >
-                <SkillOrbitLogo size={70} animated={true} />
-              </Box>
-              <Typography variant="h3" component="h1" gutterBottom fontWeight={800}>
-                Welcome to SkillOrbit
-              </Typography>
-              <Typography variant="body1" color="text.secondary" sx={{ fontSize: '1.1rem' }}>
-                Your journey to skill mastery begins here
-              </Typography>
-            </Box>
-
-          <form onSubmit={handleSubmit}>
-            <TextField
-              fullWidth
-              label="Email Address"
-              name="email"
-              type="email"
-              value={formData.email}
-              onChange={handleChange}
-              error={!!errors.email}
-              helperText={errors.email}
-              margin="normal"
-              autoComplete="email"
-              autoFocus
-            />
-
-            <TextField
-              fullWidth
-              label="Password"
-              name="password"
-              type={showPassword ? 'text' : 'password'}
-              value={formData.password}
-              onChange={handleChange}
-              error={!!errors.password}
-              helperText={errors.password}
-              margin="normal"
-              autoComplete="current-password"
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      onClick={() => setShowPassword(!showPassword)}
-                      edge="end"
-                    >
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-            />
-
+          {/* Back to Home Button */}
+          <Fade in timeout={500}>
             <Button
-              fullWidth
-              type="submit"
-              variant="contained"
-              size="large"
-              disabled={loading}
-              sx={{ 
-                mt: 3, 
-                mb: 2, 
-                py: 2, 
-                fontSize: '1.1rem',
-                fontWeight: 600,
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                boxShadow: '0 4px 20px rgba(102, 126, 234, 0.4)',
+              startIcon={<ArrowBack />}
+              onClick={() => navigate('/')}
+              sx={{
+                position: 'absolute',
+                top: 20,
+                left: 20,
+                color: 'white',
                 '&:hover': {
-                  background: 'linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%)',
-                  boxShadow: '0 6px 24px rgba(102, 126, 234, 0.5)',
-                  transform: 'translateY(-2px)',
+                  backgroundColor: 'rgba(255,255,255,0.1)',
                 },
-                transition: 'all 0.3s ease',
               }}
             >
-              {loading ? <CircularProgress size={24} sx={{ color: 'white' }} /> : 'Sign In'}
+              Back to Home
             </Button>
+          </Fade>
 
-            <Box sx={{ textAlign: 'center', mt: 3 }}>
-              <Typography variant="body1">
-                Don't have an account?{' '}
-                <Link
-                  to="/register"
-                  style={{
-                    color: '#667eea',
-                    textDecoration: 'none',
+          <Slide direction="down" in timeout={800}>
+            <Paper
+              elevation={24}
+              sx={{
+                padding: { xs: 3, sm: 5 },
+                width: '100%',
+                borderRadius: '24px',
+                background: 'rgba(255, 255, 255, 0.95)',
+                backdropFilter: 'blur(20px)',
+                boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
+              }}
+            >
+              {/* Logo and Title */}
+              <Box textAlign="center" mb={4}>
+                <Box display="flex" justifyContent="center" mb={2}>
+                  <SkillOrbitLogo variant="dark" size="large" withText={true} />
+                </Box>
+                <Typography
+                  variant="h3"
+                  sx={{
+                    fontFamily: '"Poppins", sans-serif',
                     fontWeight: 700,
+                    background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    mb: 1,
                   }}
                 >
-                  Sign Up
-                </Link>
-              </Typography>
-            </Box>
-            <Box sx={{ textAlign: 'center', mt: 3, p: 2, bgcolor: '#f0f4ff', borderRadius: 2 }}>
-              <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
-                💡 Demo Mode: Use any email/password to login<br/>
-                Use email with "admin" for admin access
-              </Typography>
-            </Box>
-          </form>
-        </Paper>
-      </Box>
-    </Container>
+                  Welcome Back!
+                </Typography>
+                <Typography variant="body1" color="text.secondary">
+                  Sign in to continue your learning journey
+                </Typography>
+              </Box>
+
+              {error && (
+                <Fade in>
+                  <Alert
+                    severity="error"
+                    sx={{
+                      mb: 3,
+                      borderRadius: '12px',
+                      animation: 'shake 0.5s',
+                      '@keyframes shake': {
+                        '0%, 100%': { transform: 'translateX(0)' },
+                        '25%': { transform: 'translateX(-10px)' },
+                        '75%': { transform: 'translateX(10px)' },
+                      },
+                    }}
+                  >
+                    {error}
+                  </Alert>
+                </Fade>
+              )}
+
+              <Box component="form" onSubmit={handleSubmit}>
+                <TextField
+                  margin="normal"
+                  required
+                  fullWidth
+                  id="email"
+                  label="Email Address"
+                  name="email"
+                  autoComplete="email"
+                  autoFocus
+                  value={formData.email}
+                  onChange={handleChange}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Email color="primary" />
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: '12px',
+                      transition: 'all 0.3s',
+                      '&:hover': {
+                        transform: 'translateY(-2px)',
+                        boxShadow: '0 4px 12px rgba(102, 126, 234, 0.2)',
+                      },
+                      '&.Mui-focused': {
+                        transform: 'translateY(-2px)',
+                        boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
+                      },
+                    },
+                  }}
+                />
+
+                <TextField
+                  margin="normal"
+                  required
+                  fullWidth
+                  name="password"
+                  label="Password"
+                  type={showPassword ? 'text' : 'password'}
+                  id="password"
+                  autoComplete="current-password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Lock color="primary" />
+                      </InputAdornment>
+                    ),
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          onClick={() => setShowPassword(!showPassword)}
+                          edge="end"
+                        >
+                          {showPassword ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: '12px',
+                      transition: 'all 0.3s',
+                      '&:hover': {
+                        transform: 'translateY(-2px)',
+                        boxShadow: '0 4px 12px rgba(102, 126, 234, 0.2)',
+                      },
+                      '&.Mui-focused': {
+                        transform: 'translateY(-2px)',
+                        boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
+                      },
+                    },
+                  }}
+                />
+
+                <Button
+                  type="submit"
+                  fullWidth
+                  variant="contained"
+                  size="large"
+                  disabled={loading}
+                  endIcon={loading ? null : <LoginIcon />}
+                  sx={{
+                    mt: 4,
+                    mb: 2,
+                    py: 1.5,
+                    borderRadius: '12px',
+                    fontSize: '1.1rem',
+                    fontWeight: 600,
+                    background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)',
+                    boxShadow: '0 4px 15px 0 rgba(102, 126, 234, 0.4)',
+                    transition: 'all 0.3s',
+                    '&:hover': {
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 6px 20px 0 rgba(102, 126, 234, 0.5)',
+                    },
+                    '&:active': {
+                      transform: 'translateY(0)',
+                    },
+                  }}
+                >
+                  {loading ? <CircularProgress size={24} color="inherit" /> : 'Sign In'}
+                </Button>
+
+                <Divider sx={{ my: 3 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    OR
+                  </Typography>
+                </Divider>
+
+                <Box textAlign="center">
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                    Don't have an account?
+                  </Typography>
+                  <Button
+                    component={Link}
+                    to="/register"
+                    variant="outlined"
+                    fullWidth
+                    startIcon={<Rocket />}
+                    sx={{
+                      borderRadius: '12px',
+                      py: 1.2,
+                      borderWidth: '2px',
+                      borderColor: '#667eea',
+                      color: '#667eea',
+                      fontWeight: 600,
+                      '&:hover': {
+                        borderWidth: '2px',
+                        backgroundColor: 'rgba(102, 126, 234, 0.05)',
+                        transform: 'translateY(-2px)',
+                      },
+                      transition: 'all 0.3s',
+                    }}
+                  >
+                    Create Account
+                  </Button>
+                </Box>
+              </Box>
+            </Paper>
+          </Slide>
+        </Box>
+      </Container>
     </Box>
   );
 };
