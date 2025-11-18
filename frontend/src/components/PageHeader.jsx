@@ -22,15 +22,12 @@ const PageHeader = ({ title, subtitle, icon }) => {
           </Box>
         )}
         <Typography
-          variant="h1"
+          variant="h3"
           sx={{
             fontFamily: '"Poppins", sans-serif',
             fontWeight: 700,
-            fontSize: { xs: '2.25rem', sm: '2.75rem', md: '3.5rem' },
-            background: 'linear-gradient(90deg, #6366F1 0%, #0EA5E9 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
+            fontSize: { xs: '2rem', sm: '2.25rem', md: '2.5rem' },
+            color: 'text.primary',
           }}
         >
           {title}

@@ -404,51 +404,24 @@ const ReportsEnhanced = () => {
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       {/* Header */}
       <Box mb={4}>
-        <Box display="flex" justifyContent="space-between" alignItems="flex-start" flexWrap="wrap" gap={2} mb={3}>
-          <Box flex={1}>
-            <Box display="flex" alignItems="center" gap={2} mb={2}>
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: 56,
-                  height: 56,
-                  borderRadius: '12px',
-                  background: 'linear-gradient(135deg, #6366F1 0%, #0EA5E9 100%)',
-                  color: 'white',
-                }}
-              >
-                <Assessment sx={{ fontSize: 28 }} />
-              </Box>
-              <Typography
-                variant="h1"
-                sx={{
-                  fontFamily: '"Poppins", sans-serif',
-                  fontWeight: 700,
-                  fontSize: { xs: '2.25rem', sm: '2.75rem', md: '3.5rem' },
-                  background: 'linear-gradient(90deg, #6366F1 0%, #0EA5E9 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                }}
-              >
-                Reports & Analytics
-              </Typography>
-            </Box>
-            <Typography
-              variant="h6"
-              color="text.secondary"
-              sx={{
-                fontWeight: 400,
-                fontSize: { xs: '1rem', sm: '1.1rem', md: '1.25rem' },
-                maxWidth: '800px',
+        <Box display="flex" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={2} mb={3}>
+          <Box>
+            <Typography 
+              variant="h3" 
+              gutterBottom 
+              sx={{ 
+                fontWeight: 700,
+                color: 'text.primary',
+                mb: 1
               }}
             >
+              📊 Reports & Analytics
+            </Typography>
+            <Typography variant="h6" color="text.secondary">
               Track your progress and visualize your skill development journey
             </Typography>
             {lastUpdated && (
-              <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+              <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
                 Last updated: {lastUpdated.toLocaleTimeString()}
               </Typography>
             )}
