@@ -53,6 +53,7 @@ import api from '../api/axios';
 import { SKILLS_LIST } from '../data/skillsList';
 import PageHeader from '../components/PageHeader';
 import AILearningPathDisplay from '../components/AILearningPathDisplay';
+import LEARNING_RESOURCES, { getResourcesByProficiency, getRecommendedLevel } from '../data/learningResources';
 
 const LearningPathUnified = () => {
   const { user } = useAuth();
@@ -91,122 +92,6 @@ const LearningPathUnified = () => {
   ];
 
   const levels = ['Beginner', 'Intermediate', 'Advanced', 'Expert'];
-
-  // Comprehensive learning resources
-  const learningResources = {
-    JavaScript: {
-      courses: [
-        {
-          title: 'JavaScript - The Complete Guide',
-          platform: 'Udemy',
-          instructor: 'Maximilian Schwarzmüller',
-          duration: '52 hours',
-          level: 'All Levels',
-          rating: 4.6,
-          students: '180k+',
-          price: '$84.99',
-          url: 'https://www.udemy.com/course/javascript-the-complete-guide-2020-beginner-advanced/',
-        },
-        {
-          title: 'Modern JavaScript From The Beginning',
-          platform: 'Udemy',
-          instructor: 'Brad Traversy',
-          duration: '21 hours',
-          level: 'Beginner',
-          rating: 4.7,
-          students: '95k+',
-          price: '$74.99',
-          url: 'https://www.udemy.com/course/modern-javascript-from-the-beginning/',
-        },
-      ],
-      documentation: [
-        {
-          title: 'MDN Web Docs - JavaScript',
-          description: 'Comprehensive JavaScript documentation and tutorials',
-          url: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript',
-        },
-        {
-          title: 'JavaScript.info',
-          description: 'Modern JavaScript tutorial with interactive examples',
-          url: 'https://javascript.info/',
-        },
-      ],
-      projects: [
-        {
-          title: '30 JavaScript Projects',
-          description: 'Build 30 projects in 30 days',
-          difficulty: 'Intermediate',
-          estimatedTime: '30 days',
-        },
-        {
-          title: 'Todo App with LocalStorage',
-          description: 'CRUD operations with browser storage',
-          difficulty: 'Beginner',
-          estimatedTime: '3 days',
-        },
-      ],
-    },
-    React: {
-      courses: [
-        {
-          title: 'React - The Complete Guide',
-          platform: 'Udemy',
-          instructor: 'Maximilian Schwarzmüller',
-          duration: '48 hours',
-          level: 'All Levels',
-          rating: 4.7,
-          students: '200k+',
-          price: '$84.99',
-          url: 'https://www.udemy.com/course/react-the-complete-guide-incl-redux/',
-        },
-      ],
-      documentation: [
-        {
-          title: 'React Official Documentation',
-          description: 'Official React docs with interactive examples',
-          url: 'https://react.dev/',
-        },
-      ],
-      projects: [
-        {
-          title: 'E-commerce Store',
-          description: 'Full-featured shopping cart with React',
-          difficulty: 'Advanced',
-          estimatedTime: '2 weeks',
-        },
-      ],
-    },
-    Python: {
-      courses: [
-        {
-          title: 'Complete Python Bootcamp',
-          platform: 'Udemy',
-          instructor: 'Jose Portilla',
-          duration: '22 hours',
-          level: 'All Levels',
-          rating: 4.6,
-          students: '1.5M+',
-          price: '$84.99',
-          url: 'https://www.udemy.com/course/complete-python-bootcamp/',
-        },
-      ],
-      documentation: [
-        {
-          title: 'Python Official Documentation',
-          description: 'Comprehensive Python documentation',
-          url: 'https://docs.python.org/3/',
-        },
-      ],
-      projects: [
-        {
-          title: 'Web Scraper',
-          description: 'Build a web scraping tool with BeautifulSoup',
-          difficulty: 'Intermediate',
-          estimatedTime: '1 week',
-        },
-      ],
-    },
-  };
 
   useEffect(() => {
     fetchUserSkills();
@@ -298,7 +183,13 @@ const LearningPathUnified = () => {
     );
   };
 
-  const currentResources = learningResources[selectedSkill] || {
+  // Get current skill's proficiency level
+  const currentSkillData = userSkills.find(skill => skill.name === selectedSkill);
+  const currentProficiency = currentSkillData?.proficiency || 50;
+  const recommendedLevel = getRecommendedLevel(currentProficiency);
+
+  // Get resources filtered by proficiency
+  const currentResources = getResourcesByProficiency(selectedSkill, currentProficiency) || {
     courses: [],
     documentation: [],
     projects: [],
@@ -376,6 +267,46 @@ const LearningPathUnified = () => {
           {/* Resource Tabs */}
           {selectedSkill && (
             <>
+              {/* Proficiency Level Info */}
+              <Paper elevation={2} sx={{ p: 2.5, mb: 3, background: 'linear-gradient(135deg, #667eea15 0%, #764ba215 100%)' }}>
+                <Box display="flex" alignItems="center" justifyContent="space-between" flexWrap="wrap" gap={2}>
+                  <Box display="flex" alignItems="center" gap={2}>
+                    <Box
+                      sx={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: '12px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        color: 'white',
+                        fontWeight: 'bold',
+                        fontSize: '1.2rem',
+                      }}
+                    >
+                      {currentProficiency}%
+                    </Box>
+                    <Box>
+                      <Typography variant="body2" color="text.secondary">
+                        Your Current Level
+                      </Typography>
+                      <Typography variant="h6" fontWeight="bold">
+                        {recommendedLevel}
+                      </Typography>
+                    </Box>
+                  </Box>
+                  <Box>
+                    <Chip
+                      icon={<EmojiObjects />}
+                      label={`Showing ${recommendedLevel} resources`}
+                      color="primary"
+                      variant="outlined"
+                    />
+                  </Box>
+                </Box>
+              </Paper>
+
               <Tabs
                 value={resourceTab}
                 onChange={(e, newValue) => setResourceTab(newValue)}
@@ -393,8 +324,11 @@ const LearningPathUnified = () => {
                     <Grid item xs={12}>
                       <Paper sx={{ p: 4, textAlign: 'center' }}>
                         <PlayCircleOutline sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
-                        <Typography variant="h6" color="text.secondary">
-                          No courses available for this skill yet
+                        <Typography variant="h6" color="text.secondary" gutterBottom>
+                          No courses available for {selectedSkill} yet
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          We're constantly adding new resources. Check back soon or try the AI-Powered Path tab for personalized recommendations!
                         </Typography>
                       </Paper>
                     </Grid>
@@ -456,8 +390,11 @@ const LearningPathUnified = () => {
                     <Grid item xs={12}>
                       <Paper sx={{ p: 4, textAlign: 'center' }}>
                         <MenuBook sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
-                        <Typography variant="h6" color="text.secondary">
-                          No documentation available for this skill yet
+                        <Typography variant="h6" color="text.secondary" gutterBottom>
+                          No documentation available for {selectedSkill} yet
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          We're working on adding official documentation links. Try searching the web or check the Courses tab!
                         </Typography>
                       </Paper>
                     </Grid>
@@ -501,8 +438,11 @@ const LearningPathUnified = () => {
                     <Grid item xs={12}>
                       <Paper sx={{ p: 4, textAlign: 'center' }}>
                         <Code sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
-                        <Typography variant="h6" color="text.secondary">
-                          No projects available for this skill yet
+                        <Typography variant="h6" color="text.secondary" gutterBottom>
+                          No projects available for {selectedSkill} yet
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Practice projects coming soon! Meanwhile, try building your own projects or check out GitHub for inspiration.
                         </Typography>
                       </Paper>
                     </Grid>
@@ -511,16 +451,13 @@ const LearningPathUnified = () => {
                       <Grid item xs={12} md={6} key={index}>
                         <Card elevation={3}>
                           <CardContent>
-                            <Box display="flex" alignItems="center" gap={1} mb={2}>
-                              <Code color="primary" />
-                              <Typography variant="h6" fontWeight="bold">
-                                {project.title}
-                              </Typography>
-                            </Box>
-                            <Typography variant="body2" color="text.secondary" mb={2}>
-                              {project.description}
-                            </Typography>
-                            <Box display="flex" gap={1}>
+                            <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+                              <Box display="flex" alignItems="center" gap={1}>
+                                <Code color="primary" />
+                                <Typography variant="h6" fontWeight="bold">
+                                  {project.title}
+                                </Typography>
+                              </Box>
                               <Chip
                                 label={project.difficulty}
                                 size="small"
@@ -532,7 +469,33 @@ const LearningPathUnified = () => {
                                     : 'error'
                                 }
                               />
-                              <Chip label={project.estimatedTime} size="small" variant="outlined" />
+                            </Box>
+                            <Typography variant="body2" color="text.secondary" mb={2}>
+                              {project.description}
+                            </Typography>
+                            
+                            {/* Skills Tags */}
+                            {project.skills && (
+                              <Box mb={2}>
+                                <Typography variant="caption" color="text.secondary" gutterBottom display="block">
+                                  Skills You'll Practice:
+                                </Typography>
+                                <Box display="flex" gap={0.5} flexWrap="wrap">
+                                  {project.skills.map((skill, idx) => (
+                                    <Chip
+                                      key={idx}
+                                      label={skill}
+                                      size="small"
+                                      variant="outlined"
+                                      sx={{ fontSize: '0.7rem' }}
+                                    />
+                                  ))}
+                                </Box>
+                              </Box>
+                            )}
+                            
+                            <Box display="flex" gap={1} alignItems="center">
+                              <Chip icon={<Timer />} label={project.estimatedTime} size="small" variant="outlined" />
                             </Box>
                           </CardContent>
                           <CardActions>
