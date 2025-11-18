@@ -112,7 +112,8 @@ const Landing = () => {
   useEffect(() => {
     const fetchTrendingData = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/trending');
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+        const response = await fetch(`${apiBaseUrl}/trending`);
         const data = await response.json();
         
         setTrendingData({
