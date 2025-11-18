@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Typography,
@@ -10,52 +10,41 @@ import {
   CardContent,
   Grid,
   IconButton,
-  LinearProgress,
   TextField,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
   Tooltip,
   CircularProgress,
+  Stack,
+  Avatar,
 } from '@mui/material';
 import {
   Save,
   Favorite,
   FavoriteBorder,
-  Share,
   Download,
-  ExpandMore,
-  CheckCircle,
-  RadioButtonUnchecked,
   School,
   PlayCircleOutline,
   MenuBook,
   Code,
   Link as LinkIcon,
-  Timeline,
-  EmojiObjects,
   TrendingUp,
   OpenInNew,
+  Language,
+  WorkOutline,
+  Speed,
+  Assessment,
 } from '@mui/icons-material';
 import { toast } from 'react-toastify';
-import ReactMarkdown from 'react-markdown';
 import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 
 const AILearningPathDisplay = ({ learningPath, onSave, isSaved = false }) => {
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [isFavorite, setIsFavorite] = useState(false);
   const [downloading, setDownloading] = useState(false);
-  const contentRef = useRef(null);
 
   const handleSave = () => {
     if (!title.trim()) {
@@ -198,158 +187,375 @@ const AILearningPathDisplay = ({ learningPath, onSave, isSaved = false }) => {
 
   const sections = parseSections();
 
+  // Extract key information from AI response
+  const extractKeyInfo = () => {
+    const text = learningPath.rawResponse || '';
+    
+    // Extract timeline/duration
+    const timelineMatch = text.match(/(\d+[-–]\d+\s*(?:weeks?|months?|days?))/i);
+    const timeline = timelineMatch ? timelineMatch[1] : 'Flexible';
+    
+    // Extract difficulty level
+    const levelMatch = text.match(/(beginner|intermediate|advanced)/i);
+    const level = levelMatch ? levelMatch[1] : 'Intermediate';
+    
+    return { timeline, level };
+  };
+
+  const { timeline, level } = extractKeyInfo();
+
   return (
     <Box>
-      {/* Header Actions */}
-      <Paper elevation={3} sx={{ p: 3, mb: 3, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
-        <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Box>
-            <Typography variant="h5" sx={{ color: 'white', fontWeight: 'bold', mb: 1 }}>
-              🎯 Your Personalized Learning Path
-            </Typography>
-            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.9)' }}>
-              Generated on {new Date(learningPath.generatedAt).toLocaleString()}
-            </Typography>
-          </Box>
-          <Box display="flex" gap={1}>
-            {!isSaved && (
-              <Tooltip title="Save Learning Path">
+      {/* Header Card */}
+      <Card 
+        elevation={0} 
+        sx={{ 
+          mb: 3,
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          color: 'white',
+          borderRadius: '16px',
+        }}
+      >
+        <CardContent sx={{ p: 3 }}>
+          <Box display="flex" justifyContent="space-between" alignItems="flex-start" flexWrap="wrap" gap={2}>
+            <Box flex={1}>
+              <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
+                🎯 Your AI-Powered Learning Path
+              </Typography>
+              <Typography variant="body2" sx={{ opacity: 0.95, mb: 2 }}>
+                Generated {new Date(learningPath.generatedAt).toLocaleDateString()} at {new Date(learningPath.generatedAt).toLocaleTimeString()}
+              </Typography>
+              <Stack direction="row" spacing={1} flexWrap="wrap">
+                <Chip 
+                  icon={<Speed sx={{ color: 'white !important' }} />}
+                  label={timeline}
+                  size="small"
+                  sx={{ bgcolor: 'rgba(255,255,255,0.2)', color: 'white', fontWeight: 500 }}
+                />
+                <Chip 
+                  icon={<TrendingUp sx={{ color: 'white !important' }} />}
+                  label={level}
+                  size="small"
+                  sx={{ bgcolor: 'rgba(255,255,255,0.2)', color: 'white', fontWeight: 500 }}
+                />
+              </Stack>
+            </Box>
+            <Stack direction="row" spacing={1}>
+              {!isSaved && (
                 <Button
                   variant="contained"
                   startIcon={<Save />}
                   onClick={() => setSaveDialogOpen(true)}
+                  size="small"
                   sx={{
                     bgcolor: 'white',
                     color: '#667eea',
+                    fontWeight: 600,
                     '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' }
                   }}
                 >
-                  Save Path
+                  Save
                 </Button>
-              </Tooltip>
-            )}
-            <Tooltip title="Share">
-              <IconButton sx={{ color: 'white' }}>
-                <Share />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Download PDF">
+              )}
               <IconButton 
-                sx={{ color: 'white' }}
+                size="small"
                 onClick={handleDownloadPDF}
                 disabled={downloading}
+                sx={{ 
+                  bgcolor: 'rgba(255,255,255,0.2)', 
+                  color: 'white',
+                  '&:hover': { bgcolor: 'rgba(255,255,255,0.3)' }
+                }}
               >
-                {downloading ? <CircularProgress size={24} sx={{ color: 'white' }} /> : <Download />}
+                {downloading ? <CircularProgress size={20} sx={{ color: 'white' }} /> : <Download fontSize="small" />}
               </IconButton>
-            </Tooltip>
+            </Stack>
           </Box>
-        </Box>
-      </Paper>
+        </CardContent>
+      </Card>
 
-      {/* Resources Section */}
+      {/* Curated Resources */}
       {learningPath.resources && learningPath.resources.length > 0 && (
-        <Paper elevation={3} sx={{ p: 3, mb: 3 }}>
-          <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <LinkIcon color="primary" />
-            Recommended Resources ({learningPath.resources.length})
-          </Typography>
-          <Divider sx={{ mb: 2 }} />
-          <Grid container spacing={2}>
-            {learningPath.resources.map((resource, index) => (
-              <Grid item xs={12} sm={6} md={4} key={index}>
+        <Card elevation={2} sx={{ mb: 3, borderRadius: '12px' }}>
+          <CardContent sx={{ p: 3 }}>
+            <Box display="flex" alignItems="center" gap={1.5} mb={2.5}>
+              <Avatar sx={{ bgcolor: 'primary.main', width: 40, height: 40 }}>
+                <LinkIcon />
+              </Avatar>
+              <Box>
+                <Typography variant="h6" fontWeight={600}>
+                  Curated Resources
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {learningPath.resources.length} handpicked resources
+                </Typography>
+              </Box>
+            </Box>
+            
+            <Grid container spacing={2}>
+              {learningPath.resources.slice(0, 6).map((resource, index) => (
+                <Grid item xs={12} sm={6} key={index}>
+                  <Card 
+                    elevation={0}
+                    sx={{
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      transition: 'all 0.2s',
+                      '&:hover': {
+                        borderColor: 'primary.main',
+                        transform: 'translateY(-2px)',
+                        boxShadow: 2
+                      }
+                    }}
+                  >
+                    <CardContent sx={{ p: 2 }}>
+                      <Box display="flex" gap={1.5}>
+                        <Box 
+                          sx={{ 
+                            width: 40, 
+                            height: 40, 
+                            borderRadius: '8px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            bgcolor: `${getResourceColor(resource.type)}.50`,
+                            flexShrink: 0
+                          }}
+                        >
+                          {getResourceIcon(resource.type)}
+                        </Box>
+                        <Box flex={1} minWidth={0}>
+                          <Typography 
+                            variant="body2" 
+                            fontWeight={600} 
+                            sx={{ 
+                              mb: 0.5,
+                              display: '-webkit-box',
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: 'vertical',
+                              overflow: 'hidden'
+                            }}
+                          >
+                            {resource.title}
+                          </Typography>
+                          <Box display="flex" alignItems="center" justifyContent="space-between" gap={1}>
+                            <Chip
+                              label={resource.type}
+                              size="small"
+                              sx={{ 
+                                height: 20, 
+                                fontSize: '0.7rem',
+                                bgcolor: 'background.default'
+                              }}
+                            />
+                            <IconButton
+                              size="small"
+                              href={resource.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              sx={{ 
+                                color: 'primary.main',
+                                '&:hover': { bgcolor: 'primary.50' }
+                              }}
+                            >
+                              <OpenInNew fontSize="small" />
+                            </IconButton>
+                          </Box>
+                        </Box>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+            
+            {learningPath.resources.length > 6 && (
+              <Typography 
+                variant="caption" 
+                color="text.secondary" 
+                sx={{ display: 'block', textAlign: 'center', mt: 2 }}
+              >
+                +{learningPath.resources.length - 6} more resources in full report
+              </Typography>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Key Sections Grid */}
+      {Object.keys(sections).length > 0 && (
+        <Grid container spacing={2} sx={{ mb: 3 }}>
+          {Object.entries(sections).slice(0, 4).map(([key, value]) => {
+            const sectionIcons = {
+              'gap_analysis': <Assessment />,
+              'learning_path': <TrendingUp />,
+              'recommended_resources': <School />,
+              'timeline': <Speed />,
+              'projects': <Code />,
+              'priority_order': <WorkOutline />
+            };
+            
+            const sectionColors = {
+              'gap_analysis': 'error',
+              'learning_path': 'primary',
+              'recommended_resources': 'success',
+              'timeline': 'warning',
+              'projects': 'info',
+              'priority_order': 'secondary'
+            };
+
+            return (
+              <Grid item xs={12} sm={6} key={key}>
                 <Card 
                   elevation={2}
-                  sx={{
+                  sx={{ 
                     height: '100%',
-                    transition: 'transform 0.2s',
-                    '&:hover': {
-                      transform: 'translateY(-4px)',
-                      boxShadow: 4
-                    }
+                    borderRadius: '12px',
+                    border: '1px solid',
+                    borderColor: 'divider'
                   }}
                 >
-                  <CardContent>
-                    <Box display="flex" alignItems="center" gap={1} mb={1}>
-                      {getResourceIcon(resource.type)}
-                      <Chip
-                        label={resource.type}
-                        size="small"
-                        color={getResourceColor(resource.type)}
-                        variant="outlined"
-                      />
+                  <CardContent sx={{ p: 2.5 }}>
+                    <Box display="flex" alignItems="center" gap={1.5} mb={1.5}>
+                      <Avatar 
+                        sx={{ 
+                          bgcolor: `${sectionColors[key] || 'primary'}.50`,
+                          color: `${sectionColors[key] || 'primary'}.main`,
+                          width: 36,
+                          height: 36
+                        }}
+                      >
+                        {sectionIcons[key] || <Language />}
+                      </Avatar>
+                      <Typography variant="subtitle1" fontWeight={600} sx={{ textTransform: 'capitalize' }}>
+                        {key.replace(/_/g, ' ')}
+                      </Typography>
                     </Box>
-                    <Typography variant="body2" sx={{ mb: 2, wordBreak: 'break-word' }}>
-                      {resource.title}
-                    </Typography>
-                    <Button
-                      fullWidth
-                      variant="outlined"
-                      size="small"
-                      endIcon={<OpenInNew />}
-                      href={resource.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <Typography 
+                      variant="body2" 
+                      color="text.secondary"
+                      sx={{ 
+                        display: '-webkit-box',
+                        WebkitLineClamp: 4,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                        lineHeight: 1.6
+                      }}
                     >
-                      Open Resource
-                    </Button>
+                      {value.replace(/[*#]/g, '').substring(0, 180)}...
+                    </Typography>
                   </CardContent>
                 </Card>
               </Grid>
-            ))}
-          </Grid>
-        </Paper>
+            );
+          })}
+        </Grid>
       )}
 
-      {/* Structured Sections */}
-      {Object.keys(sections).length > 0 && (
-        <Paper elevation={3} sx={{ p: 3, mb: 3 }}>
-          <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Timeline color="primary" />
-            Learning Path Breakdown
-          </Typography>
-          <Divider sx={{ mb: 2 }} />
-          {Object.entries(sections).map(([key, value]) => (
-            <Accordion key={key} defaultExpanded={key === 'gap_analysis'}>
-              <AccordionSummary expandIcon={<ExpandMore />}>
-                <Typography sx={{ fontWeight: 600, textTransform: 'capitalize' }}>
-                  {key.replace(/_/g, ' ')}
-                </Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                <Box sx={{ 
-                  '& ul': { pl: 2 },
-                  '& li': { mb: 1 },
-                  '& strong': { color: 'primary.main' }
-                }}>
-                  <ReactMarkdown>{value}</ReactMarkdown>
-                </Box>
-              </AccordionDetails>
-            </Accordion>
-          ))}
-        </Paper>
-      )}
-
-      {/* Full Response */}
-      <Paper elevation={3} sx={{ p: 3 }}>
-        <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <EmojiObjects color="primary" />
-          Complete AI Recommendations
-        </Typography>
-        <Divider sx={{ mb: 2 }} />
-        <Box
-          sx={{
-            whiteSpace: 'pre-wrap',
-            lineHeight: 1.8,
-            '& strong': { fontWeight: 700, color: 'primary.main' },
-            '& h1, & h2, & h3': { color: 'primary.main', mt: 2, mb: 1 },
-            '& ul, & ol': { pl: 3 },
-            '& li': { mb: 0.5 },
-            '& a': { color: 'secondary.main', textDecoration: 'underline' }
-          }}
-        >
-          <ReactMarkdown>{learningPath.rawResponse}</ReactMarkdown>
-        </Box>
-      </Paper>
+      {/* Detailed Roadmap */}
+      <Card elevation={2} sx={{ borderRadius: '12px' }}>
+        <CardContent sx={{ p: 3 }}>
+          <Box display="flex" alignItems="center" gap={1.5} mb={2}>
+            <Avatar sx={{ bgcolor: 'success.main', width: 40, height: 40 }}>
+              <TrendingUp />
+            </Avatar>
+            <Box>
+              <Typography variant="h6" fontWeight={600}>
+                Complete Learning Roadmap
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                Your personalized step-by-step guide
+              </Typography>
+            </Box>
+          </Box>
+          
+          <Box
+            sx={{
+              bgcolor: 'background.default',
+              borderRadius: '8px',
+              p: 2.5,
+              maxHeight: '400px',
+              overflowY: 'auto',
+              '& p': { 
+                mb: 1.5, 
+                lineHeight: 1.7,
+                fontSize: '0.9rem'
+              },
+              '& strong': { 
+                fontWeight: 700, 
+                color: 'primary.main',
+                fontSize: '0.95rem'
+              },
+              '& ul, & ol': { 
+                pl: 2.5,
+                mb: 1.5
+              },
+              '& li': { 
+                mb: 0.75,
+                lineHeight: 1.6,
+                fontSize: '0.875rem'
+              },
+              '& h1, & h2, & h3': { 
+                color: 'text.primary', 
+                fontWeight: 600,
+                mt: 2, 
+                mb: 1.5,
+                fontSize: '1rem'
+              },
+              '&::-webkit-scrollbar': {
+                width: '8px'
+              },
+              '&::-webkit-scrollbar-track': {
+                bgcolor: 'background.paper',
+                borderRadius: '4px'
+              },
+              '&::-webkit-scrollbar-thumb': {
+                bgcolor: 'divider',
+                borderRadius: '4px',
+                '&:hover': {
+                  bgcolor: 'text.secondary'
+                }
+              }
+            }}
+          >
+            {learningPath.rawResponse.split('\n').map((line, index) => {
+              // Format headers
+              if (line.startsWith('**') && line.endsWith('**')) {
+                return (
+                  <Typography key={index} variant="h6" sx={{ fontWeight: 600, color: 'primary.main', mt: 2, mb: 1 }}>
+                    {line.replace(/\*\*/g, '')}
+                  </Typography>
+                );
+              }
+              // Format list items
+              if (line.trim().startsWith('-') || line.trim().startsWith('*')) {
+                return (
+                  <Typography key={index} variant="body2" sx={{ pl: 2, mb: 0.5 }}>
+                    • {line.replace(/^[-*]\s*/, '')}
+                  </Typography>
+                );
+              }
+              // Format numbered lists
+              if (/^\d+\./.test(line.trim())) {
+                return (
+                  <Typography key={index} variant="body2" sx={{ pl: 2, mb: 0.5 }}>
+                    {line}
+                  </Typography>
+                );
+              }
+              // Regular text
+              if (line.trim()) {
+                return (
+                  <Typography key={index} variant="body2" sx={{ mb: 1 }}>
+                    {line}
+                  </Typography>
+                );
+              }
+              return <Box key={index} sx={{ height: '8px' }} />;
+            })}
+          </Box>
+        </CardContent>
+      </Card>
 
       {/* Save Dialog */}
       <Dialog open={saveDialogOpen} onClose={() => setSaveDialogOpen(false)} maxWidth="sm" fullWidth>
