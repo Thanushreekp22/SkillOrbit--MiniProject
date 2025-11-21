@@ -268,7 +268,7 @@ const LearningPathUnified = () => {
           {selectedSkill && (
             <>
               {/* Proficiency Level Info */}
-              <Paper elevation={2} sx={{ p: 2.5, mb: 3, background: 'linear-gradient(135deg, #667eea15 0%, #764ba215 100%)' }}>
+              <Paper elevation={2} sx={{ p: 2.5, mb: 3, background: 'rgba(102, 126, 234, 0.1)' }}>
                 <Box display="flex" alignItems="center" justifyContent="space-between" flexWrap="wrap" gap={2}>
                   <Box display="flex" alignItems="center" gap={2}>
                     <Box
@@ -279,7 +279,7 @@ const LearningPathUnified = () => {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        background: '#667eea',
                         color: 'white',
                         fontWeight: 'bold',
                         fontSize: '1.2rem',
@@ -638,9 +638,9 @@ const LearningPathUnified = () => {
                   startIcon={aiLoading ? <CircularProgress size={20} /> : <Rocket />}
                   sx={{
                     py: 1.5,
-                    background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)',
+                    background: '#667eea',
                     '&:hover': {
-                      background: 'linear-gradient(90deg, #764ba2 0%, #667eea 100%)',
+                      background: '#764ba2',
                     },
                   }}
                 >
@@ -712,3 +712,4 @@ const LearningPathUnified = () => {
 };
 
 export default LearningPathUnified;
+

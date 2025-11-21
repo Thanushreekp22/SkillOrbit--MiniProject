@@ -43,9 +43,8 @@ import learningPathRoutes from "./routes/learningPathRoutes.js";
 import trendingRoutes from "./routes/trendingRoutes.js";
 import analysisRoutes from "./routes/analysisRoutes.js";
 import reportRoutes from "./routes/reportRoutes.js";
-
-
-
+import adminRoutes from "./routes/adminRoutes.js";
+import adminDashboardRoutes from "./routes/adminDashboardRoutes.js";
 
 // ✅ Attach routes
 app.use("/api/test", testRoutes);
@@ -60,6 +59,8 @@ app.use("/api/learning-path", learningPathRoutes);
 app.use("/api/trending", trendingRoutes);
 app.use("/api/analysis", analysisRoutes);
 app.use("/api/reports", reportRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/admin/dashboard", adminDashboardRoutes);
 
 // ✅ Default base route
 app.get("/", (req, res) => res.send("Skill Matrix Backend running 🚀"));

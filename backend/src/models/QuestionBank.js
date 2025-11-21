@@ -25,8 +25,26 @@ const questionBankSchema = new mongoose.Schema({
   },
   questionType: {
     type: String,
-    enum: ["multiple-choice", "true-false", "short-answer"],
+    enum: ["multiple-choice", "true-false", "short-answer", "mcq"],
     default: "multiple-choice"
+  },
+  explanation: {
+    type: String,
+    default: ""
+  },
+  tags: [{
+    type: String
+  }],
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Admin'
+  },
+  updatedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Admin'
+  },
+  updatedAt: {
+    type: Date
   }
 }, {
   timestamps: true

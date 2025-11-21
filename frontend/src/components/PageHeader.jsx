@@ -14,7 +14,7 @@ const PageHeader = ({ title, subtitle, icon }) => {
               width: 56,
               height: 56,
               borderRadius: '12px',
-              background: 'linear-gradient(135deg, #6366F1 0%, #0EA5E9 100%)',
+              background: '#6366F1',
               color: 'white',
             }}
           >
@@ -51,3 +51,4 @@ const PageHeader = ({ title, subtitle, icon }) => {
 };
 
 export default PageHeader;
+

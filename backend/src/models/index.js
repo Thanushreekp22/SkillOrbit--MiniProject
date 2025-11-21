@@ -12,6 +12,7 @@ import Report from "./Report.js";
 import QuestionBank from "./QuestionBank.js";
 import UserQuestionnaire from "./UserQuestionnaire.js";
 import Assessment from "./Assessment.js";
+import Admin from "./Admin.js";
 
 // Export all models
 export { 
@@ -25,5 +26,6 @@ export {
   Report,
   QuestionBank,
   UserQuestionnaire,
-  Assessment
+  Assessment,
+  Admin
 };

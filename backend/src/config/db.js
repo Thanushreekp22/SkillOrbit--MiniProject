@@ -6,10 +6,8 @@ const connectDB = async () => {
   try {
     const mongoURI = process.env.MONGODB_URI || "mongodb://localhost:27017/skillorbit";
     
-    await mongoose.connect(mongoURI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    // Remove deprecated options - they are no longer needed in MongoDB driver v4+
+    await mongoose.connect(mongoURI);
     
     console.log("✅ MongoDB Connected Successfully!");
   } catch (error) {

@@ -295,7 +295,7 @@ const DomainDetails = () => {
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
       {/* Header */}
       <Box sx={{ 
-        background: 'linear-gradient(90deg, #6366F1 0%, #0EA5E9 100%)', 
+        background: '#6366F1', 
         color: 'white', 
         py: 2 
       }}>
@@ -573,7 +573,7 @@ const DomainDetails = () => {
             p: 4,
             mt: 4,
             textAlign: 'center',
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            background: '#667eea',
             color: 'white',
           }}
         >
@@ -604,3 +604,4 @@ const DomainDetails = () => {
 };
 
 export default DomainDetails;
+

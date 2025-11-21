@@ -202,12 +202,17 @@ export const downloadReportPDF = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    // Fetch all user data
-    const [skills, assessments, analyses] = await Promise.all([
+    // Fetch all user data including user details
+    const [user, skills, assessments, analyses] = await Promise.all([
+      User.findById(userId).select('-password'),
       Skill.find({ userId }),
       Assessment.find({ userId }).sort({ createdAt: -1 }),
       Analysis.find({ userId }).sort({ analyzedAt: -1 })
     ]);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
     // Calculate overview statistics
     const avgProficiency = skills.length > 0
@@ -219,317 +224,788 @@ export const downloadReportPDF = async (req, res) => {
       : 0;
 
     const expertSkills = skills.filter(s => s.proficiency >= 80).length;
+    const intermediateSkills = skills.filter(s => s.proficiency >= 50 && s.proficiency < 80).length;
+    const beginnerSkills = skills.filter(s => s.proficiency < 50).length;
+
+    // Category breakdown
+    const categoryMap = {};
+    skills.forEach(skill => {
+      const cat = skill.category || 'Other';
+      if (!categoryMap[cat]) {
+        categoryMap[cat] = { count: 0, totalProf: 0 };
+      }
+      categoryMap[cat].count++;
+      categoryMap[cat].totalProf += skill.proficiency;
+    });
 
     // Create PDF document
-    const doc = new PDFDocument({ margin: 50, size: 'A4' });
+    const doc = new PDFDocument({ 
+      margin: 40, 
+      size: 'A4',
+      bufferPages: true 
+    });
     
     // Set response headers
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="skillorbit-report-${Date.now()}.pdf"`);
+    res.setHeader('Content-Disposition', `attachment; filename="SkillOrbit_Report_${user.name.replace(/\s+/g, '_')}_${Date.now()}.pdf"`);
     
     // Pipe PDF to response
     doc.pipe(res);
 
-    // Add gradient-like header background (using rectangles)
-    doc.rect(0, 0, doc.page.width, 150).fill('#667eea');
+    // ==================== PAGE 1: HEADER & STUDENT INFO ====================
     
-    // Header
+    // Header Background
+    doc.rect(0, 0, doc.page.width, 120).fill('#1E40AF');
+    
+    // Company/Platform Logo Area
     doc.fillColor('#ffffff')
-       .fontSize(28)
+       .fontSize(32)
        .font('Helvetica-Bold')
-       .text('SkillOrbit Progress Report', 50, 50, { align: 'center' });
+       .text('SkillOrbit', 40, 30);
     
-    doc.fontSize(12)
+    doc.fontSize(11)
        .font('Helvetica')
-       .text(`Generated on ${new Date().toLocaleDateString()}`, 50, 90, { align: 'center' });
+       .text('Skill Assessment & Development Platform', 40, 68);
     
-    doc.fontSize(14)
-       .text(`Report for: ${req.user.name || 'User'}`, 50, 110, { align: 'center' });
-
-    // Reset text color and move down
-    doc.fillColor('#333333');
-    doc.moveDown(4);
-
-    // Summary Statistics Section
+    // Report Title
     doc.fontSize(18)
        .font('Helvetica-Bold')
-       .fillColor('#667eea')
-       .text('📊 Summary Statistics', 50, 180);
+       .text('PROGRESS REPORT', doc.page.width - 250, 35);
     
-    doc.moveDown(0.5);
-    doc.fontSize(11).font('Helvetica').fillColor('#333333');
+    doc.fontSize(10)
+       .font('Helvetica')
+       .text(`Generated: ${new Date().toLocaleDateString('en-US', { 
+         year: 'numeric', 
+         month: 'long', 
+         day: 'numeric' 
+       })}`, doc.page.width - 250, 60);
+    
+    doc.fontSize(9)
+       .text(`Report ID: SR-${Date.now().toString().slice(-8)}`, doc.page.width - 250, 78);
 
-    const statsY = 210;
-    const statBoxWidth = 120;
-    const statBoxHeight = 70;
-    const gap = 15;
+    // Reset position after header
+    doc.fillColor('#1F2937');
+    let yPos = 150;
 
-    // Draw stat boxes
-    const stats = [
-      { label: 'Total Skills', value: skills.length, color: '#667eea' },
-      { label: 'Avg Proficiency', value: `${avgProficiency}%`, color: '#48bb78' },
-      { label: 'Expert Skills', value: expertSkills, color: '#ed8936' },
-      { label: 'Assessments', value: assessments.length, color: '#4299e1' }
-    ];
+    // ==================== STUDENT INFORMATION BOX ====================
+    
+    doc.fontSize(16)
+       .font('Helvetica-Bold')
+       .fillColor('#1E40AF')
+       .text('STUDENT INFORMATION', 40, yPos);
+    
+    yPos += 25;
+    
+    // Draw info box
+    doc.roundedRect(40, yPos, doc.page.width - 80, 140, 8)
+       .lineWidth(1.5)
+       .strokeColor('#E5E7EB')
+       .stroke();
+    
+    yPos += 20;
+    
+    // Student Name (Large and Bold)
+    doc.fontSize(20)
+       .font('Helvetica-Bold')
+       .fillColor('#1F2937')
+       .text(user.name || 'N/A', 60, yPos);
+    
+    yPos += 35;
+    
+    // Contact Information in Two Columns
+    const leftCol = 60;
+    const rightCol = 320;
+    
+    // Left Column
+    doc.fontSize(10)
+       .font('Helvetica-Bold')
+       .fillColor('#6B7280')
+       .text('EMAIL:', leftCol, yPos);
+    
+    doc.fontSize(11)
+       .font('Helvetica')
+       .fillColor('#1F2937')
+       .text(user.email || 'N/A', leftCol, yPos + 15);
+    
+    doc.fontSize(10)
+       .font('Helvetica-Bold')
+       .fillColor('#6B7280')
+       .text('PHONE:', leftCol, yPos + 40);
+    
+    doc.fontSize(11)
+       .font('Helvetica')
+       .fillColor('#1F2937')
+       .text(user.phone || 'Not Provided', leftCol, yPos + 55);
+    
+    // Right Column
+    doc.fontSize(10)
+       .font('Helvetica-Bold')
+       .fillColor('#6B7280')
+       .text('LOCATION:', rightCol, yPos);
+    
+    doc.fontSize(11)
+       .font('Helvetica')
+       .fillColor('#1F2937')
+       .text(user.location || 'Not Provided', rightCol, yPos + 15);
+    
+    doc.fontSize(10)
+       .font('Helvetica-Bold')
+       .fillColor('#6B7280')
+       .text('STUDENT ID:', rightCol, yPos + 40);
+    
+    doc.fontSize(11)
+       .font('Helvetica')
+       .fillColor('#1F2937')
+       .text(userId.substring(0, 12).toUpperCase(), rightCol, yPos + 55);
+    
+    yPos += 110;
 
-    stats.forEach((stat, index) => {
-      const x = 50 + (index * (statBoxWidth + gap));
+    // ==================== PROFESSIONAL INFORMATION ====================
+    
+    if (user.currentRole || user.company || user.education) {
+      yPos += 20;
       
-      // Box background
-      doc.roundedRect(x, statsY, statBoxWidth, statBoxHeight, 5)
-         .fillAndStroke('#f7fafc', '#e2e8f0');
+      doc.fontSize(16)
+         .font('Helvetica-Bold')
+         .fillColor('#1E40AF')
+         .text('PROFESSIONAL DETAILS', 40, yPos);
+      
+      yPos += 25;
+      
+      if (user.currentRole) {
+        doc.fontSize(10)
+           .font('Helvetica-Bold')
+           .fillColor('#6B7280')
+           .text('Current Role:', 60, yPos);
+        
+        doc.fontSize(11)
+           .font('Helvetica')
+           .fillColor('#1F2937')
+           .text(user.currentRole, 160, yPos);
+        
+        yPos += 20;
+      }
+      
+      if (user.company) {
+        doc.fontSize(10)
+           .font('Helvetica-Bold')
+           .fillColor('#6B7280')
+           .text('Company:', 60, yPos);
+        
+        doc.fontSize(11)
+           .font('Helvetica')
+           .fillColor('#1F2937')
+           .text(user.company, 160, yPos);
+        
+        yPos += 20;
+      }
+      
+      if (user.education) {
+        doc.fontSize(10)
+           .font('Helvetica-Bold')
+           .fillColor('#6B7280')
+           .text('Education:', 60, yPos);
+        
+        doc.fontSize(11)
+           .font('Helvetica')
+           .fillColor('#1F2937')
+           .text(user.education, 160, yPos, { width: 380 });
+        
+        yPos += 25;
+      }
+    }
+
+    // ==================== PERFORMANCE SUMMARY ====================
+    
+    yPos += 20;
+    
+    doc.fontSize(16)
+       .font('Helvetica-Bold')
+       .fillColor('#1E40AF')
+       .text('PERFORMANCE SUMMARY', 40, yPos);
+    
+    yPos += 30;
+    
+    // Summary Stats Boxes
+    const boxWidth = 120;
+    const boxHeight = 85;
+    const boxGap = 15;
+    const startX = 40;
+    
+    const summaryStats = [
+      { label: 'Total Skills', value: skills.length, color: '#3B82F6', icon: '📚' },
+      { label: 'Avg Proficiency', value: `${avgProficiency}%`, color: '#10B981', icon: '📊' },
+      { label: 'Expert Level', value: expertSkills, color: '#F59E0B', icon: '⭐' },
+      { label: 'Assessments', value: assessments.length, color: '#8B5CF6', icon: '✅' }
+    ];
+    
+    summaryStats.forEach((stat, index) => {
+      const x = startX + (index * (boxWidth + boxGap));
+      
+      // Box with colored top border
+      doc.rect(x, yPos, boxWidth, 5).fill(stat.color);
+      doc.roundedRect(x, yPos, boxWidth, boxHeight, 5)
+         .lineWidth(1)
+         .strokeColor('#E5E7EB')
+         .stroke();
+      
+      // Icon
+      doc.fontSize(24)
+         .text(stat.icon, x, yPos + 15, { 
+           width: boxWidth, 
+           align: 'center' 
+         });
       
       // Value
-      doc.fontSize(24)
+      doc.fontSize(28)
          .font('Helvetica-Bold')
          .fillColor(stat.color)
-         .text(stat.value.toString(), x, statsY + 15, { 
-           width: statBoxWidth, 
+         .text(stat.value.toString(), x, yPos + 42, { 
+           width: boxWidth, 
            align: 'center' 
          });
       
       // Label
-      doc.fontSize(10)
+      doc.fontSize(9)
          .font('Helvetica')
-         .fillColor('#666666')
-         .text(stat.label, x, statsY + 45, { 
-           width: statBoxWidth, 
+         .fillColor('#6B7280')
+         .text(stat.label.toUpperCase(), x, yPos + 70, { 
+           width: boxWidth, 
            align: 'center' 
          });
     });
-
-    doc.moveDown(6);
-
-    // Skills Section
-    if (skills.length > 0) {
-      doc.fontSize(18)
-         .font('Helvetica-Bold')
-         .fillColor('#667eea')
-         .text('🎯 Top Skills', 50, doc.y + 20);
-      
-      doc.moveDown(0.5);
-      
-      // Table header
-      const tableTop = doc.y + 10;
-      doc.fontSize(10)
-         .font('Helvetica-Bold')
-         .fillColor('#ffffff');
-      
-      doc.rect(50, tableTop, 500, 25).fill('#667eea');
-      
-      doc.text('Skill Name', 60, tableTop + 8, { width: 200 });
-      doc.text('Category', 270, tableTop + 8, { width: 100 });
-      doc.text('Proficiency', 380, tableTop + 8, { width: 80 });
-      doc.text('Assessments', 470, tableTop + 8, { width: 70 });
-
-      // Table rows
-      doc.font('Helvetica').fillColor('#333333');
-      let currentY = tableTop + 25;
-      
-      skills.slice(0, 10).forEach((skill, index) => {
-        if (currentY > 700) {
-          doc.addPage();
-          currentY = 50;
-        }
-
-        const skillAssessments = assessments.filter(a => 
-          a.skillName && skill.name && 
-          a.skillName.toLowerCase() === skill.name.toLowerCase()
-        );
-
-        // Alternate row colors
-        if (index % 2 === 0) {
-          doc.rect(50, currentY, 500, 25).fill('#f7fafc');
-        }
-
-        doc.fillColor('#333333')
-           .text(skill.name, 60, currentY + 8, { width: 200 });
-        doc.text(skill.category || 'N/A', 270, currentY + 8, { width: 100 });
-        doc.text(`${skill.proficiency}%`, 380, currentY + 8, { width: 80 });
-        doc.text(skillAssessments.length.toString(), 470, currentY + 8, { width: 70 });
-
-        currentY += 25;
-      });
-
-      doc.moveDown(2);
-    }
-
-    // Recent Assessments Section
-    if (assessments.length > 0) {
-      const assessmentY = doc.y + 30;
-      
-      if (assessmentY > 650) {
-        doc.addPage();
-      }
-
-      doc.fontSize(18)
-         .font('Helvetica-Bold')
-         .fillColor('#667eea')
-         .text('📝 Recent Assessments', 50, doc.y + 20);
-      
-      doc.moveDown(0.5);
-      
-      // Table header
-      const tableTop = doc.y + 10;
-      doc.fontSize(10)
-         .font('Helvetica-Bold')
-         .fillColor('#ffffff');
-      
-      doc.rect(50, tableTop, 500, 25).fill('#667eea');
-      
-      doc.text('Skill', 60, tableTop + 8, { width: 180 });
-      doc.text('Score', 250, tableTop + 8, { width: 60 });
-      doc.text('Difficulty', 320, tableTop + 8, { width: 80 });
-      doc.text('Date', 410, tableTop + 8, { width: 130 });
-
-      // Table rows
-      doc.font('Helvetica').fillColor('#333333');
-      let currentY = tableTop + 25;
-      
-      assessments.slice(0, 8).forEach((assessment, index) => {
-        if (currentY > 700) {
-          doc.addPage();
-          currentY = 50;
-        }
-
-        // Alternate row colors
-        if (index % 2 === 0) {
-          doc.rect(50, currentY, 500, 25).fill('#f7fafc');
-        }
-
-        doc.fillColor('#333333')
-           .text(assessment.skillName || 'N/A', 60, currentY + 8, { width: 180 });
-        doc.text(`${assessment.score}%`, 250, currentY + 8, { width: 60 });
-        doc.text(assessment.difficulty || 'N/A', 320, currentY + 8, { width: 80 });
-        doc.text(new Date(assessment.createdAt).toLocaleDateString(), 410, currentY + 8, { width: 130 });
-
-        currentY += 25;
-      });
-
-      doc.moveDown(2);
-    }
-
-    // Category Breakdown Section
-    if (skills.length > 0) {
-      if (doc.y > 650) {
-        doc.addPage();
-      }
-
-      doc.fontSize(18)
-         .font('Helvetica-Bold')
-         .fillColor('#667eea')
-         .text('📊 Skills by Category', 50, doc.y + 20);
-      
-      doc.moveDown(1);
-
-      const categories = {};
-      skills.forEach(skill => {
-        const cat = skill.category || 'Other';
-        categories[cat] = (categories[cat] || 0) + 1;
-      });
-
-      Object.keys(categories).forEach((category, index) => {
-        if (doc.y > 700) {
-          doc.addPage();
-        }
-
-        const count = categories[category];
-        const percentage = Math.round((count / skills.length) * 100);
-
-        doc.fontSize(11)
-           .font('Helvetica')
-           .fillColor('#333333')
-           .text(`${category}: ${count} skills (${percentage}%)`, 70, doc.y + 5);
-
-        // Progress bar
-        const barY = doc.y + 5;
-        const barWidth = 300;
-        const filledWidth = (percentage / 100) * barWidth;
-
-        // Background bar
-        doc.rect(70, barY, barWidth, 10)
-           .fillAndStroke('#e0e0e0', '#cccccc');
-
-        // Filled bar
-        doc.rect(70, barY, filledWidth, 10)
-           .fill('#667eea');
-
-        doc.moveDown(1);
-      });
-    }
-
-    // Insights Section
-    if (doc.y > 650) {
-      doc.addPage();
-    }
-
-    doc.fontSize(18)
-       .font('Helvetica-Bold')
-       .fillColor('#667eea')
-       .text('💡 Insights & Recommendations', 50, doc.y + 20);
     
-    doc.moveDown(0.5);
-    doc.fontSize(11).font('Helvetica').fillColor('#333333');
+    yPos += boxHeight + 30;
 
+    // ==================== SKILLS BREAKDOWN ====================
+    
+    if (skills.length > 0) {
+      // Check if we need a new page
+      if (yPos > 650) {
+        doc.addPage();
+        yPos = 40;
+      }
+      
+      doc.fontSize(16)
+         .font('Helvetica-Bold')
+         .fillColor('#1E40AF')
+         .text('SKILLS INVENTORY', 40, yPos);
+      
+      yPos += 30;
+      
+      // Skills Level Distribution
+      doc.fontSize(12)
+         .font('Helvetica-Bold')
+         .fillColor('#1F2937')
+         .text('Skill Level Distribution:', 60, yPos);
+      
+      yPos += 20;
+      
+      const levelData = [
+        { label: 'Expert (80-100%)', value: expertSkills, color: '#10B981', width: (expertSkills / skills.length) * 450 },
+        { label: 'Intermediate (50-79%)', value: intermediateSkills, color: '#F59E0B', width: (intermediateSkills / skills.length) * 450 },
+        { label: 'Beginner (0-49%)', value: beginnerSkills, color: '#EF4444', width: (beginnerSkills / skills.length) * 450 }
+      ];
+      
+      levelData.forEach(level => {
+        doc.fontSize(10)
+           .font('Helvetica')
+           .fillColor('#6B7280')
+           .text(`${level.label}: ${level.value} skills`, 80, yPos);
+        
+        yPos += 18;
+        
+        // Progress bar
+        doc.rect(80, yPos, 450, 12)
+           .fillColor('#F3F4F6')
+           .fill();
+        
+        if (level.width > 0) {
+          doc.rect(80, yPos, level.width, 12)
+             .fillColor(level.color)
+             .fill();
+        }
+        
+        yPos += 20;
+      });
+      
+      yPos += 15;
+      
+      // Skills Table Header
+      doc.fontSize(14)
+         .font('Helvetica-Bold')
+         .fillColor('#1F2937')
+         .text('Detailed Skills List:', 60, yPos);
+      
+      yPos += 25;
+      
+      // Table header
+      doc.rect(40, yPos, doc.page.width - 80, 28)
+         .fillColor('#1E40AF')
+         .fill();
+      
+      doc.fontSize(10)
+         .font('Helvetica-Bold')
+         .fillColor('#ffffff')
+         .text('Skill Name', 50, yPos + 10, { width: 180 })
+         .text('Category', 240, yPos + 10, { width: 120 })
+         .text('Proficiency', 370, yPos + 10, { width: 80 })
+         .text('Level', 460, yPos + 10, { width: 80 });
+      
+      yPos += 28;
+      
+      // Table rows
+      const sortedSkills = [...skills].sort((a, b) => b.proficiency - a.proficiency).slice(0, 15);
+      
+      sortedSkills.forEach((skill, index) => {
+        // Check for page break
+        if (yPos > 720) {
+          doc.addPage();
+          yPos = 40;
+          
+          // Repeat header
+          doc.rect(40, yPos, doc.page.width - 80, 28)
+             .fillColor('#1E40AF')
+             .fill();
+          
+          doc.fontSize(10)
+             .font('Helvetica-Bold')
+             .fillColor('#ffffff')
+             .text('Skill Name', 50, yPos + 10, { width: 180 })
+             .text('Category', 240, yPos + 10, { width: 120 })
+             .text('Proficiency', 370, yPos + 10, { width: 80 })
+             .text('Level', 460, yPos + 10, { width: 80 });
+          
+          yPos += 28;
+        }
+        
+        // Alternate row colors
+        if (index % 2 === 0) {
+          doc.rect(40, yPos, doc.page.width - 80, 24)
+             .fillColor('#F9FAFB')
+             .fill();
+        }
+        
+        // Determine skill level and color
+        let level = 'Beginner';
+        let levelColor = '#EF4444';
+        if (skill.proficiency >= 80) {
+          level = 'Expert';
+          levelColor = '#10B981';
+        } else if (skill.proficiency >= 50) {
+          level = 'Intermediate';
+          levelColor = '#F59E0B';
+        }
+        
+        doc.fontSize(10)
+           .font('Helvetica')
+           .fillColor('#1F2937')
+           .text(skill.name, 50, yPos + 8, { width: 180, ellipsis: true })
+           .text(skill.category || 'General', 240, yPos + 8, { width: 120 })
+           .text(`${skill.proficiency}%`, 370, yPos + 8, { width: 80 });
+        
+        doc.fontSize(9)
+           .font('Helvetica-Bold')
+           .fillColor(levelColor)
+           .text(level, 460, yPos + 8, { width: 80 });
+        
+        yPos += 24;
+      });
+      
+      yPos += 20;
+      
+      // If there are more skills, add note
+      if (skills.length > 15) {
+        doc.fontSize(9)
+           .font('Helvetica-Oblique')
+           .fillColor('#6B7280')
+           .text(`* Showing top 15 of ${skills.length} total skills`, 50, yPos);
+        
+        yPos += 20;
+      }
+    }
+
+    // ==================== ASSESSMENT HISTORY ====================
+    
+    if (assessments.length > 0) {
+      // Check for new page
+      if (yPos > 650) {
+        doc.addPage();
+        yPos = 40;
+      }
+      
+      doc.fontSize(16)
+         .font('Helvetica-Bold')
+         .fillColor('#1E40AF')
+         .text('ASSESSMENT HISTORY', 40, yPos);
+      
+      yPos += 30;
+      
+      // Summary stats
+      const passedAssessments = assessments.filter(a => a.score >= 60).length;
+      const passRate = Math.round((passedAssessments / assessments.length) * 100);
+      
+      doc.fontSize(11)
+         .font('Helvetica')
+         .fillColor('#1F2937')
+         .text(`Total Assessments: ${assessments.length} | Passed (≥60%): ${passedAssessments} | Pass Rate: ${passRate}%`, 60, yPos);
+      
+      yPos += 30;
+      
+      // Table header
+      doc.rect(40, yPos, doc.page.width - 80, 28)
+         .fillColor('#1E40AF')
+         .fill();
+      
+      doc.fontSize(10)
+         .font('Helvetica-Bold')
+         .fillColor('#ffffff')
+         .text('Domain/Skill', 50, yPos + 10, { width: 200 })
+         .text('Score', 260, yPos + 10, { width: 60 })
+         .text('Difficulty', 330, yPos + 10, { width: 80 })
+         .text('Date', 420, yPos + 10, { width: 120 });
+      
+      yPos += 28;
+      
+      // Table rows
+      const recentAssessments = assessments.slice(0, 10);
+      
+      recentAssessments.forEach((assessment, index) => {
+        // Check for page break
+        if (yPos > 720) {
+          doc.addPage();
+          yPos = 40;
+          
+          // Repeat header
+          doc.rect(40, yPos, doc.page.width - 80, 28)
+             .fillColor('#1E40AF')
+             .fill();
+          
+          doc.fontSize(10)
+             .font('Helvetica-Bold')
+             .fillColor('#ffffff')
+             .text('Domain/Skill', 50, yPos + 10, { width: 200 })
+             .text('Score', 260, yPos + 10, { width: 60 })
+             .text('Difficulty', 330, yPos + 10, { width: 80 })
+             .text('Date', 420, yPos + 10, { width: 120 });
+          
+          yPos += 28;
+        }
+        
+        // Alternate row colors
+        if (index % 2 === 0) {
+          doc.rect(40, yPos, doc.page.width - 80, 24)
+             .fillColor('#F9FAFB')
+             .fill();
+        }
+        
+        // Score color
+        let scoreColor = '#EF4444'; // Red for low scores
+        if (assessment.score >= 80) {
+          scoreColor = '#10B981'; // Green for high scores
+        } else if (assessment.score >= 60) {
+          scoreColor = '#F59E0B'; // Orange for medium scores
+        }
+        
+        doc.fontSize(10)
+           .font('Helvetica')
+           .fillColor('#1F2937')
+           .text(assessment.skillName || 'N/A', 50, yPos + 8, { width: 200, ellipsis: true })
+           .fillColor(scoreColor)
+           .font('Helvetica-Bold')
+           .text(`${assessment.score}%`, 260, yPos + 8, { width: 60 })
+           .fillColor('#1F2937')
+           .font('Helvetica')
+           .text(assessment.difficulty || 'N/A', 330, yPos + 8, { width: 80 })
+           .text(new Date(assessment.createdAt).toLocaleDateString('en-US', {
+             month: 'short',
+             day: 'numeric',
+             year: 'numeric'
+           }), 420, yPos + 8, { width: 120 });
+
+        yPos += 24;
+      });
+      
+      yPos += 20;
+      
+      // Note if more assessments exist
+      if (assessments.length > 10) {
+        doc.fontSize(9)
+           .font('Helvetica-Oblique')
+           .fillColor('#6B7280')
+           .text(`* Showing recent 10 of ${assessments.length} total assessments`, 50, yPos);
+        
+        yPos += 20;
+      }
+    }
+
+    // ==================== CATEGORY BREAKDOWN ====================
+    
+    if (skills.length > 0 && Object.keys(categoryMap).length > 0) {
+      // Check for new page
+      if (yPos > 650) {
+        doc.addPage();
+        yPos = 40;
+      }
+      
+      doc.fontSize(16)
+         .font('Helvetica-Bold')
+         .fillColor('#1E40AF')
+         .text('SKILLS BY CATEGORY', 40, yPos);
+      
+      yPos += 30;
+      
+      const categoryEntries = Object.entries(categoryMap).sort((a, b) => b[1].count - a[1].count);
+      
+      categoryEntries.forEach(([category, data]) => {
+        if (yPos > 720) {
+          doc.addPage();
+          yPos = 40;
+        }
+        
+        const count = data.count;
+        const avgProf = Math.round(data.totalProf / count);
+        const percentage = Math.round((count / skills.length) * 100);
+        
+        // Category name and stats
+        doc.fontSize(11)
+           .font('Helvetica-Bold')
+           .fillColor('#1F2937')
+           .text(`${category}`, 60, yPos);
+        
+        doc.fontSize(10)
+           .font('Helvetica')
+           .fillColor('#6B7280')
+           .text(`${count} skills (${percentage}%) • Avg: ${avgProf}%`, 60, yPos + 15);
+        
+        yPos += 35;
+        
+        // Progress bar background
+        doc.rect(60, yPos, 480, 14)
+           .fillColor('#E5E7EB')
+           .fill();
+        
+        // Progress bar fill (based on percentage of total skills)
+        const barWidth = (percentage / 100) * 480;
+        let barColor = '#3B82F6';
+        if (avgProf >= 80) barColor = '#10B981';
+        else if (avgProf >= 50) barColor = '#F59E0B';
+        else barColor = '#EF4444';
+        
+        doc.rect(60, yPos, barWidth, 14)
+           .fillColor(barColor)
+           .fill();
+        
+        // Percentage text on bar
+        doc.fontSize(9)
+           .font('Helvetica-Bold')
+           .fillColor('#ffffff')
+           .text(`${percentage}%`, 65, yPos + 3);
+        
+        yPos += 30;
+      });
+      
+      yPos += 10;
+    }
+
+    // ==================== INSIGHTS & RECOMMENDATIONS ====================
+    
+    // Check for new page
+    if (yPos > 650) {
+      doc.addPage();
+      yPos = 40;
+    }
+    
+    doc.fontSize(16)
+       .font('Helvetica-Bold')
+       .fillColor('#1E40AF')
+       .text('PERFORMANCE INSIGHTS', 40, yPos);
+    
+    yPos += 30;
+    
+    // Insights box
+    doc.roundedRect(40, yPos, doc.page.width - 80, 140, 8)
+       .lineWidth(1)
+       .strokeColor('#E5E7EB')
+       .fillColor('#F0F9FF')
+       .fillAndStroke();
+    
+    yPos += 20;
+    
     // Generate insights
     const insights = [];
     
     if (avgProficiency >= 80) {
-      insights.push('✓ Excellent overall proficiency! You\'re doing great across all skills.');
+      insights.push('✓ Outstanding proficiency level! You demonstrate expertise across your skill set.');
     } else if (avgProficiency >= 60) {
-      insights.push('✓ Good progress! Focus on practicing weaker skills to reach expert level.');
+      insights.push('✓ Solid foundation established. Focus on advancing skills to expert level.');
+    } else if (avgProficiency >= 40) {
+      insights.push('⚠ Developing proficiency. Consistent practice will accelerate growth.');
     } else {
-      insights.push('• Consider dedicating more time to skill development and practice.');
+      insights.push('⚠ Beginning stage. Dedicate focused time to skill development.');
     }
 
-    if (expertSkills > 0) {
-      insights.push(`✓ You have ${expertSkills} expert-level skill${expertSkills > 1 ? 's' : ''}. Great job!`);
-    }
-
-    if (assessments.length > 0) {
-      insights.push(`✓ You've completed ${assessments.length} assessment${assessments.length > 1 ? 's' : ''}. Keep testing your knowledge!`);
+    if (expertSkills > 5) {
+      insights.push(`✓ Impressive! ${expertSkills} expert-level skills demonstrate strong capability.`);
+    } else if (expertSkills > 0) {
+      insights.push(`✓ ${expertSkills} expert skill${expertSkills > 1 ? 's' : ''} achieved. Great progress!`);
     } else {
-      insights.push('• Take skill assessments to validate your proficiency levels.');
+      insights.push('⚠ Work towards achieving expert level (80%+) in key skills.');
     }
 
-    if (avgScore > 0 && avgScore >= 80) {
-      insights.push(`✓ Your assessment average of ${avgScore}% shows strong understanding.`);
+    if (assessments.length >= 10) {
+      insights.push(`✓ ${assessments.length} assessments completed! Regular testing validates learning.`);
+    } else if (assessments.length > 0) {
+      insights.push(`✓ ${assessments.length} assessment${assessments.length > 1 ? 's' : ''} taken. Continue testing knowledge regularly.`);
+    } else {
+      insights.push('⚠ Begin taking assessments to benchmark your skill proficiency.');
+    }
+
+    if (avgScore >= 80) {
+      insights.push(`✓ Excellent assessment average (${avgScore}%). Strong conceptual understanding.`);
+    } else if (avgScore >= 60) {
+      insights.push(`✓ Good assessment average (${avgScore}%). Review challenging topics for improvement.`);
     } else if (avgScore > 0) {
-      insights.push(`• Your assessment average is ${avgScore}%. Review concepts to improve scores.`);
+      insights.push(`⚠ Assessment average: ${avgScore}%. Additional study and practice recommended.`);
     }
 
-    insights.forEach(insight => {
-      doc.text(`  ${insight}`, 70, doc.y + 10);
-      doc.moveDown(0.5);
+    doc.fontSize(10)
+       .font('Helvetica')
+       .fillColor('#1F2937');
+    
+    insights.forEach((insight, index) => {
+      doc.text(`${insight}`, 60, yPos, { width: doc.page.width - 120 });
+      yPos += 22;
+      if (index < insights.length - 1 && yPos > 700) {
+        doc.addPage();
+        yPos = 40;
+      }
     });
     
-    doc.moveDown(1);
+    yPos += 20;
 
-    // Recommendations
-    doc.fontSize(14)
+    // ==================== RECOMMENDATIONS ====================
+    
+    if (yPos > 650) {
+      doc.addPage();
+      yPos = 40;
+    }
+    
+    doc.fontSize(16)
        .font('Helvetica-Bold')
-       .fillColor('#667eea')
-       .text('Next Steps:', 70, doc.y + 10);
+       .fillColor('#1E40AF')
+       .text('ACTION PLAN & RECOMMENDATIONS', 40, yPos);
     
-    doc.fontSize(11).font('Helvetica').fillColor('#333333');
-    doc.text('1. Continue taking assessments to track your progress', 70, doc.y + 10);
-    doc.text('2. Focus on skills with proficiency below 70%', 70, doc.y + 5);
-    doc.text('3. Explore learning paths for your target roles', 70, doc.y + 5);
-    doc.text('4. Practice regularly to maintain and improve your skills', 70, doc.y + 5);
+    yPos += 30;
     
+    const recommendations = [
+      {
+        title: 'Continue Regular Assessments',
+        desc: 'Take assessments weekly to track progress and identify knowledge gaps.'
+      },
+      {
+        title: 'Focus on Low Proficiency Skills',
+        desc: 'Prioritize skills below 70% proficiency through structured learning.'
+      },
+      {
+        title: 'Explore AI Learning Paths',
+        desc: 'Generate personalized learning roadmaps for your target roles.'
+      },
+      {
+        title: 'Practice Consistently',
+        desc: 'Dedicate 30-60 minutes daily to skill practice and hands-on projects.'
+      },
+      {
+        title: 'Set Skill Goals',
+        desc: 'Define target proficiency levels and create timeline for achievement.'
+      }
+    ];
+    
+    recommendations.forEach((rec, index) => {
+      if (yPos > 700) {
+        doc.addPage();
+        yPos = 40;
+      }
+      
+      doc.fontSize(11)
+         .font('Helvetica-Bold')
+         .fillColor('#1F2937')
+         .text(`${index + 1}. ${rec.title}`, 60, yPos);
+      
+      yPos += 18;
+      
+      doc.fontSize(10)
+         .font('Helvetica')
+         .fillColor('#6B7280')
+         .text(rec.desc, 75, yPos, { width: doc.page.width - 130 });
+      
+      yPos += 30;
+    });
+    
+    yPos += 20;
+    
+    // ==================== CLOSING SECTION ====================
+    
+    if (yPos > 650) {
+      doc.addPage();
+      yPos = 40;
+    }
+    
+    doc.rect(40, yPos, doc.page.width - 80, 80)
+       .fillColor('#F9FAFB')
+       .fill();
+    
+    doc.fontSize(12)
+       .font('Helvetica-Bold')
+       .fillColor('#1E40AF')
+       .text('Need Help or Guidance?', 60, yPos + 15);
+    
+    doc.fontSize(10)
+       .font('Helvetica')
+       .fillColor('#1F2937')
+       .text('Visit SkillOrbit platform for personalized learning paths, expert resources,', 60, yPos + 35);
+    
+    doc.text('and AI-powered recommendations tailored to your career goals.', 60, yPos + 50);
 
-    // Footer
-    const pageCount = doc.bufferedPageRange().count;
+    // ==================== FOOTER - ADD TO ALL PAGES ====================
+    
+    const range = doc.bufferedPageRange();
+    const pageCount = range.count;
+    
     for (let i = 0; i < pageCount; i++) {
-      doc.switchToPage(i);
+      doc.switchToPage(range.start + i);
+      
+      // Footer line
+      doc.moveTo(40, doc.page.height - 60)
+         .lineTo(doc.page.width - 40, doc.page.height - 60)
+         .strokeColor('#E5E7EB')
+         .lineWidth(1)
+         .stroke();
+      
+      // Footer text
       doc.fontSize(8)
-         .fillColor('#999999')
+         .font('Helvetica')
+         .fillColor('#9CA3AF')
          .text(
-           `Page ${i + 1} of ${pageCount} | © ${new Date().getFullYear()} SkillOrbit - Your Skill Development Platform`,
-           50,
-           doc.page.height - 50,
-           { align: 'center', width: doc.page.width - 100 }
+           `SkillOrbit - Skill Assessment & Development Platform`,
+           40,
+           doc.page.height - 45,
+           { align: 'left' }
          );
+      
+      doc.text(
+        `Page ${i + 1} of ${pageCount}`,
+        0,
+        doc.page.height - 45,
+        { align: 'center' }
+      );
+      
+      doc.text(
+        `© ${new Date().getFullYear()} SkillOrbit`,
+        0,
+        doc.page.height - 45,
+        { align: 'right', width: doc.page.width - 40 }
+      );
     }
 
     // Finalize PDF

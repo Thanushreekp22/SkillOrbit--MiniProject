@@ -266,9 +266,9 @@ const AILearningPath = () => {
               startIcon={loading ? <CircularProgress size={20} /> : <Rocket />}
               sx={{
                 py: 1.5,
-                background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)',
+                background: '#667eea',
                 '&:hover': {
-                  background: 'linear-gradient(90deg, #764ba2 0%, #667eea 100%)',
+                  background: '#764ba2',
                 },
               }}
             >
@@ -378,3 +378,4 @@ const AILearningPath = () => {
 };
 
 export default AILearningPath;
+

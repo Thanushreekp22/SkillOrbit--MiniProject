@@ -142,10 +142,405 @@ code {
   height: 200px;
 }
 
-/* Responsive design helpers */
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Prevent horizontal scroll */
+body, html {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+/* Responsive Typography */
+@media (max-width: 768px) {
+  h1 {
+    font-size: 2rem !important;
+  }
+  
+  h2 {
+    font-size: 1.75rem !important;
+  }
+  
+  h3 {
+    font-size: 1.5rem !important;
+  }
+  
+  h4 {
+    font-size: 1.25rem !important;
+  }
+}
+
+/* Responsive spacing */
 @media (max-width: 600px) {
   .MuiContainer-root {
     padding-left: 1rem !important;
     padding-right: 1rem !important;
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+  }
+  
+  .MuiGrid-container {
+    margin-top: 0 !important;
+  }
+  
+  .MuiCard-root {
+    margin-bottom: 1rem !important;
+  }
+}
+
+/* Mobile-friendly buttons */
+@media (max-width: 600px) {
+  .MuiButton-root {
+    padding: 8px 16px !important;
+    font-size: 0.875rem !important;
+    min-width: auto !important;
+  }
+  
+  .MuiButton-startIcon, .MuiButton-endIcon {
+    margin-left: 4px !important;
+    margin-right: 4px !important;
+  }
+}
+
+/* Responsive tables */
+@media (max-width: 768px) {
+  .MuiTable-root {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}
+
+/* Card responsive improvements */
+.MuiCard-root {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+@media (max-width: 600px) {
+  .MuiCard-root {
+    border-radius: 12px !important;
+  }
+  
+  .MuiCardContent-root {
+    padding: 16px !important;
+  }
+}
+
+/* Improved touch targets for mobile */
+@media (max-width: 768px) {
+  .MuiIconButton-root {
+    padding: 12px !important;
+  }
+  
+  .MuiChip-root {
+    font-size: 0.8125rem !important;
+  }
+}
+
+/* Grid responsive improvements */
+@media (max-width: 900px) {
+  .MuiGrid-item {
+    padding: 8px !important;
+  }
+}
+
+/* Dialog/Modal responsive */
+@media (max-width: 600px) {
+  .MuiDialog-paper {
+    margin: 16px !important;
+    width: calc(100% - 32px) !important;
+    max-width: 100% !important;
+  }
+}
+
+/* AppBar/Navbar mobile */
+@media (max-width: 768px) {
+  .MuiToolbar-root {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+    min-height: 56px !important;
+  }
+}
+
+/* Form fields responsive */
+@media (max-width: 600px) {
+  .MuiTextField-root {
+    margin-bottom: 12px !important;
+  }
+  
+  .MuiFormControl-root {
+    width: 100% !important;
+  }
+}
+
+/* Stats cards responsive */
+@media (max-width: 600px) {
+  .stat-card {
+    min-height: auto !important;
+  }
+  
+  .stat-value {
+    font-size: 2rem !important;
+  }
+}
+
+/* Animation for page transitions */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-enter {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Responsive images */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Better focus states for accessibility */
+*:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Loading skeleton responsive */
+@media (max-width: 600px) {
+  .MuiSkeleton-root {
+    transform: scale(1);
+  }
+}
+
+/* Tablet specific */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .MuiContainer-root {
+    padding-left: 2rem !important;
+    padding-right: 2rem !important;
+  }
+}
+
+/* Large screens optimization */
+@media (min-width: 1440px) {
+  .MuiContainer-maxWidthLg {
+    max-width: 1280px !important;
+  }
+}
+
+/* Professional enhancements */
+.MuiCard-root {
+  overflow: hidden;
+}
+
+.MuiButton-contained {
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.2) !important;
+}
+
+.MuiButton-contained:hover {
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3) !important;
+}
+
+/* Glassmorphism effect */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Chart responsive container */
+@media (max-width: 600px) {
+  .recharts-responsive-container {
+    height: 250px !important;
+  }
+}
+
+/* Improved nav spacing on mobile */
+@media (max-width: 600px) {
+  .MuiDrawer-paper {
+    width: 280px !important;
+  }
+  
+  .MuiListItem-root {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+}
+
+/* Stats card mobile */
+@media (max-width: 600px) {
+  .stat-card .MuiAvatar-root {
+    width: 48px !important;
+    height: 48px !important;
+  }
+  
+  .stat-card .MuiTypography-h3 {
+    font-size: 2rem !important;
+  }
+}
+
+/* Profile avatar mobile */
+@media (max-width: 600px) {
+  .MuiAvatar-root {
+    width: 32px !important;
+    height: 32px !important;
+  }
+}
+
+/* Page header responsive */
+@media (max-width: 768px) {
+  .page-header {
+    padding: 16px 0 !important;
+  }
+  
+  .page-header h4 {
+    font-size: 1.5rem !important;
+  }
+}
+
+/* Landing page hero responsive */
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 40px 0 !important;
+  }
+  
+  .hero-title {
+    font-size: 2.5rem !important;
+    line-height: 1.2 !important;
+  }
+}
+
+/* Skill chip mobile friendly */
+@media (max-width: 600px) {
+  .MuiChip-root {
+    height: 28px !important;
+    font-size: 0.75rem !important;
+  }
+}
+
+/* Better spacing for mobile forms */
+@media (max-width: 600px) {
+  .MuiGrid-item {
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+  }
+}
+
+/* Toast notifications responsive */
+@media (max-width: 600px) {
+  .Toastify__toast-container {
+    width: calc(100% - 32px) !important;
+    left: 16px !important;
+    right: 16px !important;
+    margin: 0 !important;
+  }
+  
+  .Toastify__toast {
+    margin-bottom: 8px !important;
+    border-radius: 12px !important;
+  }
+}
+
+/* Improved box shadows for depth */
+.card-elevated {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.card-elevated:hover {
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.15), 0 10px 10px rgba(0, 0, 0, 0.12);
+}
+
+/* Smooth page transitions */
+.page-transition-enter {
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.page-transition-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 300ms, transform 300ms;
+}
+
+.page-transition-exit {
+  opacity: 1;
+}
+
+.page-transition-exit-active {
+  opacity: 0;
+  transition: opacity 300ms;
+}
+
+/* Professional loading spinner */
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+}
+
+/* Gradient text utility */
+.gradient-text-primary {
+  background: linear-gradient(90deg, #6366F1 0%, #0EA5E9 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Card hover effect */
+.hover-lift {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* Pulse animation for notifications */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.pulse-animation {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Better focus indicator */
+.MuiButton-root:focus-visible,
+.MuiIconButton-root:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  body {
+    background: white;
+  }
+  
+  .MuiCard-root {
+    box-shadow: none !important;
+    border: 1px solid #e0e0e0 !important;
   }
 }

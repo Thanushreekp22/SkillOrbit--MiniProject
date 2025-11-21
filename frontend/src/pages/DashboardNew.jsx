@@ -129,7 +129,7 @@ const DashboardNew = () => {
             elevation={0}
             sx={{
               borderRadius: '16px',
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              background: '#667eea',
               color: 'white',
               transition: 'all 0.3s ease',
               '&:hover': {
@@ -161,7 +161,7 @@ const DashboardNew = () => {
             elevation={0}
             sx={{
               borderRadius: '16px',
-              background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+              background: '#10B981',
               color: 'white',
               transition: 'all 0.3s ease',
               '&:hover': {
@@ -193,7 +193,7 @@ const DashboardNew = () => {
             elevation={0}
             sx={{
               borderRadius: '16px',
-              background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)',
+              background: '#3B82F6',
               color: 'white',
               transition: 'all 0.3s ease',
               '&:hover': {
@@ -225,7 +225,7 @@ const DashboardNew = () => {
             elevation={0}
             sx={{
               borderRadius: '16px',
-              background: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
+              background: '#F59E0B',
               color: 'white',
               transition: 'all 0.3s ease',
               '&:hover': {
@@ -555,3 +555,4 @@ const DashboardNew = () => {
 };
 
 export default DashboardNew;
+

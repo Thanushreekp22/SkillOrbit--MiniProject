@@ -88,7 +88,7 @@ const Navbar = () => {
   const drawer = (
     <div>
       <Toolbar sx={{ 
-        background: 'linear-gradient(135deg, #6366F1 0%, #0EA5E9 100%)',
+        background: '#6366F1',
         minHeight: '100px !important',
         display: 'flex',
         flexDirection: 'column',
@@ -193,7 +193,7 @@ const Navbar = () => {
         sx={{
           width: { md: `calc(100% - ${drawerWidth}px)` },
           ml: { md: `${drawerWidth}px` },
-          background: 'linear-gradient(90deg, #6366F1 0%, #0EA5E9 100%)',
+          background: '#6366F1',
           backdropFilter: 'blur(10px)',
           borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
         }}
@@ -254,7 +254,7 @@ const Navbar = () => {
             <Avatar sx={{ 
               width: 36, 
               height: 36,
-              background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+              background: '#10B981',
               fontWeight: 600,
               fontSize: '1rem',
               border: '2px solid rgba(255,255,255,0.3)',
@@ -394,3 +394,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
+

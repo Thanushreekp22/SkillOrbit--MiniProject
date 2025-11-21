@@ -30,6 +30,7 @@ import {
   LinkedIn,
   GitHub,
   Language,
+  AccountCircle,
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
@@ -168,7 +169,7 @@ const Profile = () => {
                     width: 120,
                     height: 120,
                     fontSize: '3rem',
-                    background: 'linear-gradient(135deg, #6366F1 0%, #0EA5E9 100%)',
+                    background: '#6366F1',
                     fontWeight: 700,
                     border: '4px solid white',
                     boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)',
@@ -206,7 +207,7 @@ const Profile = () => {
                   label={formData.currentRole}
                   sx={{
                     mb: 2,
-                    background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                    background: '#10B981',
                     color: 'white',
                     fontWeight: 500,
                   }}
@@ -312,7 +313,7 @@ const Profile = () => {
                     startIcon={<Edit />}
                     onClick={() => setEditMode(true)}
                     sx={{
-                      background: 'linear-gradient(90deg, #6366F1 0%, #0EA5E9 100%)',
+                      background: '#6366F1',
                       borderRadius: '8px',
                       textTransform: 'none',
                       fontWeight: 600,
@@ -341,7 +342,7 @@ const Profile = () => {
                       onClick={handleSubmit}
                       disabled={loading}
                       sx={{
-                        background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                        background: '#10B981',
                         borderRadius: '8px',
                         textTransform: 'none',
                         fontWeight: 600,
@@ -556,3 +557,4 @@ const Profile = () => {
 };
 
 export default Profile;
+

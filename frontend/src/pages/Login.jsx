@@ -70,7 +70,7 @@ const Login = () => {
       sx={{
         minHeight: '100vh',
         display: 'flex',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        background: '#667eea',
         position: 'relative',
         overflow: 'hidden',
       }}
@@ -163,7 +163,7 @@ const Login = () => {
                   sx={{
                     fontFamily: '"Poppins", sans-serif',
                     fontWeight: 700,
-                    background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)',
+                    background: '#667eea',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                     mb: 1,
@@ -289,7 +289,7 @@ const Login = () => {
                     borderRadius: '12px',
                     fontSize: '1.1rem',
                     fontWeight: 600,
-                    background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)',
+                    background: '#667eea',
                     boxShadow: '0 4px 15px 0 rgba(102, 126, 234, 0.4)',
                     transition: 'all 0.3s',
                     '&:hover': {
@@ -348,3 +348,4 @@ const Login = () => {
 };
 
 export default Login;
+

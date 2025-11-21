@@ -211,7 +211,7 @@ const AILearningPathDisplay = ({ learningPath, onSave, isSaved = false }) => {
         elevation={0} 
         sx={{ 
           mb: 3,
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          background: '#667eea',
           color: 'white',
           borderRadius: '16px',
         }}
@@ -590,3 +590,4 @@ const AILearningPathDisplay = ({ learningPath, onSave, isSaved = false }) => {
 };
 
 export default AILearningPathDisplay;
+

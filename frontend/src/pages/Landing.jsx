@@ -191,7 +191,7 @@ const Landing = () => {
         position="static" 
         elevation={0}
         sx={{ 
-          background: 'linear-gradient(90deg, #6366F1 0%, #0EA5E9 100%)',
+          background: '#6366F1',
           py: 0.5,
         }}
       >
@@ -201,6 +201,25 @@ const Landing = () => {
               <SkillOrbitLogo variant="light" size="small" withText={true} />
             </Box>
             <Box sx={{ display: 'flex', gap: 1 }}>
+              <Button 
+                color="inherit" 
+                onClick={() => navigate('/admin/login')}
+                sx={{
+                  fontSize: '0.875rem',
+                  fontWeight: 600,
+                  px: 2,
+                  py: 0.75,
+                  textTransform: 'none',
+                  border: '1px solid rgba(255,255,255,0.3)',
+                  borderRadius: '8px',
+                  '&:hover': {
+                    backgroundColor: 'rgba(255,255,255,0.1)',
+                    border: '1px solid rgba(255,255,255,0.5)',
+                  },
+                }}
+              >
+                Admin
+              </Button>
               <Button 
                 color="inherit" 
                 onClick={() => navigate('/login')}
@@ -252,7 +271,7 @@ const Landing = () => {
               fontFamily: '"Poppins", sans-serif',
               fontWeight: 800,
               fontSize: { xs: '2rem', sm: '2.75rem', md: '3.5rem', lg: '4rem' },
-              background: 'linear-gradient(90deg, #6366F1 0%, #0EA5E9 100%)',
+              background: '#6366F1',
               backgroundClip: 'text',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
@@ -291,7 +310,7 @@ const Landing = () => {
                 fontSize: '1rem',
                 fontWeight: 600,
                 borderRadius: '12px',
-                background: 'linear-gradient(90deg, #6366F1 0%, #0EA5E9 100%)',
+                background: '#6366F1',
                 boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)',
                 '&:hover': {
                   boxShadow: '0 6px 20px rgba(99, 102, 241, 0.4)',
@@ -352,7 +371,7 @@ const Landing = () => {
                 sx={{
                   fontFamily: '"Poppins", sans-serif',
                   fontWeight: 800,
-                  background: 'linear-gradient(90deg, #6366F1 0%, #0EA5E9 100%)',
+                  background: '#6366F1',
                   backgroundClip: 'text',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
@@ -556,7 +575,7 @@ const Landing = () => {
             p: 6, 
             textAlign: 'center', 
             borderRadius: 4,
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            background: '#667eea',
             color: 'white',
           }}
         >
@@ -598,3 +617,4 @@ const Landing = () => {
 };
 
 export default Landing;
+

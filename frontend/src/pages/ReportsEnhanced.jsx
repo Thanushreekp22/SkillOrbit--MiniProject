@@ -448,9 +448,9 @@ const ReportsEnhanced = () => {
                   onClick={handleDownloadReport}
                   disabled={downloading}
                   sx={{ 
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    background: '#667eea',
                     '&:hover': {
-                      background: 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)',
+                      background: '#764ba2',
                     }
                   }}
                 >
@@ -530,7 +530,7 @@ const ReportsEnhanced = () => {
             <Card 
               elevation={3}
               sx={{ 
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                background: '#667eea',
                 color: 'white',
                 height: '100%'
               }}
@@ -558,7 +558,7 @@ const ReportsEnhanced = () => {
             <Card 
               elevation={3}
               sx={{ 
-                background: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
+                background: '#11998e',
                 color: 'white',
                 height: '100%'
               }}
@@ -586,7 +586,7 @@ const ReportsEnhanced = () => {
             <Card 
               elevation={3}
               sx={{ 
-                background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                background: '#f093fb',
                 color: 'white',
                 height: '100%'
               }}
@@ -614,7 +614,7 @@ const ReportsEnhanced = () => {
             <Card 
               elevation={3}
               sx={{ 
-                background: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+                background: '#fa709a',
                 color: 'white',
                 height: '100%'
               }}
@@ -644,7 +644,7 @@ const ReportsEnhanced = () => {
           elevation={2} 
           sx={{ 
             p: 2, 
-            background: 'linear-gradient(to right, #f8f9fa, #ffffff)',
+            background: '#f8f9fa',
             borderRadius: 2
           }}
         >
@@ -693,7 +693,7 @@ const ReportsEnhanced = () => {
             sx={{ 
               borderRadius: 3,
               overflow: 'hidden',
-              background: 'linear-gradient(to bottom, #ffffff, #f8f9fa)'
+              background: '#f8f9fa'
             }}
           >
             <CardContent>
@@ -786,7 +786,7 @@ const ReportsEnhanced = () => {
             sx={{ 
               borderRadius: 3,
               overflow: 'hidden',
-              background: 'linear-gradient(to bottom, #ffffff, #f8f9fa)'
+              background: '#f8f9fa'
             }}
           >
             <CardContent>
@@ -852,7 +852,7 @@ const ReportsEnhanced = () => {
           mb: 4, 
           borderRadius: 3,
           overflow: 'hidden',
-          background: 'linear-gradient(to bottom, #ffffff, #f8f9fa)'
+          background: '#f8f9fa'
         }}
       >
         <CardContent>
@@ -937,7 +937,7 @@ const ReportsEnhanced = () => {
           mb: 4, 
           borderRadius: 3,
           overflow: 'hidden',
-          background: 'linear-gradient(to bottom, #ffffff, #f8f9fa)'
+          background: '#f8f9fa'
         }}
       >
         <CardContent>
@@ -955,7 +955,7 @@ const ReportsEnhanced = () => {
             <TableContainer sx={{ borderRadius: 2, overflow: 'hidden' }}>
               <Table>
                 <TableHead>
-                  <TableRow sx={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+                  <TableRow sx={{ background: '#667eea' }}>
                     <TableCell sx={{ color: 'white', fontWeight: 700 }}>Skill</TableCell>
                     <TableCell sx={{ color: 'white', fontWeight: 700 }}>Category</TableCell>
                     <TableCell sx={{ color: 'white', fontWeight: 700 }}>Proficiency</TableCell>
@@ -1013,7 +1013,7 @@ const ReportsEnhanced = () => {
                           label={skill.assessments}
                           size="small"
                           sx={{ 
-                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            background: '#667eea',
                             color: 'white',
                             fontWeight: 600
                           }}
@@ -1086,7 +1086,7 @@ const ReportsEnhanced = () => {
         sx={{ 
           borderRadius: 3,
           overflow: 'hidden',
-          background: 'linear-gradient(to bottom, #ffffff, #f8f9fa)'
+          background: '#f8f9fa'
         }}
       >
         <CardContent>
@@ -1104,7 +1104,7 @@ const ReportsEnhanced = () => {
             <TableContainer sx={{ borderRadius: 2, overflow: 'hidden' }}>
               <Table>
                 <TableHead>
-                  <TableRow sx={{ background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' }}>
+                  <TableRow sx={{ background: '#f093fb' }}>
                     <TableCell sx={{ color: 'white', fontWeight: 700 }}>Date</TableCell>
                     <TableCell sx={{ color: 'white', fontWeight: 700 }}>Skill</TableCell>
                     <TableCell sx={{ color: 'white', fontWeight: 700 }}>Score</TableCell>
@@ -1186,7 +1186,7 @@ const ReportsEnhanced = () => {
                 variant="contained" 
                 sx={{ 
                   mt: 3,
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  background: '#667eea',
                 }}
                 onClick={() => window.location.href = '/app/assessment'}
               >
@@ -1212,7 +1212,7 @@ const ReportsEnhanced = () => {
       >
         <DialogTitle 
           sx={{ 
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            background: '#667eea',
             color: 'white',
             pb: 2
           }}
@@ -1284,9 +1284,9 @@ const ReportsEnhanced = () => {
               startIcon={emailSending ? <CircularProgress size={20} color="inherit" /> : <Email />}
               sx={{ 
                 borderRadius: 2,
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                background: '#667eea',
                 '&:hover': {
-                  background: 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)',
+                  background: '#764ba2',
                 }
               }}
             >
@@ -1300,3 +1300,4 @@ const ReportsEnhanced = () => {
 };
 
 export default ReportsEnhanced;
+
