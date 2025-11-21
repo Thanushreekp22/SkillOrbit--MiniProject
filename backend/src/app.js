@@ -9,6 +9,7 @@ const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:3001',
   'http://localhost:5173',
+  'https://skill-orbit-mini-project.vercel.app',
   process.env.FRONTEND_URL
 ].filter(Boolean);
 
