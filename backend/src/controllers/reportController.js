@@ -1309,15 +1309,32 @@ export const emailReport = async (req, res) => {
     
     if (process.env.EMAIL_HOST && process.env.EMAIL_USER && process.env.EMAIL_PASS) {
       // Production: Use configured SMTP server
+      console.log('📧 Configuring email with Gmail SMTP...');
+      console.log('   Host:', process.env.EMAIL_HOST);
+      console.log('   User:', process.env.EMAIL_USER);
+      console.log('   Port:', process.env.EMAIL_PORT || 587);
+      
       transporter = nodemailer.createTransport({
         host: process.env.EMAIL_HOST,
-        port: process.env.EMAIL_PORT || 587,
+        port: parseInt(process.env.EMAIL_PORT) || 587,
         secure: process.env.EMAIL_SECURE === 'true',
         auth: {
           user: process.env.EMAIL_USER,
           pass: process.env.EMAIL_PASS
+        },
+        tls: {
+          rejectUnauthorized: false
         }
       });
+      
+      // Verify connection
+      try {
+        await transporter.verify();
+        console.log('✅ Email server connection verified!');
+      } catch (verifyError) {
+        console.error('❌ Email server verification failed:', verifyError.message);
+        throw new Error(`Email configuration error: ${verifyError.message}`);
+      }
     } else {
       // Development: Create test account with Ethereal
       const testAccount = await nodemailer.createTestAccount();
