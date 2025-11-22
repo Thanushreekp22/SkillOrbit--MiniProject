@@ -20,3 +20,17 @@ services:
         value: 24h
       - key: GROQ_API_KEY
         sync: false
+      - key: FRONTEND_URL
+        value: https://skill-orbit-mini-project.vercel.app
+      - key: EMAIL_HOST
+        value: smtp.gmail.com
+      - key: EMAIL_PORT
+        value: 587
+      - key: EMAIL_SECURE
+        value: false
+      - key: EMAIL_USER
+        value: skillorbit.web.2025@gmail.com
+      - key: EMAIL_PASS
+        sync: false
+      - key: EMAIL_FROM
+        value: SkillOrbit <skillorbit.web.2025@gmail.com>
