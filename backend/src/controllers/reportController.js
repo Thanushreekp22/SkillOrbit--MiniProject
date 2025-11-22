@@ -1388,13 +1388,31 @@ export const emailReport = async (req, res) => {
       }
     } catch (emailError) {
       console.error('❌ Error sending email:', emailError);
-      throw new Error(`Failed to send email: ${emailError.message}`);
+      console.error('   Error code:', emailError.code);
+      console.error('   Error command:', emailError.command);
+      
+      // Provide user-friendly error message
+      let userMessage = 'Failed to send email. ';
+      if (emailError.code === 'EAUTH') {
+        userMessage += 'Email authentication failed. Please contact administrator.';
+      } else if (emailError.code === 'ETIMEDOUT' || emailError.code === 'ECONNECTION') {
+        userMessage += 'Email server connection timeout. Please try again.';
+      } else {
+        userMessage += 'Please try again or contact support.';
+      }
+      
+      return res.status(500).json({
+        message: userMessage,
+        error: emailError.message,
+        success: false
+      });
     }
   } catch (error) {
     console.error("Error emailing report:", error);
     res.status(500).json({ 
-      message: "Error emailing report", 
-      error: error.message 
+      message: error.message || "Error emailing report", 
+      error: error.message,
+      success: false
     });
   }
 };
