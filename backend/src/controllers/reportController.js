@@ -1324,7 +1324,10 @@ export const emailReport = async (req, res) => {
         },
         tls: {
           rejectUnauthorized: false
-        }
+        },
+        connectionTimeout: 30000, // 30 seconds
+        greetingTimeout: 30000,
+        socketTimeout: 30000
       });
       
       // Verify connection
@@ -1333,21 +1336,25 @@ export const emailReport = async (req, res) => {
         console.log('✅ Email server connection verified!');
       } catch (verifyError) {
         console.error('❌ Email server verification failed:', verifyError.message);
-        throw new Error(`Email configuration error: ${verifyError.message}`);
+        console.error('   This may be due to:');
+        console.error('   - Invalid Gmail app password');
+        console.error('   - Gmail account does not have 2FA enabled');
+        console.error('   - Network/firewall issues');
+        // Don't throw error, continue with sending attempt
+        console.log('⚠️ Continuing despite verification failure...');
       }
     } else {
-      // Development: Create test account with Ethereal
-      const testAccount = await nodemailer.createTestAccount();
-      transporter = nodemailer.createTransport({
-        host: 'smtp.ethereal.email',
-        port: 587,
-        secure: false,
-        auth: {
-          user: testAccount.user,
-          pass: testAccount.pass
-        }
+      // Missing email configuration
+      console.error('❌ Email configuration missing!');
+      console.error('   Required environment variables:');
+      console.error('   - EMAIL_HOST:', process.env.EMAIL_HOST ? '✓' : '✗');
+      console.error('   - EMAIL_USER:', process.env.EMAIL_USER ? '✓' : '✗');
+      console.error('   - EMAIL_PASS:', process.env.EMAIL_PASS ? '✓' : '✗');
+      
+      return res.status(500).json({
+        message: 'Email service is not configured. Please contact administrator.',
+        error: 'Missing email configuration on server'
       });
-      console.log('📧 Using Ethereal test email account:', testAccount.user);
     }
 
     // Send email
