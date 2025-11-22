@@ -1317,32 +1317,24 @@ export const emailReport = async (req, res) => {
       transporter = nodemailer.createTransport({
         host: process.env.EMAIL_HOST,
         port: parseInt(process.env.EMAIL_PORT) || 587,
-        secure: process.env.EMAIL_SECURE === 'true',
+        secure: false, // Use STARTTLS
         auth: {
           user: process.env.EMAIL_USER,
           pass: process.env.EMAIL_PASS
         },
         tls: {
-          rejectUnauthorized: false
+          rejectUnauthorized: false,
+          ciphers: 'SSLv3'
         },
+        requireTLS: true,
         connectionTimeout: 30000, // 30 seconds
         greetingTimeout: 30000,
-        socketTimeout: 30000
+        socketTimeout: 30000,
+        pool: true
       });
       
-      // Verify connection
-      try {
-        await transporter.verify();
-        console.log('✅ Email server connection verified!');
-      } catch (verifyError) {
-        console.error('❌ Email server verification failed:', verifyError.message);
-        console.error('   This may be due to:');
-        console.error('   - Invalid Gmail app password');
-        console.error('   - Gmail account does not have 2FA enabled');
-        console.error('   - Network/firewall issues');
-        // Don't throw error, continue with sending attempt
-        console.log('⚠️ Continuing despite verification failure...');
-      }
+      // Verify connection (skip verification, just attempt to send)
+      console.log('⚠️ Skipping verification, will attempt direct send...');
     } else {
       // Missing email configuration
       console.error('❌ Email configuration missing!');
