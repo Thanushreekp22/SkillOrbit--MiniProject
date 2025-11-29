@@ -6,7 +6,11 @@ import {
   updateAdminProfile,
   changeAdminPassword,
   getAllAdmins,
-  toggleAdminStatus
+  toggleAdminStatus,
+  getAdminActivity,
+  getMyActivity,
+  getAdminStatistics,
+  unlockAdminAccount
 } from "../controllers/adminController.js";
 import { verifyAdminToken, checkSuperAdmin } from "../middleware/adminAuthMiddleware.js";
 
@@ -19,10 +23,14 @@ router.post("/login", adminLogin);
 router.get("/profile", verifyAdminToken, getAdminProfile);
 router.put("/profile", verifyAdminToken, updateAdminProfile);
 router.put("/change-password", verifyAdminToken, changeAdminPassword);
+router.get("/my-activity", verifyAdminToken, getMyActivity);
 
 // Super admin only routes
 router.post("/create", verifyAdminToken, checkSuperAdmin, createAdmin);
 router.get("/all", verifyAdminToken, checkSuperAdmin, getAllAdmins);
+router.get("/statistics", verifyAdminToken, checkSuperAdmin, getAdminStatistics);
+router.get("/activity/:adminId", verifyAdminToken, checkSuperAdmin, getAdminActivity);
 router.put("/toggle-status/:adminId", verifyAdminToken, checkSuperAdmin, toggleAdminStatus);
+router.put("/unlock/:adminId", verifyAdminToken, checkSuperAdmin, unlockAdminAccount);
 
 export default router;

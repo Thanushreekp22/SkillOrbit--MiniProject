@@ -69,4 +69,27 @@ export const getQuestionStatistics = () =>
 export const getUserManagementData = (params) => 
   adminApi.get('/api/admin/dashboard/users', { params });
 
+// Activity Logs
+export const getMyActivity = (params) => 
+  adminApi.get('/api/admin/my-activity', { params });
+
+export const getAdminActivity = (adminId, params) => 
+  adminApi.get(`/api/admin/activity/${adminId}`, { params });
+
+// Admin Management (Super Admin only)
+export const getAllAdmins = () => 
+  adminApi.get('/api/admin/all');
+
+export const createAdmin = (adminData) => 
+  adminApi.post('/api/admin/create', adminData);
+
+export const toggleAdminStatus = (adminId) => 
+  adminApi.put(`/api/admin/toggle-status/${adminId}`);
+
+export const unlockAdminAccount = (adminId) => 
+  adminApi.put(`/api/admin/unlock/${adminId}`);
+
+export const getAdminStatistics = () => 
+  adminApi.get('/api/admin/statistics');
+
 export default adminApi;

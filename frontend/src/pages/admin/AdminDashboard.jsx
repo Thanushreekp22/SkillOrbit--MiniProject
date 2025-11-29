@@ -30,7 +30,9 @@ import {
   Menu as MenuIcon,
   AccountCircle,
   TrendingUp,
-  Assessment as AssessmentIcon
+  Assessment as AssessmentIcon,
+  History as HistoryIcon,
+  SupervisorAccount as SupervisorAccountIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { getPlatformAnalytics } from '../../api/adminApi';
@@ -107,7 +109,9 @@ const AdminDashboard = () => {
 
   const menuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, section: 'dashboard' },
-    { text: 'Questions', icon: <QuestionAnswer />, section: 'questions', route: '/admin/questions' }
+    { text: 'Questions', icon: <QuestionAnswer />, section: 'questions', route: '/admin/questions' },
+    { text: 'My Activity', icon: <HistoryIcon />, section: 'activity', route: '/admin/activity' },
+    { text: 'Admin Management', icon: <SupervisorAccountIcon />, section: 'management', route: '/admin/management' }
   ];
 
   const drawer = (

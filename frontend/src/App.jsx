@@ -30,6 +30,8 @@ import Profile from './pages/Profile';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import QuestionManagement from './pages/admin/QuestionManagement';
+import ActivityLog from './pages/admin/ActivityLog';
+import AdminManagement from './pages/admin/AdminManagement';
 
 function App() {
   return (
@@ -48,6 +50,8 @@ function App() {
               <Route path="/admin/login" element={<AdminLogin />} />
               <Route path="/admin/dashboard" element={<AdminDashboard />} />
               <Route path="/admin/questions" element={<QuestionManagement />} />
+              <Route path="/admin/activity" element={<ActivityLog />} />
+              <Route path="/admin/management" element={<AdminManagement />} />
               
               {/* Protected Routes */}
               <Route path="/app" element={<ProtectedRoute><Navbar /></ProtectedRoute>}>

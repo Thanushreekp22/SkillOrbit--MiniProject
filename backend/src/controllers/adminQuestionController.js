@@ -1,4 +1,4 @@
-import { QuestionBank } from "../models/index.js";
+import { QuestionBank, Admin } from "../models/index.js";
 import { User, Assessment, Skill } from "../models/index.js";
 
 // Get All Questions with Filters
@@ -110,6 +110,16 @@ export const addQuestion = async (req, res) => {
       createdBy: req.user.id
     });
 
+    // Log activity
+    const admin = await Admin.findById(req.user.id);
+    if (admin) {
+      const ipAddress = req.ip || req.connection.remoteAddress;
+      await admin.logActivity('ADD_QUESTION', 
+        `Added ${difficulty} ${skillName} question: "${questionText.substring(0, 50)}..."`, 
+        ipAddress
+      );
+    }
+
     res.status(201).json({
       message: "Question added successfully",
       question
@@ -155,6 +165,20 @@ export const updateQuestion = async (req, res) => {
 
     await question.save();
 
+    // Log activity
+    const admin = await Admin.findById(req.user.id);
+    if (admin) {
+      const ipAddress = req.ip || req.connection.remoteAddress;
+      const changes = [];
+      if (skillName) changes.push('skill');
+      if (questionText) changes.push('text');
+      if (difficulty) changes.push('difficulty');
+      await admin.logActivity('UPDATE_QUESTION', 
+        `Updated ${changes.join(', ')} for question: "${question.questionText.substring(0, 50)}..."`, 
+        ipAddress
+      );
+    }
+
     res.json({
       message: "Question updated successfully",
       question
@@ -170,18 +194,34 @@ export const deleteQuestion = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const question = await QuestionBank.findByIdAndDelete(id);
+    const question = await QuestionBank.findById(id);
     if (!question) {
       return res.status(404).json({ message: "Question not found" });
     }
 
+    // Store question details before deletion
+    const deletedInfo = {
+      id: question._id,
+      skillName: question.skillName,
+      questionText: question.questionText,
+      difficulty: question.difficulty
+    };
+
+    await QuestionBank.findByIdAndDelete(id);
+
+    // Log activity
+    const admin = await Admin.findById(req.user.id);
+    if (admin) {
+      const ipAddress = req.ip || req.connection.remoteAddress;
+      await admin.logActivity('DELETE_QUESTION', 
+        `Deleted ${deletedInfo.difficulty} ${deletedInfo.skillName} question: "${deletedInfo.questionText.substring(0, 50)}..."`, 
+        ipAddress
+      );
+    }
+
     res.json({
       message: "Question deleted successfully",
-      deletedQuestion: {
-        id: question._id,
-        skillName: question.skillName,
-        questionText: question.questionText
-      }
+      deletedQuestion: deletedInfo
     });
   } catch (error) {
     console.error("Delete question error:", error);
@@ -198,6 +238,18 @@ export const bulkAddQuestions = async (req, res) => {
       return res.status(400).json({ message: "Questions array is required" });
     }
 
+    // Validate each question
+    const errors = [];
+    questions.forEach((q, index) => {
+      if (!q.skillName || !q.questionText || !q.correctAnswer || !q.difficulty) {
+        errors.push(`Question ${index + 1}: Missing required fields`);
+      }
+    });
+
+    if (errors.length > 0) {
+      return res.status(400).json({ message: "Validation errors", errors });
+    }
+
     // Add createdBy to all questions
     const questionsWithCreator = questions.map(q => ({
       ...q,
@@ -205,6 +257,17 @@ export const bulkAddQuestions = async (req, res) => {
     }));
 
     const insertedQuestions = await QuestionBank.insertMany(questionsWithCreator);
+
+    // Log activity
+    const admin = await Admin.findById(req.user.id);
+    if (admin) {
+      const ipAddress = req.ip || req.connection.remoteAddress;
+      const skillsAdded = [...new Set(questions.map(q => q.skillName))].join(', ');
+      await admin.logActivity('BULK_ADD_QUESTIONS', 
+        `Added ${insertedQuestions.length} questions for skills: ${skillsAdded}`, 
+        ipAddress
+      );
+    }
 
     res.status(201).json({
       message: `${insertedQuestions.length} questions added successfully`,
