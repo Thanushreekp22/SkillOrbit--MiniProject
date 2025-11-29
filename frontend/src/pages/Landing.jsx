@@ -124,9 +124,9 @@ const Landing = () => {
 
         // Animate stats with real data
         const targets = {
-          users: data.stats?.users || 25000,
-          skills: data.stats?.skills || 500,
-          domains: data.stats?.domains || 50,
+          users: data.stats?.users || 0,
+          skills: data.stats?.skills || 0,
+          domains: data.stats?.domains || 0,
         };
         
         const duration = 2000;
@@ -159,7 +159,7 @@ const Landing = () => {
         });
         
         // Animate with fallback stats
-        const targets = { users: 25000, skills: 500, domains: 50 };
+        const targets = { users: 0, skills: 0, domains: 0 };
         const duration = 2000;
         const steps = 60;
         const stepTime = duration / steps;

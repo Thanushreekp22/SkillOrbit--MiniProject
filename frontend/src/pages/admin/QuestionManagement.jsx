@@ -27,29 +27,14 @@ import {
   Grid,
   FormControl,
   InputLabel,
-  Select,
-  AppBar,
-  Toolbar,
-  Drawer,
-  List,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  Divider,
-  Menu,
-  MenuItem as MenuItemMUI
+  Select
 } from '@mui/material';
 import {
   Edit,
   Delete,
   Add,
   Search,
-  FilterList,
-  Dashboard as DashboardIcon,
-  QuestionAnswer,
-  Menu as MenuIcon,
-  ExitToApp,
-  AccountCircle
+  FilterList
 } from '@mui/icons-material';
 import {
   getAllQuestions,
@@ -57,6 +42,7 @@ import {
   updateQuestion,
   deleteQuestion
 } from '../../api/adminApi';
+import AdminLayout from '../../components/AdminLayout';
 
 const QuestionManagement = () => {
   const navigate = useNavigate();
@@ -70,10 +56,6 @@ const QuestionManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterSkill, setFilterSkill] = useState('');
   const [filterDifficulty, setFilterDifficulty] = useState('');
-  
-  // Sidebar states
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [anchorEl, setAnchorEl] = useState(null);
 
   // Dialog states
   const [openDialog, setOpenDialog] = useState(false);
@@ -209,24 +191,6 @@ const QuestionManagement = () => {
     }
   };
 
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
-  };
-
-  const handleMenuOpen = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('adminToken');
-    localStorage.removeItem('adminData');
-    navigate('/admin/login');
-  };
-
   const getDifficultyColor = (difficulty) => {
     const colors = {
       basic: 'success',
@@ -236,125 +200,8 @@ const QuestionManagement = () => {
     return colors[difficulty] || 'default';
   };
 
-  const menuItems = [
-    { text: 'Dashboard', icon: <DashboardIcon />, route: '/admin/dashboard' },
-    { text: 'Questions', icon: <QuestionAnswer />, route: '/admin/questions' }
-  ];
-
-  const drawer = (
-    <Box>
-      <Toolbar>
-        <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#667eea' }}>
-          Admin Panel
-        </Typography>
-      </Toolbar>
-      <Divider />
-      <List>
-        {menuItems.map((item) => (
-          <ListItemButton
-            key={item.text}
-            selected={item.route === '/admin/questions'}
-            onClick={() => {
-              navigate(item.route);
-              setMobileOpen(false);
-            }}
-          >
-            <ListItemIcon sx={{ color: item.route === '/admin/questions' ? '#667eea' : 'inherit' }}>
-              {item.icon}
-            </ListItemIcon>
-            <ListItemText primary={item.text} />
-          </ListItemButton>
-        ))}
-      </List>
-    </Box>
-  );
-
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#f5f7fa' }}>
-      {/* App Bar */}
-      <AppBar
-        position="fixed"
-        sx={{
-          zIndex: (theme) => theme.zIndex.drawer + 1,
-          background: '#667eea'
-        }}
-      >
-        <Toolbar>
-          <IconButton
-            color="inherit"
-            edge="start"
-            onClick={handleDrawerToggle}
-            sx={{ mr: 2, display: { sm: 'none' } }}
-          >
-            <MenuIcon />
-          </IconButton>
-          
-          <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 'bold' }}>
-            SkillOrbit Admin - Questions
-          </Typography>
-
-          <IconButton color="inherit" onClick={handleMenuOpen}>
-            <AccountCircle />
-          </IconButton>
-          
-          <Menu
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={handleMenuClose}
-          >
-            <MenuItemMUI disabled>
-              <Typography variant="body2">{adminData.email}</Typography>
-            </MenuItemMUI>
-            <Divider />
-            <MenuItemMUI onClick={handleLogout}>
-              <ListItemIcon>
-                <ExitToApp fontSize="small" />
-              </ListItemIcon>
-              Logout
-            </MenuItemMUI>
-          </Menu>
-        </Toolbar>
-      </AppBar>
-
-      {/* Sidebar */}
-      <Box
-        component="nav"
-        sx={{ width: { sm: 240 }, flexShrink: { sm: 0 } }}
-      >
-        <Drawer
-          variant="temporary"
-          open={mobileOpen}
-          onClose={handleDrawerToggle}
-          ModalProps={{ keepMounted: true }}
-          sx={{
-            display: { xs: 'block', sm: 'none' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: 240 }
-          }}
-        >
-          {drawer}
-        </Drawer>
-        <Drawer
-          variant="permanent"
-          sx={{
-            display: { xs: 'none', sm: 'block' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: 240 }
-          }}
-          open
-        >
-          {drawer}
-        </Drawer>
-      </Box>
-
-      {/* Main Content */}
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          p: 3,
-          width: { sm: `calc(100% - 240px)` },
-          mt: 8
-        }}
-      >
+    <AdminLayout>
         <Container maxWidth="xl">
           <Paper sx={{ p: 3 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
@@ -705,8 +552,7 @@ const QuestionManagement = () => {
         </DialogActions>
       </Dialog>
         </Container>
-      </Box>
-    </Box>
+    </AdminLayout>
   );
 };
 

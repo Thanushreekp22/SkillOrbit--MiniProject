@@ -24,6 +24,7 @@ import {
   Divider,
   Select,
   MenuItem,
+  TextField,
 } from '@mui/material';
 import {
   Quiz,
@@ -51,6 +52,8 @@ const Assessment = () => {
   const [loading, setLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
+  const [isExpertAssessment, setIsExpertAssessment] = useState(false);
 
   // Available skills grouped by job role
   const skillsByRole = {
@@ -67,6 +70,9 @@ const Assessment = () => {
   const allSkills = [...new Set(Object.values(skillsByRole).flat())].sort();
   const [assessmentHistory, setAssessmentHistory] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [selectedAssessment, setSelectedAssessment] = useState(null);
+  const [assessmentDetails, setAssessmentDetails] = useState(null);
+  const [loadingDetails, setLoadingDetails] = useState(false);
 
   // Timer effect
   useEffect(() => {
@@ -98,10 +104,35 @@ const Assessment = () => {
     }
   };
 
-  // Start assessment
+  const viewAssessmentDetails = async (assessmentId) => {
+    setLoadingDetails(true);
+    setSelectedAssessment(assessmentId);
+    try {
+      const response = await api.get(`/assessment/${assessmentId}`);
+      setAssessmentDetails(response.data);
+    } catch (error) {
+      console.error('Error fetching assessment details:', error);
+      toast.error('Failed to load assessment details');
+    } finally {
+      setLoadingDetails(false);
+    }
+  };
+
+  const closeDetailsDialog = () => {
+    setSelectedAssessment(null);
+    setAssessmentDetails(null);
+  };
+
+  // Start assessment (regular)
   const startAssessment = async () => {
     if (!selectedSkill) {
       toast.error('Please select a skill to assess');
+      return;
+    }
+
+    // Check if Expert level selected
+    if (selectedDifficulty === 'expert') {
+      startExpertAssessment();
       return;
     }
 
@@ -125,6 +156,7 @@ const Assessment = () => {
       setStartTime(Date.now());
       setCurrentQuestionIndex(0);
       setAnswers({});
+      setIsExpertAssessment(false);
       toast.success('Assessment started! Good luck!');
     } catch (error) {
       console.error('Error starting assessment:', error);
@@ -132,6 +164,55 @@ const Assessment = () => {
       toast.error(errorMsg);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Start Expert Assessment with AI
+  const startExpertAssessment = async () => {
+    if (!selectedSkill) {
+      toast.error('Please select a skill to assess');
+      return;
+    }
+
+    setLoading(true);
+    setIsGeneratingAI(true);
+    
+    toast.info('🤖 Generating expert-level questions using AI... This may take a moment.', {
+      autoClose: 5000
+    });
+
+    try {
+      const response = await api.post('/assessment/expert/generate', {
+        skillName: selectedSkill
+      });
+
+      console.log('Expert assessment generated:', response.data);
+      
+      if (!response.data.questions || response.data.questions.length === 0) {
+        toast.error('Failed to generate questions. Please try again.');
+        return;
+      }
+      
+      setAssessment(response.data);
+      setQuestions(response.data.questions);
+      setCurrentStep('taking');
+      setStartTime(Date.now());
+      setCurrentQuestionIndex(0);
+      setAnswers({});
+      setIsExpertAssessment(true);
+      
+      toast.success(`✨ ${response.data.totalQuestions} expert questions generated! Good luck!`, {
+        autoClose: 3000
+      });
+      
+      console.log('📊 Question Distribution:', response.data.distribution);
+    } catch (error) {
+      console.error('Error generating expert assessment:', error);
+      const errorMsg = error.response?.data?.message || error.message || 'Failed to generate expert assessment';
+      toast.error(errorMsg);
+    } finally {
+      setLoading(false);
+      setIsGeneratingAI(false);
     }
   };
 
@@ -167,11 +248,17 @@ const Assessment = () => {
     setLoading(true);
     setIsSubmitting(true);
     
-    const formattedAnswers = Object.entries(answers).map(([questionId, userAnswer]) => ({
-      questionId,
-      userAnswer,
-      timeSpent: Math.floor(timeSpent / questions.length) // Average time per question
-    }));
+    // Format answers differently for expert assessments
+    const formattedAnswers = isExpertAssessment 
+      ? questions.map((q, index) => ({
+          answer: answers[index] || '',
+          timeSpent: Math.floor(timeSpent / questions.length)
+        }))
+      : Object.entries(answers).map(([questionId, userAnswer]) => ({
+          questionId,
+          userAnswer,
+          timeSpent: Math.floor(timeSpent / questions.length)
+        }));
 
     const assessmentId = assessment.assessmentId || assessment._id;
     
@@ -185,11 +272,17 @@ const Assessment = () => {
     console.log('Submitting assessment:', {
       assessmentId,
       answersCount: formattedAnswers.length,
-      timeSpent
+      timeSpent,
+      isExpert: isExpertAssessment
     });
 
     try {
-      const response = await api.post(`/assessment/${assessmentId}/submit`, {
+      // Use different endpoint for expert assessments
+      const endpoint = isExpertAssessment 
+        ? `/assessment/expert/${assessmentId}/submit`
+        : `/assessment/${assessmentId}/submit`;
+        
+      const response = await api.post(endpoint, {
         answers: formattedAnswers,
         timeSpent
       });
@@ -271,10 +364,187 @@ const Assessment = () => {
     return 'error';
   };
 
+  // Assessment Details Dialog
+  const renderAssessmentDetailsDialog = () => (
+    <Dialog
+      open={selectedAssessment !== null}
+      onClose={closeDetailsDialog}
+      maxWidth="md"
+      fullWidth
+    >
+      <DialogTitle>
+        <Box display="flex" justifyContent="space-between" alignItems="center">
+          <Typography variant="h6">
+            Assessment Details
+            {assessmentDetails?.assessment?.isAIGenerated && (
+              <Chip label="AI Generated" size="small" color="secondary" sx={{ ml: 1 }} />
+            )}
+          </Typography>
+          <Button onClick={closeDetailsDialog}>Close</Button>
+        </Box>
+      </DialogTitle>
+      <DialogContent>
+        {loadingDetails ? (
+          <Box display="flex" justifyContent="center" py={4}>
+            <CircularProgress />
+          </Box>
+        ) : assessmentDetails ? (
+          <>
+            {/* Assessment Summary */}
+            <Paper elevation={2} sx={{ p: 2, mb: 3 }}>
+              <Grid container spacing={2}>
+                <Grid item xs={6}>
+                  <Typography variant="body2" color="text.secondary">Skill</Typography>
+                  <Typography variant="h6">{assessmentDetails.assessment.skillName}</Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="body2" color="text.secondary">Difficulty</Typography>
+                  <Chip 
+                    label={assessmentDetails.assessment.difficulty} 
+                    size="small" 
+                    color="primary"
+                    sx={{ textTransform: 'capitalize' }}
+                  />
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="body2" color="text.secondary">Score</Typography>
+                  <Typography variant="h6" color={assessmentDetails.assessment.score >= 75 ? 'success.main' : 'warning.main'}>
+                    {assessmentDetails.assessment.score}%
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="body2" color="text.secondary">Correct Answers</Typography>
+                  <Typography variant="h6">
+                    {assessmentDetails.assessment.correctAnswers}/{assessmentDetails.assessment.totalQuestions}
+                  </Typography>
+                </Grid>
+              </Grid>
+            </Paper>
+
+            {/* Questions Review */}
+            <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
+              Questions Review
+            </Typography>
+            {assessmentDetails.results.map((result, index) => (
+              <Paper
+                key={index}
+                elevation={1}
+                sx={{
+                  p: 2,
+                  mb: 2,
+                  border: result.isCorrect ? '2px solid #4caf50' : '2px solid #f44336',
+                  bgcolor: result.isCorrect ? '#f1f8f4' : '#fef1f1'
+                }}
+              >
+                <Box display="flex" alignItems="center" mb={1}>
+                  {result.isCorrect ? (
+                    <CheckCircle color="success" sx={{ mr: 1 }} />
+                  ) : (
+                    <Cancel color="error" sx={{ mr: 1 }} />
+                  )}
+                  <Typography variant="subtitle1" fontWeight="bold">
+                    Question {result.questionNumber || index + 1}
+                    {result.questionType && (
+                      <Chip 
+                        label={result.questionType.toUpperCase().replace('-', ' ')} 
+                        size="small" 
+                        sx={{ ml: 1, height: 20 }}
+                      />
+                    )}
+                  </Typography>
+                </Box>
+
+                <Typography variant="body1" sx={{ mb: 2, whiteSpace: 'pre-wrap' }}>
+                  {result.question}
+                </Typography>
+
+                {/* Options for MCQ questions */}
+                {result.options && result.options.length > 0 && (
+                  <Box sx={{ mb: 2, pl: 2 }}>
+                    {result.options.map((option, idx) => (
+                      <Typography
+                        key={idx}
+                        variant="body2"
+                        sx={{
+                          p: 1,
+                          my: 0.5,
+                          borderRadius: 1,
+                          bgcolor: option === result.correctAnswer ? '#d4edda' : 
+                                   option === result.userAnswer && !result.isCorrect ? '#f8d7da' : 'transparent',
+                          border: option === result.correctAnswer || option === result.userAnswer ? '1px solid' : 'none',
+                          borderColor: option === result.correctAnswer ? 'success.main' : 'error.main'
+                        }}
+                      >
+                        {option}
+                        {option === result.correctAnswer && ' ✓ (Correct)'}
+                        {option === result.userAnswer && !result.isCorrect && ' ✗ (Your Answer)'}
+                      </Typography>
+                    ))}
+                  </Box>
+                )}
+
+                {/* User Answer for text-based questions */}
+                {(!result.options || result.options.length === 0) && (
+                  <>
+                    <Box sx={{ mb: 2 }}>
+                      <Typography variant="body2" color="text.secondary" gutterBottom>
+                        Your Answer:
+                      </Typography>
+                      <Paper sx={{ p: 1.5, bgcolor: '#fff3cd', fontFamily: 'monospace', fontSize: '0.9rem', whiteSpace: 'pre-wrap', overflow: 'auto' }}>
+                        <pre style={{ margin: 0, fontFamily: 'inherit', whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}>
+                          {result.userAnswer || '(No answer provided)'}
+                        </pre>
+                      </Paper>
+                    </Box>
+                    
+                    <Box sx={{ mb: 2 }}>
+                      <Typography variant="body2" color="text.secondary" gutterBottom>
+                        Expected Answer:
+                      </Typography>
+                      <Paper sx={{ p: 1.5, bgcolor: '#d4edda', fontFamily: 'monospace', fontSize: '0.9rem', whiteSpace: 'pre-wrap', overflow: 'auto' }}>
+                        <pre style={{ margin: 0, fontFamily: 'inherit', whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}>
+                          {result.correctAnswer}
+                        </pre>
+                      </Paper>
+                    </Box>
+                  </>
+                )}
+
+                {/* Explanation */}
+                {result.explanation && (
+                  <Alert severity="info" sx={{ mt: 2 }}>
+                    <Typography variant="body2" fontWeight="bold">Explanation:</Typography>
+                    <Typography variant="body2">{result.explanation}</Typography>
+                  </Alert>
+                )}
+
+                {/* AI Feedback for Expert Level */}
+                {assessmentDetails.assessment.difficulty === 'expert' && !result.isCorrect && (
+                  <Alert severity="warning" sx={{ mt: 1 }}>
+                    <Typography variant="body2" fontWeight="bold">💡 Improvement Tip:</Typography>
+                    <Typography variant="body2">
+                      {result.questionType === 'code-typing' || result.questionType === 'practical'
+                        ? 'Review the expected solution above. Focus on proper syntax, edge case handling, and code optimization. Practice similar problems to improve.'
+                        : result.questionType === 'short-answer'
+                        ? 'Your answer should cover the key concepts mentioned in the expected answer. Be more specific and include relevant details.'
+                        : 'Review the explanation to understand why the correct answer is right. Consider the core concepts and try again.'}
+                    </Typography>
+                  </Alert>
+                )}
+              </Paper>
+            ))}
+          </>
+        ) : null}
+      </DialogContent>
+    </Dialog>
+  );
+
   // Skill Selection Step
   if (currentStep === 'select') {
     return (
-      <Container maxWidth="md" sx={{ py: 4 }}>
+      <>
+        {renderAssessmentDetailsDialog()}
+        <Container maxWidth="md" sx={{ py: 4 }}>
         <Box textAlign="center" mb={4}>
           <AssessmentIcon sx={{ fontSize: 64, color: 'primary.main', mb: 2 }} />
           <Typography variant="h3" component="h1" gutterBottom>
@@ -328,16 +598,44 @@ const Assessment = () => {
                   <FormControlLabel value="basic" control={<Radio />} label="Basic" />
                   <FormControlLabel value="intermediate" control={<Radio />} label="Intermediate" />
                   <FormControlLabel value="advanced" control={<Radio />} label="Advanced" />
+                  <FormControlLabel 
+                    value="expert" 
+                    control={<Radio />} 
+                    label={
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <span>Expert</span>
+                        <Chip 
+                          label="AI-Generated" 
+                          size="small" 
+                          color="secondary" 
+                          sx={{ height: 20, fontSize: '0.7rem' }}
+                        />
+                      </Box>
+                    } 
+                  />
                 </RadioGroup>
               </FormControl>
             </Box>
 
-            <Alert severity="info" sx={{ mb: 3 }}>
+            <Alert severity={selectedDifficulty === 'expert' ? 'warning' : 'info'} sx={{ mb: 3 }}>
               <Typography variant="body2">
-                • Assessment contains 10 questions<br/>
-                • No time limit, but time will be tracked<br/>
-                • You can navigate between questions<br/>
-                • Results will show detailed feedback
+                {selectedDifficulty === 'expert' ? (
+                  <>
+                    🤖 <strong>AI-Generated Expert Assessment:</strong><br/>
+                    • 15 placement-focused questions generated by AI<br/>
+                    • 6 Theory: 2 MCQ, 2 True/False, 2 Short Answer<br/>
+                    • 9 Practical: 3-4 Code Typing, 5-6 Code MCQ<br/>
+                    • Questions are unique each time<br/>
+                    • Generation may take 10-15 seconds
+                  </>
+                ) : (
+                  <>
+                    • Assessment contains 10 questions<br/>
+                    • No time limit, but time will be tracked<br/>
+                    • You can navigate between questions<br/>
+                    • Results will show detailed feedback
+                  </>
+                )}
               </Typography>
             </Alert>
 
@@ -372,12 +670,26 @@ const Assessment = () => {
                 <Grid container spacing={2}>
                   {assessmentHistory.map((assessment) => (
                     <Grid item xs={12} key={assessment._id}>
-                      <Paper elevation={1} sx={{ p: 2 }}>
+                      <Paper 
+                        elevation={1} 
+                        sx={{ 
+                          p: 2, 
+                          cursor: 'pointer',
+                          transition: 'all 0.2s',
+                          '&:hover': {
+                            elevation: 3,
+                            bgcolor: 'action.hover',
+                            transform: 'translateY(-2px)'
+                          }
+                        }}
+                        onClick={() => viewAssessmentDetails(assessment._id)}
+                      >
                         <Box display="flex" justifyContent="space-between" alignItems="center">
                           <Box>
                             <Typography variant="h6">{assessment.skillName}</Typography>
                             <Typography variant="body2" color="text.secondary">
                               {new Date(assessment.createdAt).toLocaleDateString()} • {assessment.difficulty}
+                              {assessment.isAIGenerated && <Chip label="AI" size="small" color="secondary" sx={{ ml: 1, height: 18 }} />}
                             </Typography>
                           </Box>
                           <Box textAlign="right">
@@ -400,6 +712,7 @@ const Assessment = () => {
           </Card>
         )}
       </Container>
+      </>
     );
   }
 
@@ -407,12 +720,16 @@ const Assessment = () => {
   if (currentStep === 'taking' && questions.length > 0) {
     const currentQuestion = questions[currentQuestionIndex];
     const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
-    const answeredCount = Object.keys(answers).length;
+    const answeredCount = isExpertAssessment 
+      ? Object.values(answers).filter(a => a && a.trim() !== '').length
+      : Object.keys(answers).length;
 
     return (
-      <Container maxWidth="md" sx={{ py: 4 }}>
-        {/* Header */}
-        <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
+      <>
+        {renderAssessmentDetailsDialog()}
+        <Container maxWidth="md" sx={{ py: 4 }}>
+          {/* Header */}
+          <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
           <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
             <Typography variant="h5">
               {selectedSkill} Assessment - {selectedDifficulty}
@@ -434,29 +751,47 @@ const Assessment = () => {
         {/* Question */}
         <Card elevation={3}>
           <CardContent sx={{ p: 4 }}>
-            <Typography variant="h6" gutterBottom>
+            {/* Question Type Badge */}
+            {isExpertAssessment && currentQuestion.questionType && (
+              <Chip 
+                label={currentQuestion.questionType.toUpperCase().replace('-', ' ')} 
+                size="small"
+                color={currentQuestion.category === 'theory' ? 'info' : 'secondary'}
+                sx={{ mb: 2 }}
+              />
+            )}
+
+            <Typography variant="h6" gutterBottom sx={{ whiteSpace: 'pre-wrap' }}>
               {currentQuestion.questionText}
             </Typography>
 
-            <FormControl component="fieldset" fullWidth sx={{ mt: 3 }}>
-              <RadioGroup
-                value={answers[currentQuestion._id] || ''}
-                onChange={(e) => handleAnswerChange(currentQuestion._id, e.target.value)}
-              >
-                {currentQuestion.options && Array.isArray(currentQuestion.options) ? (
-                  currentQuestion.options.map((option, index) => (
-                    <FormControlLabel
-                      key={index}
-                      value={option}
-                      control={<Radio />}
-                      label={option}
-                      sx={{ 
-                        mb: 1.5, 
+            {/* Render based on question type */}
+            {(!isExpertAssessment || currentQuestion.questionType === 'mcq' || currentQuestion.questionType === 'true-false' || currentQuestion.questionType === 'code-mcq') && (
+              <FormControl component="fieldset" fullWidth sx={{ mt: 3 }}>
+                <RadioGroup
+                  value={isExpertAssessment ? answers[currentQuestionIndex] || '' : answers[currentQuestion._id] || ''}
+                  onChange={(e) => {
+                    if (isExpertAssessment) {
+                      setAnswers(prev => ({ ...prev, [currentQuestionIndex]: e.target.value }));
+                    } else {
+                      handleAnswerChange(currentQuestion._id, e.target.value);
+                    }
+                  }}
+                >
+                  {currentQuestion.options && Array.isArray(currentQuestion.options) ? (
+                    currentQuestion.options.map((option, index) => (
+                      <FormControlLabel
+                        key={index}
+                        value={option}
+                        control={<Radio />}
+                        label={option}
+                        sx={{ 
+                          mb: 1.5, 
                         p: 2, 
                         borderRadius: 2,
                         border: '1px solid',
-                        borderColor: answers[currentQuestion._id] === option ? 'primary.main' : 'divider',
-                        bgcolor: answers[currentQuestion._id] === option ? 'primary.light' : 'background.paper',
+                        borderColor: (isExpertAssessment ? answers[currentQuestionIndex] : answers[currentQuestion._id]) === option ? 'primary.main' : 'divider',
+                        bgcolor: (isExpertAssessment ? answers[currentQuestionIndex] : answers[currentQuestion._id]) === option ? 'primary.light' : 'background.paper',
                         '&:hover': { 
                           bgcolor: 'action.hover',
                           borderColor: 'primary.main'
@@ -469,6 +804,43 @@ const Assessment = () => {
                 )}
               </RadioGroup>
             </FormControl>
+            )}
+
+            {/* Short Answer, Code Typing & Practical Questions (Expert Only) */}
+            {isExpertAssessment && (currentQuestion.questionType === 'short-answer' || currentQuestion.questionType === 'code-typing' || currentQuestion.questionType === 'practical') && (
+              <Box sx={{ mt: 3 }}>
+                <TextField
+                  fullWidth
+                  multiline
+                  rows={
+                    currentQuestion.questionType === 'code-typing' ? 10 :
+                    currentQuestion.questionType === 'practical' ? 8 : 4
+                  }
+                  placeholder={
+                    currentQuestion.questionType === 'code-typing' 
+                      ? "Write your complete code solution here..." 
+                      : currentQuestion.questionType === 'practical'
+                      ? "Write your code solution here..." 
+                      : "Write your answer here (2-3 sentences)..."
+                  }
+                  value={answers[currentQuestionIndex] || ''}
+                  onChange={(e) => setAnswers(prev => ({ ...prev, [currentQuestionIndex]: e.target.value }))}
+                  variant="outlined"
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      fontFamily: (currentQuestion.questionType === 'code-typing' || currentQuestion.questionType === 'practical') ? 'monospace' : 'inherit',
+                      fontSize: (currentQuestion.questionType === 'code-typing' || currentQuestion.questionType === 'practical') ? '0.9rem' : 'inherit',
+                      backgroundColor: (currentQuestion.questionType === 'code-typing' || currentQuestion.questionType === 'practical') ? '#f5f5f5' : 'inherit'
+                    }
+                  }}
+                />
+                {(currentQuestion.questionType === 'code-typing' || currentQuestion.questionType === 'practical') && (
+                  <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                    💡 Tip: Include proper syntax, handle edge cases, add comments, and explain your approach
+                  </Typography>
+                )}
+              </Box>
+            )}
 
             {/* Navigation */}
             <Box mt={4}>
@@ -512,14 +884,17 @@ const Assessment = () => {
             </Box>
           </CardContent>
         </Card>
-      </Container>
+        </Container>
+      </>
     );
   }
 
   // Results Step
   if (currentStep === 'results' && results) {
     return (
-      <Container maxWidth="md" sx={{ py: 4 }}>
+      <>
+        {renderAssessmentDetailsDialog()}
+        <Container maxWidth="md" sx={{ py: 4 }}>
         <Box textAlign="center" mb={4}>
           <CheckCircle sx={{ fontSize: 64, color: 'success.main', mb: 2 }} />
           <Typography variant="h3" component="h1" gutterBottom>
@@ -588,16 +963,9 @@ const Assessment = () => {
           </Button>
         </Box>
       </Container>
+      </>
     );
   }
-
-  return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="50vh">
-        <CircularProgress size={64} />
-      </Box>
-    </Container>
-  );
 };
 
 export default Assessment;

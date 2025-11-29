@@ -37,7 +37,7 @@ const assessmentSchema = new mongoose.Schema({
   },
   difficulty: {
     type: String,
-    enum: ["basic", "intermediate", "advanced"],
+    enum: ["basic", "intermediate", "advanced", "expert"],
     default: "basic"
   },
   status: {
@@ -45,15 +45,27 @@ const assessmentSchema = new mongoose.Schema({
     enum: ["in_progress", "completed", "abandoned"],
     default: "completed"
   },
+  isAIGenerated: {
+    type: Boolean,
+    default: false
+  },
   questions: [{
     questionId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "QuestionBank"
     },
+    questionText: String, // For AI-generated questions
+    questionType: {
+      type: String,
+      enum: ["mcq", "true-false", "short-answer", "practical", "code-typing", "code-mcq"],
+      default: "mcq"
+    },
+    options: [String], // For MCQ, True/False, and Code-MCQ
     userAnswer: String,
     correctAnswer: String,
     isCorrect: Boolean,
-    timeSpent: Number
+    timeSpent: Number,
+    explanation: String // AI-generated explanation
   }]
 }, {
   timestamps: true

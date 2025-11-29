@@ -91,9 +91,13 @@ export const addQuestion = async (req, res) => {
       });
     }
 
-    if (questionType === 'mcq' && (!options || options.length < 2)) {
+    // Filter out empty options
+    const filteredOptions = options ? options.filter(opt => opt && opt.trim() !== '') : [];
+
+    // Validate MCQ questions need at least 2 options
+    if ((questionType === 'mcq' || questionType === 'multiple-choice') && filteredOptions.length < 2) {
       return res.status(400).json({ 
-        message: "MCQ questions must have at least 2 options" 
+        message: "MCQ questions must have at least 2 non-empty options" 
       });
     }
 
@@ -101,7 +105,7 @@ export const addQuestion = async (req, res) => {
     const question = await QuestionBank.create({
       skillName,
       questionText,
-      options: options || [],
+      options: filteredOptions,
       correctAnswer,
       difficulty,
       questionType: questionType || 'mcq',
@@ -110,22 +114,13 @@ export const addQuestion = async (req, res) => {
       createdBy: req.user.id
     });
 
-    // Log activity
-    const admin = await Admin.findById(req.user.id);
-    if (admin) {
-      const ipAddress = req.ip || req.connection.remoteAddress;
-      await admin.logActivity('ADD_QUESTION', 
-        `Added ${difficulty} ${skillName} question: "${questionText.substring(0, 50)}..."`, 
-        ipAddress
-      );
-    }
-
     res.status(201).json({
       message: "Question added successfully",
       question
     });
   } catch (error) {
     console.error("Add question error:", error);
+    console.error("Error stack:", error.stack);
     res.status(500).json({ message: "Failed to add question", error: error.message });
   }
 };
@@ -165,26 +160,13 @@ export const updateQuestion = async (req, res) => {
 
     await question.save();
 
-    // Log activity
-    const admin = await Admin.findById(req.user.id);
-    if (admin) {
-      const ipAddress = req.ip || req.connection.remoteAddress;
-      const changes = [];
-      if (skillName) changes.push('skill');
-      if (questionText) changes.push('text');
-      if (difficulty) changes.push('difficulty');
-      await admin.logActivity('UPDATE_QUESTION', 
-        `Updated ${changes.join(', ')} for question: "${question.questionText.substring(0, 50)}..."`, 
-        ipAddress
-      );
-    }
-
     res.json({
       message: "Question updated successfully",
       question
     });
   } catch (error) {
     console.error("Update question error:", error);
+    console.error("Error stack:", error.stack);
     res.status(500).json({ message: "Failed to update question", error: error.message });
   }
 };
@@ -209,22 +191,13 @@ export const deleteQuestion = async (req, res) => {
 
     await QuestionBank.findByIdAndDelete(id);
 
-    // Log activity
-    const admin = await Admin.findById(req.user.id);
-    if (admin) {
-      const ipAddress = req.ip || req.connection.remoteAddress;
-      await admin.logActivity('DELETE_QUESTION', 
-        `Deleted ${deletedInfo.difficulty} ${deletedInfo.skillName} question: "${deletedInfo.questionText.substring(0, 50)}..."`, 
-        ipAddress
-      );
-    }
-
     res.json({
       message: "Question deleted successfully",
       deletedQuestion: deletedInfo
     });
   } catch (error) {
     console.error("Delete question error:", error);
+    console.error("Error stack:", error.stack);
     res.status(500).json({ message: "Failed to delete question", error: error.message });
   }
 };
@@ -258,17 +231,6 @@ export const bulkAddQuestions = async (req, res) => {
 
     const insertedQuestions = await QuestionBank.insertMany(questionsWithCreator);
 
-    // Log activity
-    const admin = await Admin.findById(req.user.id);
-    if (admin) {
-      const ipAddress = req.ip || req.connection.remoteAddress;
-      const skillsAdded = [...new Set(questions.map(q => q.skillName))].join(', ');
-      await admin.logActivity('BULK_ADD_QUESTIONS', 
-        `Added ${insertedQuestions.length} questions for skills: ${skillsAdded}`, 
-        ipAddress
-      );
-    }
-
     res.status(201).json({
       message: `${insertedQuestions.length} questions added successfully`,
       count: insertedQuestions.length,
@@ -276,6 +238,7 @@ export const bulkAddQuestions = async (req, res) => {
     });
   } catch (error) {
     console.error("Bulk add questions error:", error);
+    console.error("Error stack:", error.stack);
     res.status(500).json({ message: "Failed to add questions", error: error.message });
   }
 };

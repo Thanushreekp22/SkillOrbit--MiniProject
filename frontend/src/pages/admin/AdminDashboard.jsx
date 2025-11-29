@@ -34,6 +34,7 @@ import {
   History as HistoryIcon,
   SupervisorAccount as SupervisorAccountIcon
 } from '@mui/icons-material';
+import { Tabs, Tab } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { getPlatformAnalytics } from '../../api/adminApi';
 import {
@@ -108,43 +109,19 @@ const AdminDashboard = () => {
   };
 
   const menuItems = [
-    { text: 'Dashboard', icon: <DashboardIcon />, section: 'dashboard' },
+    { text: 'Dashboard', icon: <DashboardIcon />, section: 'dashboard', route: '/admin/dashboard' },
     { text: 'Questions', icon: <QuestionAnswer />, section: 'questions', route: '/admin/questions' },
     { text: 'My Activity', icon: <HistoryIcon />, section: 'activity', route: '/admin/activity' },
     { text: 'Admin Management', icon: <SupervisorAccountIcon />, section: 'management', route: '/admin/management' }
   ];
 
-  const drawer = (
-    <Box>
-      <Toolbar>
-        <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#667eea' }}>
-          Admin Panel
-        </Typography>
-      </Toolbar>
-      <Divider />
-      <List>
-        {menuItems.map((item) => (
-          <ListItemButton
-            key={item.text}
-            selected={activeSection === item.section}
-            onClick={() => {
-              if (item.route) {
-                navigate(item.route);
-              } else {
-                setActiveSection(item.section);
-              }
-              setMobileOpen(false);
-            }}
-          >
-            <ListItemIcon sx={{ color: activeSection === item.section ? '#667eea' : 'inherit' }}>
-              {item.icon}
-            </ListItemIcon>
-            <ListItemText primary={item.text} />
-          </ListItemButton>
-        ))}
-      </List>
-    </Box>
-  );
+  const handleTabChange = (event, newValue) => {
+    const item = menuItems[newValue];
+    if (item.route) {
+      navigate(item.route);
+    }
+    setActiveSection(item.section);
+  };
 
   if (loading) {
     return (
@@ -155,29 +132,61 @@ const AdminDashboard = () => {
   }
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#f5f7fa' }}>
-      {/* App Bar */}
+    <Box sx={{ minHeight: '100vh', bgcolor: '#f5f7fa' }}>
+      {/* Top Navigation Bar */}
       <AppBar
         position="fixed"
         sx={{
-          zIndex: (theme) => theme.zIndex.drawer + 1,
-          background: '#667eea'
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
         }}
       >
         <Toolbar>
-          <IconButton
-            color="inherit"
-            edge="start"
-            onClick={handleDrawerToggle}
-            sx={{ mr: 2, display: { sm: 'none' } }}
-          >
-            <MenuIcon />
-          </IconButton>
-          
-          <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 'bold' }}>
-            SkillOrbit Admin Dashboard
+          <Typography variant="h6" sx={{ fontWeight: 'bold', mr: 4 }}>
+            SkillOrbit Admin
           </Typography>
 
+          {/* Navigation Tabs */}
+          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
+            <Tabs
+              value={menuItems.findIndex(item => item.section === activeSection)}
+              onChange={handleTabChange}
+              textColor="inherit"
+              indicatorColor="secondary"
+              sx={{
+                '& .MuiTab-root': {
+                  color: 'rgba(255,255,255,0.7)',
+                  minHeight: 64,
+                  '&.Mui-selected': {
+                    color: '#fff',
+                    fontWeight: 'bold'
+                  }
+                }
+              }}
+            >
+              {menuItems.map((item, index) => (
+                <Tab
+                  key={item.text}
+                  icon={item.icon}
+                  label={item.text}
+                  iconPosition="start"
+                />
+              ))}
+            </Tabs>
+          </Box>
+
+          {/* Mobile Menu */}
+          <Box sx={{ display: { xs: 'flex', md: 'none' }, flexGrow: 1 }}>
+            <IconButton
+              color="inherit"
+              edge="start"
+              onClick={handleDrawerToggle}
+            >
+              <MenuIcon />
+            </IconButton>
+          </Box>
+
+          {/* User Menu */}
           <IconButton color="inherit" onClick={handleMenuOpen}>
             <AccountCircle />
           </IconButton>
@@ -201,43 +210,60 @@ const AdminDashboard = () => {
         </Toolbar>
       </AppBar>
 
-      {/* Sidebar */}
-      <Box
-        component="nav"
-        sx={{ width: { sm: 240 }, flexShrink: { sm: 0 } }}
+      {/* Mobile Drawer */}
+      <Drawer
+        variant="temporary"
+        open={mobileOpen}
+        onClose={handleDrawerToggle}
+        ModalProps={{ keepMounted: true }}
+        sx={{
+          display: { xs: 'block', md: 'none' },
+          '& .MuiDrawer-paper': { boxSizing: 'border-box', width: 240 }
+        }}
       >
-        <Drawer
-          variant="temporary"
-          open={mobileOpen}
-          onClose={handleDrawerToggle}
-          ModalProps={{ keepMounted: true }}
-          sx={{
-            display: { xs: 'block', sm: 'none' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: 240 }
-          }}
-        >
-          {drawer}
-        </Drawer>
-        <Drawer
-          variant="permanent"
-          sx={{
-            display: { xs: 'none', sm: 'block' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: 240 }
-          }}
-          open
-        >
-          {drawer}
-        </Drawer>
-      </Box>
+        <Box sx={{ p: 2 }}>
+          <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#667eea', mb: 2 }}>
+            Admin Menu
+          </Typography>
+          <List>
+            {menuItems.map((item) => (
+              <ListItemButton
+                key={item.text}
+                selected={activeSection === item.section}
+                onClick={() => {
+                  if (item.route) {
+                    navigate(item.route);
+                  }
+                  setActiveSection(item.section);
+                  setMobileOpen(false);
+                }}
+                sx={{
+                  borderRadius: 1,
+                  mb: 0.5,
+                  '&.Mui-selected': {
+                    bgcolor: 'rgba(102, 126, 234, 0.1)',
+                    '&:hover': {
+                      bgcolor: 'rgba(102, 126, 234, 0.2)'
+                    }
+                  }
+                }}
+              >
+                <ListItemIcon sx={{ color: activeSection === item.section ? '#667eea' : 'inherit' }}>
+                  {item.icon}
+                </ListItemIcon>
+                <ListItemText primary={item.text} />
+              </ListItemButton>
+            ))}
+          </List>
+        </Box>
+      </Drawer>
 
       {/* Main Content */}
       <Box
         component="main"
         sx={{
-          flexGrow: 1,
           p: 3,
-          width: { sm: `calc(100% - 240px)` },
-          mt: 8
+          mt: 10
         }}
       >
         <Container maxWidth="xl">

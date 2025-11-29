@@ -218,22 +218,43 @@ export const getAssessmentDetails = async (req, res) => {
       return res.status(403).json({ message: "Unauthorized access to assessment" });
     }
 
-    // Get question details
-    const questionIds = assessment.questions.map(q => q.questionId);
-    const questions = await QuestionBank.find({ _id: { $in: questionIds } });
+    let detailedResults;
 
-    const detailedResults = assessment.questions.map(q => {
-      const questionDetail = questions.find(qd => qd._id.toString() === q.questionId.toString());
-      return {
-        question: questionDetail?.questionText || 'Question not found',
-        options: questionDetail?.options || [],
+    // Handle AI-generated expert assessments differently
+    if (assessment.isAIGenerated && assessment.difficulty === 'expert') {
+      // For expert assessments, questions are embedded in the assessment
+      detailedResults = assessment.questions.map((q, index) => ({
+        questionNumber: index + 1,
+        questionType: q.questionType,
+        question: q.questionText,
+        options: q.options || [],
         userAnswer: q.userAnswer,
         correctAnswer: q.correctAnswer,
         isCorrect: q.isCorrect,
         timeSpent: q.timeSpent,
-        explanation: questionDetail?.explanation || ''
-      };
-    });
+        explanation: q.explanation || '',
+        category: q.questionType === 'mcq' || q.questionType === 'true-false' || q.questionType === 'short-answer' ? 'theory' : 'practical'
+      }));
+    } else {
+      // For regular assessments, fetch from QuestionBank
+      const questionIds = assessment.questions.map(q => q.questionId).filter(id => id);
+      const questions = await QuestionBank.find({ _id: { $in: questionIds } });
+
+      detailedResults = assessment.questions.map((q, index) => {
+        const questionDetail = questions.find(qd => qd._id.toString() === q.questionId?.toString());
+        return {
+          questionNumber: index + 1,
+          questionType: questionDetail?.questionType || 'mcq',
+          question: questionDetail?.questionText || 'Question not found',
+          options: questionDetail?.options || [],
+          userAnswer: q.userAnswer,
+          correctAnswer: q.correctAnswer,
+          isCorrect: q.isCorrect,
+          timeSpent: q.timeSpent,
+          explanation: questionDetail?.explanation || ''
+        };
+      });
+    }
 
     res.json({
       assessment: {
@@ -246,7 +267,8 @@ export const getAssessmentDetails = async (req, res) => {
         feedback: assessment.feedback,
         timeSpent: assessment.timeSpent,
         status: assessment.status,
-        createdAt: assessment.createdAt
+        createdAt: assessment.createdAt,
+        isAIGenerated: assessment.isAIGenerated || false
       },
       results: detailedResults
     });
@@ -299,5 +321,196 @@ export const getAssessmentStats = async (req, res) => {
   } catch (error) {
     console.error("Error fetching assessment stats:", error);
     res.status(500).json({ message: "Error fetching assessment stats", error: error.message });
+  }
+};
+
+// Generate Expert Level Assessment with AI
+export const generateExpertAssessment = async (req, res) => {
+  try {
+    const { skillName } = req.body;
+    const userId = req.user.id;
+
+    if (!skillName) {
+      return res.status(400).json({ message: "Skill name is required" });
+    }
+
+    console.log(`🤖 Generating expert assessment for ${skillName}...`);
+
+    // Import AI service
+    const grokAI = (await import('../services/grokAI.js')).default;
+    
+    // Generate questions using AI
+    const aiResponse = await grokAI.generateExpertQuestions(skillName);
+    
+    if (!aiResponse.questions || aiResponse.questions.length === 0) {
+      return res.status(500).json({ 
+        message: "Failed to generate questions. Please try again." 
+      });
+    }
+
+    // Create assessment with AI-generated questions
+    const assessment = await Assessment.create({
+      userId,
+      skillName,
+      difficulty: 'expert',
+      isAIGenerated: true,
+      totalQuestions: aiResponse.questions.length,
+      correctAnswers: 0,
+      score: 0,
+      status: 'in_progress',
+      questions: aiResponse.questions.map(q => ({
+        questionText: q.question,
+        questionType: q.type,
+        options: q.options || [],
+        correctAnswer: q.correctAnswer,
+        explanation: q.explanation,
+        isCorrect: false,
+        userAnswer: '',
+        timeSpent: 0
+      }))
+    });
+
+    // Prepare questions for user (without answers)
+    const questionsForUser = aiResponse.questions.map((q, index) => ({
+      id: index + 1,
+      questionText: q.question,
+      questionType: q.type,
+      category: q.category,
+      options: q.options || []
+    }));
+
+    console.log(`✅ Expert assessment created: ${assessment._id}`);
+
+    res.status(201).json({
+      message: "Expert assessment generated successfully",
+      assessmentId: assessment._id,
+      questions: questionsForUser,
+      totalQuestions: aiResponse.questions.length,
+      difficulty: 'expert',
+      isAIGenerated: true,
+      distribution: {
+        theory: aiResponse.theoryCount,
+        practical: aiResponse.practicalCount
+      }
+    });
+
+  } catch (error) {
+    console.error("❌ Error generating expert assessment:", error);
+    res.status(500).json({ 
+      message: "Error generating expert assessment", 
+      error: error.message 
+    });
+  }
+};
+
+// Submit Expert Assessment
+export const submitExpertAssessment = async (req, res) => {
+  try {
+    const { assessmentId } = req.params;
+    const { answers, timeSpent = 0 } = req.body;
+    const userId = req.user.id;
+
+    const assessment = await Assessment.findById(assessmentId);
+    
+    if (!assessment) {
+      return res.status(404).json({ message: "Assessment not found" });
+    }
+
+    if (assessment.userId.toString() !== userId) {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+
+    if (assessment.status === 'completed') {
+      return res.status(400).json({ message: "Assessment already completed" });
+    }
+
+    if (!assessment.isAIGenerated || assessment.difficulty !== 'expert') {
+      return res.status(400).json({ message: "Not an expert assessment" });
+    }
+
+    let correctCount = 0;
+    const evaluatedQuestions = [];
+
+    // Evaluate answers
+    for (let i = 0; i < assessment.questions.length; i++) {
+      const question = assessment.questions[i];
+      const userAnswer = answers[i]?.answer || '';
+      const answerTimeSpent = answers[i]?.timeSpent || 0;
+
+      let isCorrect = false;
+
+      // Evaluate based on question type
+      if (question.questionType === 'mcq' || question.questionType === 'true-false' || question.questionType === 'code-mcq') {
+        // Exact match for MCQ, True/False, and Code MCQ
+        isCorrect = userAnswer.trim().toLowerCase() === question.correctAnswer.trim().toLowerCase();
+      } else if (question.questionType === 'short-answer') {
+        // Keyword-based matching for short answers (simplified)
+        const correctKeywords = question.correctAnswer.toLowerCase().split(' ');
+        const userKeywords = userAnswer.toLowerCase().split(' ');
+        const matchCount = correctKeywords.filter(kw => userKeywords.includes(kw)).length;
+        isCorrect = matchCount >= correctKeywords.length * 0.5; // 50% keyword match
+      } else if (question.questionType === 'code-typing' || question.questionType === 'practical') {
+        // For code typing and practical questions, check if answer contains key concepts
+        if (userAnswer && userAnswer.trim().length > 0) {
+          const correctLower = question.correctAnswer.toLowerCase();
+          const userLower = userAnswer.toLowerCase();
+          // More lenient for code: check if at least 30% of expected keywords are present
+          const correctKeywords = correctLower.split(/\s+/).filter(word => word.length > 3);
+          const userKeywords = userLower.split(/\s+/);
+          const matchCount = correctKeywords.filter(kw => userKeywords.some(uk => uk.includes(kw))).length;
+          // Remove minimum length requirement, just check keyword match
+          isCorrect = matchCount >= Math.max(1, correctKeywords.length * 0.3);
+        } else {
+          isCorrect = false; // Empty answer is incorrect
+        }
+      }
+
+      if (isCorrect) correctCount++;
+
+      question.userAnswer = userAnswer;
+      question.isCorrect = isCorrect;
+      question.timeSpent = answerTimeSpent;
+
+      evaluatedQuestions.push({
+        questionText: question.questionText,
+        questionType: question.questionType,
+        userAnswer,
+        correctAnswer: question.correctAnswer,
+        isCorrect,
+        explanation: question.explanation
+      });
+    }
+
+    const score = Math.round((correctCount / assessment.questions.length) * 100);
+
+    assessment.correctAnswers = correctCount;
+    assessment.score = score;
+    assessment.timeSpent = timeSpent;
+    assessment.status = 'completed';
+    
+    await assessment.save();
+
+    // Update user's skill proficiency
+    await User.findByIdAndUpdate(userId, {
+      $addToSet: { skillsToImprove: assessment.skillName }
+    });
+
+    res.json({
+      message: "Expert assessment submitted successfully",
+      score,
+      correctAnswers: correctCount,
+      totalQuestions: assessment.questions.length,
+      results: evaluatedQuestions,
+      feedback: score >= 80 ? "Excellent! Expert level achieved." :
+                score >= 60 ? "Good job! Keep practicing for mastery." :
+                "Keep learning. Review the explanations and try again."
+    });
+
+  } catch (error) {
+    console.error("❌ Error submitting expert assessment:", error);
+    res.status(500).json({ 
+      message: "Error submitting assessment", 
+      error: error.message 
+    });
   }
 };

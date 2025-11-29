@@ -23,7 +23,8 @@ import {
   Alert,
   Paper,
   IconButton,
-  Tooltip
+  Tooltip,
+  Container
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -41,6 +42,7 @@ import {
   getAdminActivity
 } from '../../api/adminApi';
 import { format } from 'date-fns';
+import AdminLayout from '../../components/AdminLayout';
 
 const AdminManagement = () => {
   const [admins, setAdmins] = useState([]);
@@ -149,15 +151,18 @@ const AdminManagement = () => {
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <CircularProgress />
-      </Box>
+      <AdminLayout>
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+          <CircularProgress />
+        </Box>
+      </AdminLayout>
     );
   }
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Card sx={{ mb: 3 }}>
+    <AdminLayout>
+      <Container maxWidth="xl">
+        <Card sx={{ mb: 3 }}>
         <CardContent>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
             <Typography variant="h5">Admin Management</Typography>
@@ -413,7 +418,8 @@ const AdminManagement = () => {
           <Button onClick={() => setOpenActivityDialog(false)}>Close</Button>
         </DialogActions>
       </Dialog>
-    </Box>
+      </Container>
+    </AdminLayout>
   );
 };
 

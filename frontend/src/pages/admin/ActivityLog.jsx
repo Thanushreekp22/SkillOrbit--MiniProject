@@ -17,10 +17,12 @@ import {
   CircularProgress,
   Alert,
   Paper,
-  Grid
+  Grid,
+  Container
 } from '@mui/material';
 import { getMyActivity } from '../../api/adminApi';
 import { format } from 'date-fns';
+import AdminLayout from '../../components/AdminLayout';
 
 const ActivityLog = () => {
   const [activities, setActivities] = useState([]);
@@ -96,15 +98,18 @@ const ActivityLog = () => {
 
   if (loading && activities.length === 0) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <CircularProgress />
-      </Box>
+      <AdminLayout>
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+          <CircularProgress />
+        </Box>
+      </AdminLayout>
     );
   }
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Card>
+    <AdminLayout>
+      <Container maxWidth="xl">
+        <Card>
         <CardContent>
           <Box sx={{ mb: 3 }}>
             <Typography variant="h5" gutterBottom>
@@ -199,7 +204,8 @@ const ActivityLog = () => {
           />
         </CardContent>
       </Card>
-    </Box>
+      </Container>
+    </AdminLayout>
   );
 };
 

@@ -25,6 +25,14 @@ router.put("/profile", verifyAdminToken, updateAdminProfile);
 router.put("/change-password", verifyAdminToken, changeAdminPassword);
 router.get("/my-activity", verifyAdminToken, getMyActivity);
 
+// Debug endpoint to check token permissions
+router.get("/check-token", verifyAdminToken, (req, res) => {
+  res.json({
+    tokenData: req.user,
+    message: "Token is valid"
+  });
+});
+
 // Super admin only routes
 router.post("/create", verifyAdminToken, checkSuperAdmin, createAdmin);
 router.get("/all", verifyAdminToken, checkSuperAdmin, getAllAdmins);

@@ -12,7 +12,7 @@ const questionBankSchema = new mongoose.Schema({
   },
   options: [{
     type: String,
-    required: true
+    required: false
   }],
   correctAnswer: {
     type: String,
