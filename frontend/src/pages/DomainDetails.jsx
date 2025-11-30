@@ -39,6 +39,8 @@ const DomainDetails = () => {
   const { domainName } = useParams();
   const navigate = useNavigate();
 
+  console.log('DomainDetails - domainName from URL:', domainName);
+
   // Comprehensive domain data
   const domainData = {
     'ai-ml': {
@@ -290,6 +292,8 @@ const DomainDetails = () => {
   };
 
   const domain = domainData[domainName] || domainData['fullstack'];
+  console.log('DomainDetails - Selected domain:', domain.name);
+  console.log('DomainDetails - Available keys:', Object.keys(domainData));
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>

@@ -427,16 +427,26 @@ const Landing = () => {
                 'Mobile Development': '#85C1E9',
               };
               
-              // Map domain names to URL slugs
-              const domainSlugMap = {
-                'Artificial Intelligence & Machine Learning': 'ai-ml',
-                'Cloud Computing & DevOps': 'cloud-devops',
-                'Full Stack Development': 'fullstack',
-                'Cybersecurity': 'cybersecurity',
-                'Data Science & Analytics': 'data-science',
-                'Mobile Development': 'mobile-dev',
+              // Map domain names to URL slugs - use flexible matching
+              const getDomainSlug = (name) => {
+                const lowerName = name.toLowerCase();
+                if (lowerName.includes('artificial intelligence') || lowerName.includes('machine learning') || lowerName.includes('ai') || lowerName.includes('ml')) {
+                  return 'ai-ml';
+                } else if (lowerName.includes('cloud') || lowerName.includes('devops')) {
+                  return 'cloud-devops';
+                } else if (lowerName.includes('full stack') || lowerName.includes('fullstack')) {
+                  return 'fullstack';
+                } else if (lowerName.includes('cybersecurity') || lowerName.includes('security')) {
+                  return 'cybersecurity';
+                } else if (lowerName.includes('data science') || lowerName.includes('data analytics') || lowerName.includes('analytics')) {
+                  return 'data-science';
+                } else if (lowerName.includes('mobile')) {
+                  return 'mobile-dev';
+                }
+                return 'fullstack'; // default fallback
               };
-              const domainSlug = domainSlugMap[domain.name] || 'fullstack';
+              const domainSlug = getDomainSlug(domain.name);
+              console.log('Landing - Domain name:', domain.name, '-> Slug:', domainSlug);
               
               return (
               <Grid item xs={12} md={6} lg={4} key={index}>

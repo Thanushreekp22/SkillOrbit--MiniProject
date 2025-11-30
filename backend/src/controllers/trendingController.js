@@ -245,7 +245,13 @@ Generate a JSON response with exactly this structure:
 }
 
 Requirements:
-- Provide exactly 6 trending domains covering: AI/ML, Cloud/DevOps, Full Stack Development, Cybersecurity, Data Science, Mobile Development
+- Provide exactly 6 trending domains with EXACT names:
+  1. "Artificial Intelligence & Machine Learning"
+  2. "Cloud Computing & DevOps"
+  3. "Full Stack Development"
+  4. "Cybersecurity"
+  5. "Data Science & Analytics"
+  6. "Mobile Development"
 - Provide exactly 8 hot skills with demand scores (70-100) and realistic US market salaries
 - Use real 2025 market data and current technology trends
 - Growth percentages should be realistic (+20% to +50%)
@@ -286,6 +292,34 @@ Requirements:
         console.error('❌ Insufficient trending data from AI');
         return null;
       }
+
+      // Normalize domain names to ensure consistency
+      const domainNameMap = {
+        'ai': 'Artificial Intelligence & Machine Learning',
+        'machine learning': 'Artificial Intelligence & Machine Learning',
+        'artificial intelligence': 'Artificial Intelligence & Machine Learning',
+        'cloud': 'Cloud Computing & DevOps',
+        'devops': 'Cloud Computing & DevOps',
+        'cloud computing': 'Cloud Computing & DevOps',
+        'full stack': 'Full Stack Development',
+        'fullstack': 'Full Stack Development',
+        'cybersecurity': 'Cybersecurity',
+        'security': 'Cybersecurity',
+        'data science': 'Data Science & Analytics',
+        'data analytics': 'Data Science & Analytics',
+        'analytics': 'Data Science & Analytics',
+        'mobile': 'Mobile Development',
+      };
+
+      parsedData.trendingDomains = parsedData.trendingDomains.map(domain => {
+        const lowerName = domain.name.toLowerCase();
+        for (const [key, value] of Object.entries(domainNameMap)) {
+          if (lowerName.includes(key)) {
+            return { ...domain, name: value };
+          }
+        }
+        return domain;
+      });
 
       console.log('✅ AI trending data generated successfully');
       return parsedData;
