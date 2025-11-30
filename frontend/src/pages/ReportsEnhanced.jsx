@@ -87,6 +87,7 @@ const ReportsEnhanced = () => {
   const [emailSending, setEmailSending] = useState(false);
   const [emailSuccess, setEmailSuccess] = useState(false);
   const [emailError, setEmailError] = useState('');
+  const [previewUrl, setPreviewUrl] = useState('');
   const [downloading, setDownloading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(null);
 
@@ -388,13 +389,25 @@ const ReportsEnhanced = () => {
         recipientEmail: emailAddress
       });
       
-      setEmailSuccess(true);
+      // Check if response has preview URL (fallback email)
+      if (response.data.previewUrl) {
+        setPreviewUrl(response.data.previewUrl);
+        setEmailError('');
+        setEmailSuccess(true);
+      } else {
+        setEmailSuccess(true);
+        setPreviewUrl('');
+      }
+      
       setTimeout(() => {
         handleCloseEmailDialog();
       }, 2000);
     } catch (error) {
       console.error('Error sending email:', error);
-      setEmailError(error.response?.data?.message || 'Failed to send email. Please try again.');
+      const errorMsg = error.response?.data?.message || 'Failed to send email. Please try again.';
+      const suggestion = error.response?.data?.suggestion;
+      
+      setEmailError(suggestion ? `${errorMsg}\n\nSuggestion: ${suggestion}` : errorMsg);
     } finally {
       setEmailSending(false);
     }
@@ -1234,11 +1247,24 @@ const ReportsEnhanced = () => {
               }}
             >
               <Typography variant="body1" fontWeight={600}>
-                Report sent successfully!
+                Report generated successfully!
               </Typography>
               <Typography variant="body2">
-                Check your inbox for your comprehensive progress report.
+                {previewUrl 
+                  ? 'Gmail is temporarily unavailable. View your report using the link below.'
+                  : 'Check your inbox for your comprehensive progress report.'}
               </Typography>
+              {previewUrl && (
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() => window.open(previewUrl, '_blank')}
+                  sx={{ mt: 2 }}
+                  startIcon={<Download />}
+                >
+                  View Report
+                </Button>
+              )}
             </Alert>
           ) : (
             <>
