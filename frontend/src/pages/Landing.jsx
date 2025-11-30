@@ -113,8 +113,21 @@ const Landing = () => {
     const fetchTrendingData = async () => {
       try {
         const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+        console.log('Fetching trending data from:', `${apiBaseUrl}/trending`);
         const response = await fetch(`${apiBaseUrl}/trending`);
+        
+        if (!response.ok) {
+          console.error('API response not OK:', response.status, response.statusText);
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const data = await response.json();
+        console.log('Trending data received:', {
+          domains: data.trendingDomains?.length || 0,
+          skills: data.hotSkills?.length || 0,
+          cached: data.cached,
+          aiGenerated: data.aiGenerated
+        });
         
         setTrendingData({
           trendingDomains: data.trendingDomains || trendingDomains,
@@ -150,7 +163,8 @@ const Landing = () => {
 
         return () => intervals.forEach(clearInterval);
       } catch (error) {
-        console.error('Error fetching trending data:', error);
+        console.error('Error fetching trending data:', error.message);
+        console.warn('Using fallback static data');
         // Use fallback data
         setTrendingData({
           trendingDomains,

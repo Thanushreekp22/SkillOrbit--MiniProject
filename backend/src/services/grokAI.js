@@ -649,11 +649,19 @@ export async function generateAIResponse(prompt, options = {}) {
     const model = process.env.GROQ_API_KEY 
       ? 'llama-3.3-70b-versatile'
       : 'grok-beta';
+    
+    const provider = process.env.GROQ_API_KEY ? 'Groq' : 'Grok';
 
     if (!apiKey) {
       console.error('❌ No API key found for AI service');
+      console.error('   Please set GROQ_API_KEY or GROK_API_KEY in environment variables');
       return null;
     }
+
+    console.log(`🔄 Calling ${provider} AI API...`);
+    console.log(`   Model: ${model}`);
+    console.log(`   Timeout: ${options.timeout || 30000}ms`);
+    console.log(`   Max Tokens: ${options.max_tokens || 2000}`);
 
     const response = await axios.post(
       apiUrl,
@@ -678,10 +686,23 @@ export async function generateAIResponse(prompt, options = {}) {
       }
     );
 
-    return response.data.choices[0].message.content;
+    const content = response.data.choices[0].message.content;
+    console.log(`✅ ${provider} AI response received successfully`);
+    console.log(`   Response length: ${content.length} characters`);
+    
+    return content;
 
   } catch (error) {
-    console.error('❌ AI Response Error:', error.response?.data || error.message);
+    console.error('❌ AI Response Error:');
+    if (error.response) {
+      console.error('   Status:', error.response.status);
+      console.error('   Status Text:', error.response.statusText);
+      console.error('   Error Data:', JSON.stringify(error.response.data, null, 2));
+    } else if (error.code === 'ECONNABORTED') {
+      console.error('   Request timed out');
+    } else {
+      console.error('   Error:', error.message);
+    }
     return null;
   }
 }
