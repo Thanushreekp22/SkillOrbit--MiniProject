@@ -45,7 +45,7 @@ The backend is now configured to use **Resend** for email sending in production.
    |--------------|--------|-------|
    | `EMAIL_SERVICE` | `resend` | Switch to Resend |
    | `RESEND_API_KEY` | `re_xxxxx` | Your API key from Step 2 |
-   | `EMAIL_FROM` | `SkillOrbit <skillorbit.web.2025@gmail.com>` | Your sender email |
+   | `EMAIL_FROM` | `SkillOrbit <onboarding@resend.dev>` | Default sender (no verification) |
 
 5. Click **"Save Changes"**
 
@@ -64,17 +64,24 @@ The backend is now configured to use **Resend** for email sending in production.
 
 Your emails will be sent from: `skillorbit.web.2025@gmail.com`
 
-**Important**: You need to verify this email address in Resend dashboard:
-1. Go to Resend Dashboard → **Domains**
-2. Click **"Verify single email address"**
-3. Enter: `skillorbit.web.2025@gmail.com`
-4. Check Gmail inbox for verification link
-5. Click to verify
+**Important**: Since `gmail.com` is not your domain, you have two options:
 
-Your emails will show:
-```
-From: SkillOrbit <skillorbit.web.2025@gmail.com>
-```
+#### Option 1: Use Resend's Default Domain (Easiest - Recommended for Testing)
+Use `onboarding@resend.dev` temporarily:
+1. In Render, set: `EMAIL_FROM = SkillOrbit <onboarding@resend.dev>`
+2. No verification needed - works immediately
+3. Your emails will show: `From: SkillOrbit <onboarding@resend.dev>`
+
+#### Option 2: Verify Your Own Domain (For Production)
+If you own a domain (e.g., `skillorbit.com`):
+1. Go to Resend Dashboard → **Domains**
+2. Click **"Add Domain"**
+3. Enter your domain: `skillorbit.com`
+4. Add DNS records (SPF, DKIM) provided by Resend
+5. Wait for verification (5-30 minutes)
+6. Update Render: `EMAIL_FROM = SkillOrbit <noreply@skillorbit.com>`
+
+**Note**: You cannot verify `@gmail.com` addresses in Resend since you don't own the gmail.com domain.
 
 ### Custom Domain (Optional)
 

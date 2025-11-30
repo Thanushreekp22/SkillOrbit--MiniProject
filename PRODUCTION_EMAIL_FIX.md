@@ -31,8 +31,10 @@ Go to your Render dashboard → **skillorbit-backend** → **Environment**
 ```
 EMAIL_SERVICE = resend
 RESEND_API_KEY = re_xxxxx (paste your key from step 2)
-EMAIL_FROM = SkillOrbit <skillorbit.web.2025@gmail.com>
+EMAIL_FROM = SkillOrbit <onboarding@resend.dev>
 ```
+
+**Note**: Resend provides `onboarding@resend.dev` as default sender (no verification needed). To use your own domain, see full setup guide.
 
 **That's it!** No sender verification needed to start.
 

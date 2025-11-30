@@ -218,7 +218,7 @@ export const sendOTPEmail = async (email, otp, name) => {
       const htmlContent = generateOTPEmailHTML(email, otp, name);
       
       const data = await resendClient.emails.send({
-        from: process.env.EMAIL_FROM || 'SkillOrbit <skillorbit.web.2025@gmail.com>',
+        from: process.env.EMAIL_FROM || 'SkillOrbit <onboarding@resend.dev>',
         to: email,
         subject: 'Verify Your Email - SkillOrbit',
         html: htmlContent
@@ -459,7 +459,7 @@ export const sendWelcomeEmail = async (email, name) => {
       `;
       
       const data = await resendClient.emails.send({
-        from: process.env.EMAIL_FROM || 'SkillOrbit <skillorbit.web.2025@gmail.com>',
+        from: process.env.EMAIL_FROM || 'SkillOrbit <onboarding@resend.dev>',
         to: email,
         subject: 'Welcome to SkillOrbit! 🎉',
         html: htmlContent
