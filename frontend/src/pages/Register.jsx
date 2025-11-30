@@ -90,6 +90,23 @@ const Register = () => {
         setUserId(response.data.userId);
         toast.success('OTP sent to your email! Please check your inbox.');
         setStep(1); // Move to OTP verification step
+      } else {
+        // Auto-verified (email service disabled)
+        if (response.data.token) {
+          // User is already logged in
+          localStorage.setItem('token', response.data.token);
+          localStorage.setItem('user', JSON.stringify(response.data.user));
+          toast.success('Registration successful! Redirecting...');
+          setTimeout(() => {
+            navigate('/app/dashboard');
+          }, 1500);
+        } else {
+          // Just show success and redirect to login
+          toast.success('Registration successful! Please login.');
+          setTimeout(() => {
+            navigate('/login');
+          }, 1500);
+        }
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed');

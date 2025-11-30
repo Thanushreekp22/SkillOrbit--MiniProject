@@ -38,30 +38,67 @@ export const registerUser = async (req, res) => {
     // Hash password
     const hashed = await bcrypt.hash(password, 10);
     
-    // Generate OTP
-    const otp = generateOTP();
-    const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
+    // Check if email service is configured
+    const emailConfigured = !!(process.env.EMAIL_USER && process.env.EMAIL_PASS);
+    
+    let user;
+    
+    if (emailConfigured) {
+      // Generate OTP
+      const otp = generateOTP();
+      const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
 
-    // Create user with unverified email
-    const user = await User.create({ 
-      name, 
-      email, 
-      password: hashed, 
-      role,
-      isEmailVerified: false,
-      emailVerificationOTP: otp,
-      otpExpiresAt
-    });
+      // Create user with unverified email
+      user = await User.create({ 
+        name, 
+        email, 
+        password: hashed, 
+        role,
+        isEmailVerified: false,
+        emailVerificationOTP: otp,
+        otpExpiresAt
+      });
 
-    // Send OTP email
-    await sendOTPEmail(email, otp, name);
+      // Send OTP email
+      await sendOTPEmail(email, otp, name);
 
-    res.status(201).json({ 
-      message: "Registration successful! Please check your email for OTP verification.", 
-      userId: user._id,
-      email: user.email,
-      requiresVerification: true
-    });
+      res.status(201).json({ 
+        message: "Registration successful! Please check your email for OTP verification.", 
+        userId: user._id,
+        email: user.email,
+        requiresVerification: true
+      });
+    } else {
+      // Email service not configured - auto-verify user
+      console.log('⚠️ Email service not configured. Auto-verifying user...');
+      
+      user = await User.create({ 
+        name, 
+        email, 
+        password: hashed, 
+        role,
+        isEmailVerified: true // Auto-verify
+      });
+
+      // Generate token for immediate login
+      const token = jwt.sign(
+        { id: user._id, email: user.email },
+        process.env.JWT_SECRET || "fallback_secret",
+        { expiresIn: process.env.JWT_EXPIRES || "24h" }
+      );
+
+      // Remove password from response
+      const userResponse = user.toObject();
+      delete userResponse.password;
+
+      res.status(201).json({ 
+        message: "Registration successful! You can now login.", 
+        user: userResponse,
+        token,
+        requiresVerification: false,
+        note: "Email verification is disabled (email service not configured)"
+      });
+    }
   } catch (err) {
     console.error("Registration error:", err);
     res.status(500).json({ error: err.message });
@@ -167,15 +204,18 @@ export const resendOTP = async (req, res) => {
   }
 };
 
-// ✅ Login - Check email verification
+// ✅ Login - Check email verification (optional if email service disabled)
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    // Check if email is verified
-    if (!user.isEmailVerified) {
+    // Check if email service is configured
+    const emailConfigured = !!(process.env.EMAIL_USER && process.env.EMAIL_PASS);
+
+    // Only require email verification if email service is configured
+    if (emailConfigured && !user.isEmailVerified) {
       return res.status(403).json({ 
         message: "Please verify your email before logging in",
         requiresVerification: true,
