@@ -495,16 +495,25 @@ export const submitExpertAssessment = async (req, res) => {
       $addToSet: { skillsToImprove: assessment.skillName }
     });
 
-    res.json({
+    const responseData = {
       message: "Expert assessment submitted successfully",
-      score,
-      correctAnswers: correctCount,
-      totalQuestions: assessment.questions.length,
-      results: evaluatedQuestions,
-      feedback: score >= 80 ? "Excellent! Expert level achieved." :
-                score >= 60 ? "Good job! Keep practicing for mastery." :
-                "Keep learning. Review the explanations and try again."
-    });
+      assessment: {
+        _id: assessment._id,
+        skillName: assessment.skillName,
+        difficulty: assessment.difficulty,
+        score,
+        correctAnswers: correctCount,
+        totalQuestions: assessment.questions.length,
+        feedback: score >= 80 ? "Excellent! Expert level achieved." :
+                  score >= 60 ? "Good job! Keep practicing for mastery." :
+                  "Keep learning. Review the explanations and try again.",
+        timeSpent,
+        questions: evaluatedQuestions,
+        isAIGenerated: true
+      }
+    };
+
+    res.json(responseData);
 
   } catch (error) {
     console.error("❌ Error submitting expert assessment:", error);

@@ -43,6 +43,9 @@ const createTransporter = () => {
           user: emailUser,
           pass: emailPass,
         },
+        connectionTimeout: 60000, // 60 seconds
+        greetingTimeout: 60000,
+        socketTimeout: 60000,
         debug: true, // Enable debug output
         logger: true // Enable logger
       });
