@@ -45,7 +45,7 @@ The backend is now configured to use **Resend** for email sending in production.
    |--------------|--------|-------|
    | `EMAIL_SERVICE` | `resend` | Switch to Resend |
    | `RESEND_API_KEY` | `re_xxxxx` | Your API key from Step 2 |
-   | `EMAIL_FROM` | `SkillOrbit <onboarding@resend.dev>` | Default sender |
+   | `EMAIL_FROM` | `SkillOrbit <skillorbit.web.2025@gmail.com>` | Your sender email |
 
 5. Click **"Save Changes"**
 
@@ -60,13 +60,20 @@ The backend is now configured to use **Resend** for email sending in production.
 
 ## 📧 Email Configuration Details
 
-### Default Sender Email
+### Sender Email
 
-Resend provides a default sender: `onboarding@resend.dev`
+Your emails will be sent from: `skillorbit.web.2025@gmail.com`
 
-This works immediately without any verification. Your emails will show:
+**Important**: You need to verify this email address in Resend dashboard:
+1. Go to Resend Dashboard → **Domains**
+2. Click **"Verify single email address"**
+3. Enter: `skillorbit.web.2025@gmail.com`
+4. Check Gmail inbox for verification link
+5. Click to verify
+
+Your emails will show:
 ```
-From: SkillOrbit <onboarding@resend.dev>
+From: SkillOrbit <skillorbit.web.2025@gmail.com>
 ```
 
 ### Custom Domain (Optional)
@@ -181,7 +188,7 @@ Solution:
 **Emails going to spam**
 ```
 Solution:
-1. Ask users to add onboarding@resend.dev to contacts
+1. Ask users to add skillorbit.web.2025@gmail.com to contacts
 2. For production, use custom domain with SPF/DKIM
 3. Avoid spam trigger words in email content
 4. Keep email volume consistent

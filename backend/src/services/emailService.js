@@ -218,17 +218,17 @@ export const sendOTPEmail = async (email, otp, name) => {
       const htmlContent = generateOTPEmailHTML(email, otp, name);
       
       const data = await resendClient.emails.send({
-        from: process.env.EMAIL_FROM || 'SkillOrbit <onboarding@resend.dev>',
+        from: process.env.EMAIL_FROM || 'SkillOrbit <skillorbit.web.2025@gmail.com>',
         to: email,
         subject: 'Verify Your Email - SkillOrbit',
         html: htmlContent
       });
       
-      console.log('✅ Email sent via Resend:', data.id);
+      console.log('✅ Email sent via Resend. Response:', JSON.stringify(data, null, 2));
       return { 
         success: true, 
         message: 'OTP sent successfully via Resend',
-        messageId: data.id 
+        messageId: data?.id || data?.data?.id || 'sent'
       };
     }
     
@@ -459,7 +459,7 @@ export const sendWelcomeEmail = async (email, name) => {
       `;
       
       const data = await resendClient.emails.send({
-        from: process.env.EMAIL_FROM || 'SkillOrbit <onboarding@resend.dev>',
+        from: process.env.EMAIL_FROM || 'SkillOrbit <skillorbit.web.2025@gmail.com>',
         to: email,
         subject: 'Welcome to SkillOrbit! 🎉',
         html: htmlContent

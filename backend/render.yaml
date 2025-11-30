@@ -29,7 +29,7 @@ services:
       - key: RESEND_API_KEY
         sync: false
       - key: EMAIL_FROM
-        value: SkillOrbit <onboarding@resend.dev>
+        value: SkillOrbit <skillorbit.web.2025@gmail.com>
       # Optional: Gmail SMTP fallback (if using EMAIL_SERVICE=smtp)
       - key: EMAIL_HOST
         value: smtp.gmail.com
