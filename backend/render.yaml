@@ -22,23 +22,22 @@ services:
         sync: false
       - key: FRONTEND_URL
         value: https://skill-orbit-mini-project.vercel.app
-      # Email Configuration - Choose service: 'brevo' (recommended) or 'smtp'
+      # Email Configuration - Resend (recommended for cloud)
       - key: EMAIL_SERVICE
-        value: brevo
-      # Brevo/Sendinblue Configuration (300 free emails/day, cloud-friendly)
-      - key: BREVO_API_KEY
+        value: resend
+      # Resend Configuration (3,000 free emails/month, cloud-friendly)
+      - key: RESEND_API_KEY
         sync: false
-      - key: EMAIL_USER
-        value: skillorbit.web.2025@gmail.com
       - key: EMAIL_FROM
-        value: SkillOrbit <skillorbit.web.2025@gmail.com>
-      # Optional: Custom SMTP (if using EMAIL_SERVICE=smtp)
+        value: SkillOrbit <onboarding@resend.dev>
+      # Optional: Gmail SMTP fallback (if using EMAIL_SERVICE=smtp)
       - key: EMAIL_HOST
-        value: smtp-relay.brevo.com
+        value: smtp.gmail.com
       - key: EMAIL_PORT
         value: 587
       - key: EMAIL_SECURE
         value: false
-      # Legacy SendGrid support (optional)
-      - key: SENDGRID_API_KEY
+      - key: EMAIL_USER
+        value: skillorbit.web.2025@gmail.com
+      - key: EMAIL_PASS
         sync: false

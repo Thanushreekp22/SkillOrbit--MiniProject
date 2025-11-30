@@ -4,48 +4,39 @@
 Gmail SMTP is blocked by Render and other cloud hosting providers, causing email sending to fail in production.
 
 ## Solution
-Use **Brevo (Sendinblue)** - a free, cloud-friendly email service.
+Use **Resend** - the easiest, most developer-friendly free email service.
 
 ---
 
-## 🚀 Quick Setup (5 Minutes)
+## 🚀 Quick Setup (2 Minutes) ⚡
 
-### 1. Create Brevo Account
-- Visit: https://www.brevo.com
-- Sign up (free, no credit card)
-- Verify your email
+### 1. Create Resend Account
+- Visit: https://resend.com
+- Click **"Start Building"** or **"Sign Up"**
+- Sign up with GitHub or email (free, no credit card)
 
-### 2. Get SMTP Key
-- Dashboard → **SMTP & API** → **SMTP** tab
-- Click **"Generate new SMTP key"**
-- Copy the key (starts with `xkeysib-`)
+### 2. Get API Key (Instant)
+- After signup, you'll see the dashboard
+- Click **"API Keys"** in the left sidebar
+- Click **"Create API Key"**
+- Give it a name (e.g., "SkillOrbit Production")
+- Copy the key (starts with `re_`)
 
-### 3. Verify Sender Email
-- Dashboard → **Senders** → **Add a sender**
-- Enter: `skillorbit.web.2025@gmail.com`
-- Check inbox for verification link
-- Click verify
-
-### 4. Update Render Environment Variables
+### 3. Update Render Environment Variables
 
 Go to your Render dashboard → **skillorbit-backend** → **Environment**
 
 **Add these variables:**
 
 ```
-EMAIL_SERVICE = brevo
-BREVO_API_KEY = xkeysib-xxxxx (paste your key from step 2)
+EMAIL_SERVICE = resend
+RESEND_API_KEY = re_xxxxx (paste your key from step 2)
+EMAIL_FROM = SkillOrbit <onboarding@resend.dev>
 ```
 
-**Keep these existing:**
-```
-EMAIL_USER = skillorbit.web.2025@gmail.com
-EMAIL_FROM = SkillOrbit <skillorbit.web.2025@gmail.com>
-EMAIL_HOST = smtp-relay.brevo.com
-EMAIL_PORT = 587
-```
+**That's it!** No sender verification needed to start.
 
-### 5. Save & Deploy
+### 4. Save & Deploy
 - Click "Save Changes" in Render
 - Wait for automatic redeployment (~2-3 minutes)
 - Test user registration on your live site!
@@ -56,7 +47,7 @@ EMAIL_PORT = 587
 
 1. **Production Test**: Register a new user at https://skill-orbit-mini-project.vercel.app
 2. **Check Email**: Look for OTP in inbox (check spam folder)
-3. **Verify in Brevo**: Dashboard → Logs → Email Logs
+3. **Verify in Resend**: Dashboard → Emails → View sent emails
 
 ---
 
@@ -68,39 +59,53 @@ Your local setup (Gmail) still works! The `.env` file is configured to use Gmail
 EMAIL_SERVICE=smtp  # Uses Gmail locally
 ```
 
-Only Render uses Brevo because `EMAIL_SERVICE=brevo` in production.
+Only Render uses Resend because `EMAIL_SERVICE=resend` in production.
 
 ---
 
-## 📊 Brevo Free Tier
+## 📊 Resend Free Tier
 
-- **300 emails/day** (more than enough for OTPs and welcome emails)
-- **Unlimited contacts**
+- **3,000 emails/month** (100 emails/day)
+- **No credit card required**
 - **Email tracking & analytics**
-- **Professional deliverability**
+- **Best deliverability**
+- **No sender verification needed initially**
+- **Modern JSON API (not SMTP)**
 
 ---
 
 ## 🆘 Troubleshooting
 
 **Email not received?**
-1. Check Brevo dashboard → Logs
+1. Check Resend dashboard → Emails
 2. Check spam folder
-3. Verify sender email is approved in Brevo
+3. Verify API key is correct
 4. Check Render logs for errors
 
-**"Invalid credentials" error?**
-- Make sure you copied the **SMTP key**, not REST API key
-- Check BREVO_API_KEY is correct in Render environment variables
+**"Invalid API key" error?**
+- Make sure you copied the full API key (starts with `re_`)
+- Check RESEND_API_KEY is correct in Render environment variables
+- Try creating a new API key
 
-**"Sender not authorized"?**
-- Verify your email in Brevo dashboard → Senders
+**Need custom domain?**
+- Resend lets you use `onboarding@resend.dev` by default
+- For custom domain (e.g., `noreply@skillorbit.com`), verify domain in Resend dashboard
 
 ---
 
-## 📚 Full Documentation
+## 🎯 Why Resend is Better
 
-See `BREVO_EMAIL_SETUP.md` for detailed setup instructions and troubleshooting.
+| Feature | Resend | Brevo | Gmail |
+|---------|--------|-------|-------|
+| Free emails/month | **3,000** | 300 | Unlimited* |
+| Works on cloud | ✅ Yes | ✅ Yes | ❌ Blocked |
+| Setup time | **2 min** | 5 min | N/A |
+| Credit card needed | ❌ No | ❌ No | ❌ No |
+| Sender verification | ❌ Not initially | ✅ Required | ✅ Required |
+| Developer-friendly | ✅ Best | Medium | N/A |
+| API type | Modern JSON | SMTP | SMTP |
+
+**Gmail blocked on Render/Heroku/Railway*
 
 ---
 
