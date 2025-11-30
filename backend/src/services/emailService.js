@@ -6,56 +6,98 @@ dotenv.config();
 // Initialize email configuration check
 const EMAIL_USER = process.env.EMAIL_USER;
 const EMAIL_PASS = process.env.EMAIL_PASS || process.env.EMAIL_PASSWORD;
+const BREVO_API_KEY = process.env.BREVO_API_KEY;
+const EMAIL_SERVICE = process.env.EMAIL_SERVICE || 'smtp'; // smtp, brevo
 
 console.log('\n📧 Email Service Configuration:');
-console.log('   EMAIL_USER:', EMAIL_USER ? '✅ Found' : '❌ Not Found');
-console.log('   EMAIL_PASS:', EMAIL_PASS ? '✅ Found' : '❌ Not Found');
-console.log('   EMAIL_HOST:', process.env.EMAIL_HOST || 'smtp.gmail.com');
-console.log('   EMAIL_PORT:', process.env.EMAIL_PORT || '587');
-if (EMAIL_USER && EMAIL_PASS) {
-  console.log('   Status: ✅ Email service ACTIVE - Real emails will be sent\n');
+console.log('   EMAIL_SERVICE:', EMAIL_SERVICE);
+if (EMAIL_SERVICE === 'brevo') {
+  console.log('   BREVO_API_KEY:', BREVO_API_KEY ? '✅ Found' : '❌ Not Found');
+  console.log('   Status:', BREVO_API_KEY ? '✅ Brevo Email Service ACTIVE' : '⚠️ Brevo API Key Missing');
 } else {
-  console.log('   Status: ⚠️  Email service DISABLED - OTP will be logged to console\n');
+  console.log('   EMAIL_USER:', EMAIL_USER ? '✅ Found' : '❌ Not Found');
+  console.log('   EMAIL_PASS:', EMAIL_PASS ? '✅ Found' : '❌ Not Found');
+  console.log('   EMAIL_HOST:', process.env.EMAIL_HOST || 'smtp-relay.brevo.com');
+  console.log('   EMAIL_PORT:', process.env.EMAIL_PORT || '587');
+  console.log('   Status:', (EMAIL_USER && EMAIL_PASS) ? '✅ SMTP Email Service ACTIVE' : '⚠️ Email Disabled - Console Mode');
 }
+console.log('');
 
 // Generate 6-digit OTP
 export const generateOTP = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
-// Create email transporter
+// Create email transporter based on configured service
 const createTransporter = () => {
+  const emailService = process.env.EMAIL_SERVICE || 'smtp';
+  
+  // Try Brevo (Sendinblue) - Best for cloud deployment (free 300 emails/day)
+  if (emailService === 'brevo' && process.env.BREVO_API_KEY) {
+    console.log('🔧 Using Brevo (Sendinblue) email service');
+    try {
+      const transporter = createTransport({
+        host: 'smtp-relay.brevo.com',
+        port: 587,
+        secure: false,
+        auth: {
+          user: process.env.EMAIL_USER || 'your-email@example.com',
+          pass: process.env.BREVO_API_KEY
+        },
+        connectionTimeout: 15000,
+        greetingTimeout: 15000,
+        socketTimeout: 15000
+      });
+      console.log('✅ Brevo transporter created successfully');
+      return transporter;
+    } catch (error) {
+      console.error('❌ Brevo error:', error.message);
+      return null;
+    }
+  }
+  
+  // Fall back to SMTP (works with multiple providers)
   const emailUser = process.env.EMAIL_USER;
   const emailPass = process.env.EMAIL_PASS || process.env.EMAIL_PASSWORD;
-  const emailHost = process.env.EMAIL_HOST || 'smtp.gmail.com';
+  const emailHost = process.env.EMAIL_HOST || 'smtp-relay.brevo.com';
   const emailPort = parseInt(process.env.EMAIL_PORT || '587');
   const emailSecure = process.env.EMAIL_SECURE === 'true';
   
   if (emailUser && emailPass) {
-    console.log('🔧 Creating email transporter for:', emailUser);
+    console.log('🔧 Creating SMTP transporter for:', emailUser);
+    console.log('   Host:', emailHost);
+    console.log('   Port:', emailPort);
     
     try {
-      const transporter = createTransport({
-        service: 'gmail', // Use Gmail service for better reliability
+      const config = {
+        host: emailHost,
+        port: emailPort,
+        secure: emailSecure,
         auth: {
           user: emailUser,
           pass: emailPass,
         },
-        connectionTimeout: 10000, // 10 seconds
-        greetingTimeout: 10000,
-        socketTimeout: 10000,
-        debug: true, // Enable debug output
-        logger: true // Enable logger
-      });
+        connectionTimeout: 15000,
+        greetingTimeout: 15000,
+        socketTimeout: 15000,
+        tls: {
+          rejectUnauthorized: false // For cloud deployments
+        }
+      };
       
-      console.log('✅ Email transporter created successfully');
+      // Don't use 'service' option for non-Gmail providers
+      if (emailHost.includes('gmail')) {
+        config.service = 'gmail';
+      }
+      
+      const transporter = createTransport(config);
+      console.log('✅ SMTP transporter created successfully');
       return transporter;
     } catch (error) {
-      console.error('❌ Error creating email transporter:', error.message);
+      console.error('❌ Error creating SMTP transporter:', error.message);
       return null;
     }
   } else {
-    // Development configuration (console logging)
     console.log('⚠️  Email service not configured. OTP will be logged to console.');
     console.log('   Missing:', !emailUser ? 'EMAIL_USER' : 'EMAIL_PASS');
     return null;
