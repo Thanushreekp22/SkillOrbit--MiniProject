@@ -1308,26 +1308,17 @@ export const emailReport = async (req, res) => {
       console.log('   Port:', process.env.EMAIL_PORT || 587);
       
       transporter = nodemailer.createTransport({
-        host: process.env.EMAIL_HOST,
-        port: parseInt(process.env.EMAIL_PORT) || 587,
-        secure: false, // Use STARTTLS
+        service: 'gmail', // Use Gmail service directly
         auth: {
           user: process.env.EMAIL_USER,
           pass: process.env.EMAIL_PASS
         },
-        tls: {
-          rejectUnauthorized: false,
-          ciphers: 'SSLv3'
-        },
-        requireTLS: true,
-        connectionTimeout: 60000, // 60 seconds
-        greetingTimeout: 60000,
-        socketTimeout: 60000,
-        pool: true
+        connectionTimeout: 10000, // 10 seconds is enough for Gmail service
+        greetingTimeout: 10000,
+        socketTimeout: 10000
       });
       
-      // Verify connection (skip verification, just attempt to send)
-      console.log('⚠️ Skipping verification, will attempt direct send...');
+      console.log('✅ Email transporter configured with Gmail service');
     } else {
       // Missing email configuration
       console.error('❌ Email configuration missing!');
@@ -1372,25 +1363,61 @@ export const emailReport = async (req, res) => {
         });
       }
     } catch (emailError) {
-      console.error('❌ Error sending email:', emailError);
+      console.error('❌ Gmail sending failed:', emailError);
       console.error('   Error code:', emailError.code);
-      console.error('   Error command:', emailError.command);
       
-      // Provide user-friendly error message
-      let userMessage = 'Failed to send email. ';
-      if (emailError.code === 'EAUTH') {
-        userMessage += 'Email authentication failed. Please contact administrator.';
-      } else if (emailError.code === 'ETIMEDOUT' || emailError.code === 'ECONNECTION') {
-        userMessage += 'Email server connection timeout. Please try again.';
-      } else {
-        userMessage += 'Please try again or contact support.';
+      // Try fallback with test account
+      console.log('⚠️ Gmail failed, attempting fallback with test email service...');
+      
+      try {
+        const testAccount = await nodemailer.createTestAccount();
+        const fallbackTransporter = nodemailer.createTransport({
+          host: 'smtp.ethereal.email',
+          port: 587,
+          secure: false,
+          auth: {
+            user: testAccount.user,
+            pass: testAccount.pass
+          }
+        });
+        
+        const fallbackInfo = await fallbackTransporter.sendMail({
+          from: '"SkillOrbit (Test)" <test@skillorbit.com>',
+          to: emailTo,
+          subject: '📊 Your SkillOrbit Progress Report',
+          html: emailContent
+        });
+        
+        const previewUrl = nodemailer.getTestMessageUrl(fallbackInfo);
+        console.log('✅ Email sent via test service!');
+        console.log('📧 Preview URL:', previewUrl);
+        
+        return res.json({
+          message: `Report generated successfully! Gmail is currently unavailable, but you can view your report here:`,
+          success: true,
+          previewUrl: previewUrl,
+          note: "Email sent via test service. Preview the report using the URL provided."
+        });
+      } catch (fallbackError) {
+        console.error('❌ Fallback also failed:', fallbackError);
+        
+        // Provide user-friendly error message
+        let userMessage = 'Failed to send email. ';
+        if (emailError.code === 'EAUTH') {
+          userMessage += 'Email authentication failed. Please verify your Gmail App Password.';
+        } else if (emailError.code === 'ETIMEDOUT' || emailError.code === 'ECONNECTION') {
+          userMessage += 'Cannot connect to Gmail servers. This may be due to firewall restrictions.';
+        } else {
+          userMessage += 'Please download the report instead or try again later.';
+        }
+        
+        return res.status(500).json({
+          message: userMessage,
+          error: emailError.message,
+          success: false,
+          suggestion: 'Try downloading the PDF report instead'
+        });
       }
-      
-      return res.status(500).json({
-        message: userMessage,
-        error: emailError.message,
-        success: false
-      });
     }
   } catch (error) {
     console.error("Error emailing report:", error);

@@ -36,16 +36,14 @@ const createTransporter = () => {
     
     try {
       const transporter = createTransport({
-        host: emailHost,
-        port: emailPort,
-        secure: emailSecure,
+        service: 'gmail', // Use Gmail service for better reliability
         auth: {
           user: emailUser,
           pass: emailPass,
         },
-        connectionTimeout: 60000, // 60 seconds
-        greetingTimeout: 60000,
-        socketTimeout: 60000,
+        connectionTimeout: 10000, // 10 seconds
+        greetingTimeout: 10000,
+        socketTimeout: 10000,
         debug: true, // Enable debug output
         logger: true // Enable logger
       });
