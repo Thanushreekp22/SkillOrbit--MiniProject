@@ -15,6 +15,15 @@ import {
   Alert,
   CircularProgress,
   Paper,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  FormControl,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
+  FormLabel,
 } from '@mui/material';
 import {
   Edit,
@@ -31,17 +40,28 @@ import {
   GitHub,
   Language,
   AccountCircle,
+  DeleteForever,
+  Warning,
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
+import { toast } from 'react-toastify';
 import PageHeader from '../components/PageHeader';
 
 const Profile = () => {
-  const { user, updateUser } = useAuth();
+  const { user, updateUser, logout } = useAuth();
+  const navigate = useNavigate();
   const [editMode, setEditMode] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteReason, setDeleteReason] = useState('');
+  const [otherReason, setOtherReason] = useState('');
+  const [deleting, setDeleting] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [profilePhoto, setProfilePhoto] = useState(null);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -58,6 +78,16 @@ const Profile = () => {
     skills: [],
     interests: [],
   });
+
+  const deleteReasons = [
+    'Not using the platform anymore',
+    'Found a better alternative',
+    'Privacy concerns',
+    'Too many notifications',
+    'Difficulty using the platform',
+    'Not getting value from the service',
+    'Other'
+  ];
 
   useEffect(() => {
     if (user) {
@@ -76,14 +106,87 @@ const Profile = () => {
         skills: user.skills || [],
         interests: user.interests || [],
       });
+      setProfilePhoto(user.profilePhoto || null);
     }
   }, [user]);
+
+  const handlePhotoUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size should be less than 5MB');
+      return;
+    }
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please upload an image file');
+      return;
+    }
+
+    setUploadingPhoto(true);
+
+    try {
+      const formData = new FormData();
+      formData.append('profilePhoto', file);
+
+      const response = await api.post(`/users/${user._id}/profile-photo`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      setProfilePhoto(response.data.profilePhoto);
+      updateUser({ ...user, profilePhoto: response.data.profilePhoto });
+      toast.success('Profile photo updated successfully!');
+    } catch (err) {
+      console.error('Photo upload error:', err);
+      toast.error(err.response?.data?.message || 'Failed to upload photo');
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!deleteReason) {
+      toast.error('Please select a reason for deleting your account');
+      return;
+    }
+
+    if (deleteReason === 'Other' && !otherReason.trim()) {
+      toast.error('Please provide a reason for deleting your account');
+      return;
+    }
+
+    setDeleting(true);
+    try {
+      await api.delete(`/users/${user._id}/account`, {
+        data: {
+          reason: deleteReason,
+          otherReason: deleteReason === 'Other' ? otherReason : null
+        }
+      });
+
+      toast.success('Account deleted successfully. We\'re sorry to see you go!');
+      
+      // Logout and redirect after a short delay
+      setTimeout(() => {
+        logout();
+        navigate('/');
+      }, 2000);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to delete account');
+      setDeleting(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -165,20 +268,31 @@ const Profile = () => {
             <CardContent sx={{ textAlign: 'center', py: 4 }}>
               <Box sx={{ position: 'relative', display: 'inline-block', mb: 2 }}>
                 <Avatar
+                  src={profilePhoto || undefined}
                   sx={{
                     width: 120,
                     height: 120,
                     fontSize: '3rem',
-                    background: '#6366F1',
+                    background: profilePhoto ? 'transparent' : '#6366F1',
                     fontWeight: 700,
                     border: '4px solid white',
                     boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)',
                   }}
                 >
-                  {formData.name?.charAt(0).toUpperCase()}
+                  {!profilePhoto && formData.name?.charAt(0).toUpperCase()}
                 </Avatar>
-                {editMode && (
+                <input
+                  accept="image/*"
+                  type="file"
+                  id="profile-photo-upload"
+                  style={{ display: 'none' }}
+                  onChange={handlePhotoUpload}
+                  disabled={uploadingPhoto}
+                />
+                <label htmlFor="profile-photo-upload">
                   <IconButton
+                    component="span"
+                    disabled={uploadingPhoto}
                     sx={{
                       position: 'absolute',
                       bottom: 0,
@@ -186,12 +300,13 @@ const Profile = () => {
                       bgcolor: '#6366F1',
                       color: 'white',
                       '&:hover': { bgcolor: '#4F46E5' },
+                      '&:disabled': { bgcolor: '#9CA3AF' },
                     }}
                     size="small"
                   >
-                    <PhotoCamera fontSize="small" />
+                    {uploadingPhoto ? <CircularProgress size={20} color="inherit" /> : <PhotoCamera fontSize="small" />}
                   </IconButton>
-                )}
+                </label>
               </Box>
 
               <Typography variant="h5" sx={{ fontWeight: 600, mb: 0.5 }}>
@@ -550,8 +665,149 @@ const Profile = () => {
               </form>
             </CardContent>
           </Card>
+
+          {/* Danger Zone - Delete Account */}
+          <Card
+            sx={{
+              background: 'linear-gradient(135deg, #fff5f5 0%, #fff 100%)',
+              borderRadius: '16px',
+              border: '2px solid',
+              borderColor: 'error.light',
+              boxShadow: '0 4px 20px rgba(244, 67, 54, 0.1)',
+            }}
+          >
+            <CardContent sx={{ p: 4 }}>
+              <Box display="flex" alignItems="center" gap={2} mb={2}>
+                <Warning color="error" sx={{ fontSize: 32 }} />
+                <Typography variant="h5" fontWeight={600} color="error.main">
+                  Danger Zone
+                </Typography>
+              </Box>
+              
+              <Divider sx={{ my: 2, borderColor: 'error.light' }} />
+              
+              <Typography variant="body1" color="text.secondary" mb={3}>
+                Once you delete your account, there is no going back. This will permanently delete your profile, assessments, learning paths, and all associated data.
+              </Typography>
+              
+              <Button
+                variant="outlined"
+                color="error"
+                size="large"
+                startIcon={<DeleteForever />}
+                onClick={() => setDeleteDialogOpen(true)}
+                sx={{
+                  borderRadius: '8px',
+                  textTransform: 'none',
+                  borderWidth: 2,
+                  '&:hover': {
+                    borderWidth: 2,
+                    backgroundColor: 'error.main',
+                    color: 'white',
+                  },
+                }}
+              >
+                Delete My Account
+              </Button>
+            </CardContent>
+          </Card>
         </Grid>
       </Grid>
+
+      {/* Delete Account Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => !deleting && setDeleteDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: '16px',
+            p: 1,
+          }
+        }}
+      >
+        <DialogTitle>
+          <Box display="flex" alignItems="center" gap={2}>
+            <Warning color="error" sx={{ fontSize: 40 }} />
+            <Box>
+              <Typography variant="h5" fontWeight={600}>
+                Delete Account?
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                This action cannot be undone
+              </Typography>
+            </Box>
+          </Box>
+        </DialogTitle>
+        
+        <DialogContent>
+          <Alert severity="error" sx={{ mb: 3 }}>
+            <strong>Warning:</strong> All your data including assessments, learning paths, skills, and progress will be permanently deleted.
+          </Alert>
+
+          <FormControl component="fieldset" fullWidth>
+            <FormLabel component="legend" sx={{ mb: 2, fontWeight: 600, color: 'text.primary' }}>
+              Please tell us why you're leaving:
+            </FormLabel>
+            <RadioGroup
+              value={deleteReason}
+              onChange={(e) => setDeleteReason(e.target.value)}
+            >
+              {deleteReasons.map((reason) => (
+                <FormControlLabel
+                  key={reason}
+                  value={reason}
+                  control={<Radio />}
+                  label={reason}
+                  sx={{ mb: 1 }}
+                />
+              ))}
+            </RadioGroup>
+          </FormControl>
+
+          {deleteReason === 'Other' && (
+            <TextField
+              fullWidth
+              multiline
+              rows={3}
+              label="Please specify your reason"
+              value={otherReason}
+              onChange={(e) => setOtherReason(e.target.value)}
+              placeholder="Tell us why you're deleting your account..."
+              sx={{ mt: 2 }}
+              required
+            />
+          )}
+        </DialogContent>
+
+        <DialogActions sx={{ p: 3, pt: 0 }}>
+          <Button
+            onClick={() => {
+              setDeleteDialogOpen(false);
+              setDeleteReason('');
+              setOtherReason('');
+            }}
+            disabled={deleting}
+            sx={{ textTransform: 'none' }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleDeleteAccount}
+            color="error"
+            variant="contained"
+            disabled={deleting || !deleteReason}
+            startIcon={deleting ? <CircularProgress size={20} /> : <DeleteForever />}
+            sx={{
+              textTransform: 'none',
+              borderRadius: '8px',
+            }}
+          >
+            {deleting ? 'Deleting...' : 'Yes, Delete My Account'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };

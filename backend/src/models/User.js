@@ -59,6 +59,22 @@ const userSchema = new mongoose.Schema({
   portfolio: {
     type: String,
     trim: true
+  },
+  // Profile Photo
+  profilePhoto: {
+    type: String, // Base64 encoded image or URL
+    default: ''
+  },
+  // Email Verification
+  isEmailVerified: {
+    type: Boolean,
+    default: false
+  },
+  emailVerificationOTP: {
+    type: String
+  },
+  otpExpiresAt: {
+    type: Date
   }
 }, {
   timestamps: true

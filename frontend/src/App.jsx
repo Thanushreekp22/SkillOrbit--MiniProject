@@ -26,13 +26,6 @@ import Progress from './pages/ProgressEnhanced';
 import Reports from './pages/ReportsEnhanced';
 import Profile from './pages/Profile';
 
-// Admin Pages
-import AdminLogin from './pages/AdminLogin';
-import AdminDashboard from './pages/admin/AdminDashboard';
-import QuestionManagement from './pages/admin/QuestionManagement';
-import ActivityLog from './pages/admin/ActivityLog';
-import AdminManagement from './pages/admin/AdminManagement';
-
 function App() {
   return (
     <ThemeProvider>
@@ -45,13 +38,6 @@ function App() {
               <Route path="/domain/:domainName" element={<DomainDetails />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
-              
-              {/* Admin Routes */}
-              <Route path="/admin/login" element={<AdminLogin />} />
-              <Route path="/admin/dashboard" element={<AdminDashboard />} />
-              <Route path="/admin/questions" element={<QuestionManagement />} />
-              <Route path="/admin/activity" element={<ActivityLog />} />
-              <Route path="/admin/management" element={<AdminManagement />} />
               
               {/* Protected Routes */}
               <Route path="/app" element={<ProtectedRoute><Navbar /></ProtectedRoute>}>

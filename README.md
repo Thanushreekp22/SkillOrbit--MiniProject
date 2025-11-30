@@ -1,45 +1,58 @@
-# SkillOrbit - Comprehensive Project Documentation
+# SkillOrbit 🎯
 
-## 📋 Table of Contents
-1. [Abstract](#1-abstract)
-2. [Introduction](#2-introduction)
-3. [Literature Survey](#3-literature-survey)
-4. [Summary](#4-summary)
-5. [Problem Statement](#5-problem-statement)
-6. [Objective](#6-objective)
-7. [Proposed Solution](#7-proposed-solution)
-8. [Software Requirement Specification](#8-software-requirement-specification)
-9. [Project Overview](#9-project-overview)
-10. [Architectural Design](#10-architectural-design)
-11. [Detailed Design](#11-detailed-design)
-12. [Data Flow Diagram](#12-data-flow-diagram)
-13. [Use Case & Sequence Diagrams](#13-use-case--sequence-diagrams)
-14. [System Design](#14-system-design)
-15. [Implementation](#15-implementation)
-16. [Results](#16-results)
-17. [Application Features](#17-application-features)
-18. [Conclusion](#18-conclusion)
-19. [Future Enhancements](#19-future-enhancements)
-20. [References](#20-references)
-21. [Demonstration](#21-demonstration)
+An intelligent AI-powered skill assessment and learning platform designed to help professionals and students identify skill gaps, access personalized learning resources, and track their professional development.
 
----
+## 🌟 Features
 
-## 1. Abstract
+- **User Authentication**: Secure registration and login with email verification via OTP
+- **Skill Assessment**: 600+ curated technical questions across 10 tech domains
+- **AI-Powered Learning Paths**: Personalized learning recommendations using LLaMA 3.3-70B
+- **Skill Gap Analysis**: Compare your skills against target job roles
+- **Progress Tracking**: Visual analytics and progress monitoring
+- **Report Generation**: Comprehensive PDF reports with skill insights
+- **Admin Dashboard**: Manage questions, users, and view activity logs
+- **Delete Account**: Users can delete their account with feedback
 
-SkillOrbit is an intelligent, AI-powered skill assessment and learning platform designed to bridge the gap between current technical competencies and industry requirements. The platform addresses the critical challenge faced by professionals and students in identifying skill deficiencies, accessing personalized learning resources, and tracking their professional development in the rapidly evolving technology landscape.
+## 🚀 Tech Stack
 
-The system leverages modern web technologies including React 18.2.0, Node.js with Express 5.1.0, and MongoDB 8.0.0, integrated with advanced artificial intelligence through Groq Cloud's LLaMA 3.3-70B model. SkillOrbit provides comprehensive features including user authentication, skill management, adaptive assessments with 600+ curated technical questions across 10 domains, AI-generated personalized learning paths, skill gap analysis for target job roles, progress tracking with visual analytics, and automated report generation.
+### Frontend
+- React 18.2.0
+- Material-UI 5.14.20
+- Vite 5.0.8
+- React Router v6
+- Recharts for data visualization
+- jsPDF for client-side PDF generation
 
-The platform implements a three-tier MVC architecture ensuring scalability, maintainability, and security through JWT-based authentication, bcrypt password hashing, and CORS-enabled RESTful APIs. Deployed on cloud infrastructure (Vercel for frontend, Render for backend, MongoDB Atlas for database), SkillOrbit demonstrates excellent performance metrics with sub-2-second load times and 92/100 Lighthouse scores.
+### Backend
+- Node.js with Express 5.1.0
+- MongoDB 8.0.0 with Mongoose ODM
+- JWT Authentication
+- Bcrypt password hashing
+- Nodemailer for email services
+- PDFKit for server-side PDF generation
+- Groq Cloud API (LLaMA 3.3-70B) for AI features
 
-Key outcomes include successful integration of AI-driven recommendations, real-time skill analytics, proficiency-based resource curation, and comprehensive reporting capabilities. The system serves as both an educational tool for individuals and a potential talent assessment platform for organizations, contributing to the democratization of technical skill development and career advancement.
+### Deployment
+- Frontend: Vercel
+- Backend: Render
+- Database: MongoDB Atlas
 
-**Keywords**: Skill Assessment, AI Learning Paths, Gap Analysis, MERN Stack, Personalized Education, Career Development, LLaMA 3.3-70B, Web Application
+## 📋 Prerequisites
 
----
+- Node.js (v18 or higher)
+- MongoDB Atlas account
+- Gmail account for email services (with app password)
+- Groq Cloud API key
 
-## 2. Introduction
+## 🛠️ Installation
+
+### 1. Clone the repository
+```bash
+git clone https://github.com/Thanushreekp22/SkillOrbit--MiniProject.git
+cd SkillOrbit-NodeJs
+```
+
+### 2. Backend Setup
 
 ### 2.1 Background
 
@@ -85,800 +98,181 @@ SkillOrbit is designed for multiple user segments:
 
 ### 2.4 Document Organization
 
-This comprehensive documentation is structured to provide complete information for academic evaluation, technical understanding, and practical implementation:
+## Environment Setup
 
-- **Sections 1-4**: Academic framework (Abstract, Introduction, Literature Survey, Summary)
-- **Sections 5-8**: Problem definition and solution approach
-- **Sections 9-11**: Technical architecture and design
-- **Sections 12-14**: Detailed system design and data flows
-- **Sections 15-17**: Implementation and results
-- **Sections 18-21**: Conclusions, future work, and demonstration
+### Backend Setup
+```bash
+cd backend
+npm install
+```
+
+Create a `.env` file in the `backend` directory:
+```env
+PORT=5000
+MONGODB_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret_key
+JWT_EXPIRES=24h
+NODE_ENV=development
+FRONTEND_URL=http://localhost:5173
+
+# Groq AI API
+GROQ_API_KEY=your_groq_api_key
+
+# Email Configuration (Gmail SMTP)
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_SECURE=false
+EMAIL_USER=your_gmail
+EMAIL_PASS=your_gmail_app_password
+EMAIL_FROM="SkillOrbit <your_gmail>"
+```
+
+### Frontend Setup
+```bash
+cd frontend
+npm install
+```
+
+Create a `.env` file in the `frontend` directory:
+```env
+VITE_API_BASE_URL=http://localhost:5000/api
+```
+
+## Running the Application
+
+### Start Backend Server
+```bash
+cd backend
+npm start
+```
+Backend runs on `http://localhost:5000`
+
+### Start Frontend Development Server
+```bash
+cd frontend
+npm run dev
+```
+Frontend runs on `http://localhost:5173`
+
+## API Endpoints
+
+### Authentication
+- `POST /api/users/register` - Register new user (with OTP verification)
+- `POST /api/users/verify-otp` - Verify email OTP
+- `POST /api/users/resend-otp` - Resend verification OTP
+- `POST /api/users/login` - User login
+- `GET /api/users/profile/:id` - Get user profile (protected)
+- `PUT /api/users/profile/:id` - Update profile (protected)
+
+### Skills Management
+- `POST /api/skills` - Add new skill (protected)
+- `GET /api/skills/user/:userId` - Get user skills (protected)
+- `PUT /api/skills/:skillId` - Update skill (protected)
+- `DELETE /api/skills/:skillId` - Delete skill (protected)
+
+### Assessments
+- `POST /api/assessment/start` - Start assessment (protected)
+- `POST /api/assessment/:id/submit` - Submit assessment (protected)
+- `GET /api/assessment/history` - Get assessment history (protected)
+
+### AI Learning Paths
+- `POST /api/learning-path/ai-generate` - Generate AI path (protected)
+- `POST /api/learning-path/save` - Save learning path (protected)
+- `GET /api/learning-path/saved` - Get saved paths (protected)
+
+### Gap Analysis
+- `POST /api/analysis/analyze` - Perform gap analysis (protected)
+- `GET /api/analysis/history` - Get analysis history (protected)
+
+### Reports
+- `GET /api/reports/download-pdf` - Download PDF report (protected)
+- `POST /api/reports/email` - Email report (protected)
+
+## Deployment
+
+### Frontend (Vercel)
+1. Push code to GitHub
+2. Connect repository to Vercel
+3. Set environment variables
+4. Deploy automatically
+
+### Backend (Render)
+1. Create new Web Service on Render
+2. Connect GitHub repository
+3. Set environment variables
+4. Deploy with `npm start`
+
+### Database (MongoDB Atlas)
+1. Create cluster on MongoDB Atlas
+2. Configure network access (allow all IPs for production)
+3. Get connection string and add to backend `.env`
+
+## Key Features Implemented
+
+✅ **Email Verification with OTP** - New users receive 6-digit OTP to verify email  
+✅ **Multi-step Registration** - Registration → OTP Verification → Login  
+✅ **OTP Expiration** - OTPs expire after 10 minutes  
+✅ **Resend OTP** - Users can request new OTP if expired  
+✅ **Beautiful HTML Email Templates** - Professional gradient design  
+✅ **Profile Photo Upload** - Users can upload profile pictures (5MB limit)  
+✅ **JWT Authentication** - Secure token-based authentication (24h expiry)  
+✅ **Skills Management** - Add, edit, delete skills with proficiency tracking  
+✅ **Assessment System** - 600+ questions across 10 technical domains  
+✅ **AI Learning Paths** - Groq Cloud (LLaMA 3.3-70B) powered recommendations  
+✅ **AI-Powered Trending Data** - Real-time trending domains and skills using AI (24h cache)  
+✅ **Gap Analysis** - Compare skills against 10 target job roles  
+✅ **Progress Tracking** - Visual charts and analytics dashboard  
+✅ **PDF Reports** - Generate comprehensive skill reports  
+✅ **Email Reports** - Send reports via email with HTML templates  
+✅ **Responsive Design** - Mobile, tablet, and desktop optimized  
+
+## Project Statistics
+
+- **Lines of Code**: 15,000+
+- **API Endpoints**: 45+
+- **Database Collections**: 11
+- **Question Bank**: 600+ curated questions
+- **Supported Skills**: 300+
+- **Learning Resources**: 100+ curated courses
+- **Target Job Roles**: 10
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## License
+
+This project is open source and available under the [MIT License](LICENSE).
+
+## Contact
+
+**Developer**: Thanushree K P  
+**Email**: thanushreekp22@gmail.com  
+**GitHub**: [@Thanushreekp22](https://github.com/Thanushreekp22)  
+
+## Acknowledgments
+
+- [React](https://react.dev/) - Frontend framework
+- [Material-UI](https://mui.com/) - UI component library
+- [Express.js](https://expressjs.com/) - Backend framework
+- [MongoDB](https://www.mongodb.com/) - Database
+- [Groq Cloud](https://groq.com/) - AI inference platform
+- [Vercel](https://vercel.com/) - Frontend hosting
+- [Render](https://render.com/) - Backend hosting
 
 ---
 
-## 3. Literature Survey
-
-### 3.1 Existing Systems Analysis
-
-#### **3.1.1 LinkedIn Learning**
-**Features**: Video-based courses, skill assessments, learning paths  
-**Strengths**: Extensive course library, industry expert instructors, professional network integration  
-**Limitations**: Generic learning paths, limited personalization, expensive subscription model, no AI-driven recommendations  
-**Gap Identified**: Lacks skill gap analysis against specific job roles, no real-time proficiency tracking
-
-#### **3.1.2 Coursera**
-**Features**: University courses, specializations, professional certificates  
-**Strengths**: Academic rigor, verified certificates, structured curriculum  
-**Limitations**: No personalized assessment system, limited career-specific guidance, slow adaptation to industry trends  
-**Gap Identified**: Missing AI-powered learning path generation, no skill comparison with target roles
-
-#### **3.1.3 Udemy**
-**Features**: On-demand courses, lifetime access, wide variety  
-**Strengths**: Affordable pricing, diverse content, frequent updates  
-**Limitations**: Quality inconsistency, no integrated assessment, lacks progress analytics  
-**Gap Identified**: No skill proficiency tracking, missing gap analysis, no personalized recommendations
-
-#### **3.1.4 HackerRank**
-**Features**: Coding challenges, technical assessments, skill certification  
-**Strengths**: Industry-standard testing, recruiter network, competitive programming  
-**Limitations**: Focus only on coding, no learning path guidance, limited to assessment  
-**Gap Identified**: No learning resources integration, missing career guidance, no AI assistance
-
-#### **3.1.5 Pluralsight**
-**Features**: Tech skill assessments, skill IQ, role IQ  
-**Strengths**: Skill measurement, technology focus, hands-on labs  
-**Limitations**: Expensive, limited AI integration, no multi-domain gap analysis  
-**Gap Identified**: No personalized AI learning paths, missing visual progress tracking
-
-### 3.2 Research Contributions
-
-#### **3.2.1 Personalized Learning Systems**
-**Research**: "Adaptive Learning Technologies in Higher Education" (Johnson et al., 2023)  
-**Findings**: Adaptive systems improve learning outcomes by 35% compared to static content  
-**Relevance**: Validates the need for proficiency-based resource filtering in SkillOrbit
-
-#### **3.2.2 AI in Education**
-**Research**: "Large Language Models for Personalized Learning Paths" (Chen et al., 2024)  
-**Findings**: LLM-generated learning recommendations show 78% user satisfaction rate  
-**Relevance**: Supports integration of LLaMA 3.3-70B for learning path generation
-
-#### **3.2.3 Skill Gap Analysis**
-**Research**: "Bridging the Tech Skills Gap: Methodologies and Best Practices" (IEEE, 2023)  
-**Findings**: 68% of professionals benefit from visual gap indicators and priority recommendations  
-**Relevance**: Informs SkillOrbit's gap analysis algorithm and visualization approach
-
-#### **3.2.4 Assessment Methodologies**
-**Research**: "Effective Technical Assessment Strategies" (ACM Digital Library, 2023)  
-**Findings**: Multi-domain assessments with immediate feedback improve retention by 42%  
-**Relevance**: Validates SkillOrbit's 600+ question bank across 10 domains with instant results
-
-### 3.3 Technology Survey
-
-#### **3.3.1 Frontend Frameworks**
-**Evaluated**: React, Vue.js, Angular  
-**Selection**: React 18.2.0  
-**Rationale**: Component reusability, extensive ecosystem, virtual DOM performance, large community support
-
-#### **3.3.2 Backend Technologies**
-**Evaluated**: Node.js + Express, Django, Spring Boot  
-**Selection**: Node.js with Express 5.1.0  
-**Rationale**: JavaScript full-stack consistency, non-blocking I/O, RESTful API simplicity, npm ecosystem
-
-#### **3.3.3 Database Systems**
-**Evaluated**: MongoDB, PostgreSQL, MySQL  
-**Selection**: MongoDB 8.0.0  
-**Rationale**: Flexible schema, JSON compatibility, horizontal scaling, aggregation framework, cloud-native
-
-#### **3.3.4 AI/ML Services**
-**Evaluated**: OpenAI GPT-4, Google Gemini, Groq Cloud  
-**Selection**: Groq Cloud (LLaMA 3.3-70B)  
-**Rationale**: Cost-effective, fast inference, specialized for educational content, open-source model
-
-### 3.4 Comparative Analysis
-
-| Feature | LinkedIn Learning | Coursera | Pluralsight | HackerRank | **SkillOrbit** |
-|---------|------------------|----------|-------------|------------|----------------|
-| AI Learning Paths | ❌ | ❌ | Partial | ❌ | ✅ LLaMA 3.3 |
-| Skill Gap Analysis | ❌ | ❌ | Basic | ❌ | ✅ Advanced |
-| Multi-Domain Assessment | ❌ | ❌ | ✅ | Partial | ✅ 600+ Q |
-| Proficiency Tracking | Basic | ❌ | ✅ | ❌ | ✅ Visual |
-| Personalized Resources | ❌ | ❌ | ❌ | ❌ | ✅ Dynamic |
-| Progress Analytics | Basic | Basic | ✅ | Basic | ✅ Comprehensive |
-| Report Generation | ❌ | ✅ | Partial | ❌ | ✅ PDF/Email |
-| Role-Specific Guidance | ❌ | ❌ | Partial | ❌ | ✅ 10 Roles |
-| Free Tier | Limited | Limited | ❌ | ✅ | ✅ Full Access |
-| Open Source | ❌ | ❌ | ❌ | ❌ | ✅ GitHub |
-
-### 3.5 Key Insights from Survey
-
-1. **Gap in AI Integration**: No existing platform combines comprehensive assessment with AI-powered personalized learning paths
-2. **Limited Gap Analysis**: Most systems lack visual, actionable skill gap analysis against target job roles
-3. **Missing Holistic Approach**: Existing solutions focus on either assessment OR learning, not both integrated
-4. **Lack of Customization**: Generic recommendations don't account for individual proficiency levels
-5. **Expensive Solutions**: Enterprise-grade features are inaccessible to individual learners
-6. **No Progress Visualization**: Limited tools for tracking long-term skill development trends
-
-**Conclusion**: The literature survey validates the need for an integrated, AI-powered, accessible platform like SkillOrbit that addresses multiple gaps in the current educational technology landscape.
+**Live Demo**: [https://skill-orbit-mini-project.vercel.app](https://skill-orbit-mini-project.vercel.app)
 
 ---
 
-## 4. Summary
-
-SkillOrbit is a full-stack web application that revolutionizes technical skill development through intelligent assessment, analysis, and personalized learning recommendations. The platform integrates cutting-edge technologies to create a comprehensive ecosystem for skill management and career advancement.
-
-### 4.1 Key Components
-
-**Frontend Layer**: Built with React 18.2.0 and Material-UI, providing an intuitive, responsive user interface with 25+ reusable components, dynamic routing, and real-time data visualization through Recharts.
-
-**Backend Layer**: Node.js/Express RESTful API with 45+ endpoints, JWT-based authentication, middleware for security and validation, and integration with external services (AI, email, PDF generation).
-
-**Database Layer**: MongoDB Atlas with 11 collections storing user profiles, skills, assessments, analyses, learning paths, and progress data, optimized with strategic indexing.
-
-**AI Integration**: Groq Cloud API with LLaMA 3.3-70B model generating personalized learning paths, extracting curated resources, and providing intelligent skill recommendations.
-
-### 4.2 Core Functionality
-
-1. **User Management**: Secure registration/login, profile customization, role-based access control
-2. **Skills Dashboard**: Add/edit/delete skills, proficiency tracking (0-100%), category-wise organization
-3. **Assessment System**: 600+ questions across 10 domains, real-time scoring, detailed results with explanations
-4. **AI Learning Paths**: LLaMA-powered personalized recommendations with structured sections and resource links
-5. **Gap Analysis**: Compare current skills against 10 target roles, visual gap indicators, priority recommendations
-6. **Progress Tracking**: Monthly trends, category breakdown, skill distribution charts, timeline views
-7. **Reports & Analytics**: Comprehensive PDF reports, email delivery, multiple chart types (radar, pie, line, bar)
-8. **Resource Curation**: Proficiency-based filtering, 100+ curated resources from Udemy, Coursera, freeCodeCamp
-
-### 4.3 Technical Highlights
-
-- **Architecture**: Three-tier MVC pattern ensuring separation of concerns
-- **Security**: bcrypt password hashing, JWT tokens (24h expiry), CORS configuration, input validation
-- **Performance**: ~1.2s initial load, 120ms average API response, 92/100 Lighthouse score
-- **Scalability**: Cloud-based deployment (Vercel + Render + MongoDB Atlas), stateless API design
-- **User Experience**: Toast notifications, loading states, error handling, responsive design, accessibility features
-
-### 4.4 Innovation Aspects
-
-1. **AI-Driven Personalization**: First platform to integrate LLaMA 3.3-70B for educational content curation
-2. **Holistic Integration**: Seamlessly combines assessment, analysis, learning, and tracking in one platform
-3. **Proficiency Intelligence**: Dynamic resource filtering based on actual skill levels (0-40% beginner, 40-70% intermediate, 70-100% advanced)
-4. **Visual Gap Analysis**: Color-coded gap indicators with actionable priority recommendations
-5. **Open Source**: GitHub-hosted codebase enabling community contributions and transparency
-
-### 4.5 Impact Metrics
-
-- **Development Time**: 10 weeks from conception to production deployment
-- **Lines of Code**: 15,000+ across frontend and backend
-- **Question Bank**: 600+ curated technical questions
-- **Skills Database**: 300+ technology skills with categorization
-- **Learning Resources**: 100+ courses, documentation, and project links
-- **User Capacity**: Supports 100+ concurrent users with cloud infrastructure
-
-### 4.6 Project Outcomes
-
-✅ Successfully deployed production-ready application  
-✅ Integrated advanced AI for personalized recommendations  
-✅ Achieved excellent performance metrics (sub-2s load times)  
-✅ Created comprehensive documentation (15,000+ lines)  
-✅ Implemented secure authentication and data protection  
-✅ Delivered intuitive user experience with modern UI  
-✅ Established scalable cloud-based architecture  
-✅ Open-sourced codebase for community benefit  
-
-**Summary Statement**: SkillOrbit represents a significant advancement in educational technology by combining artificial intelligence, comprehensive assessment methodologies, and data-driven analytics to create a personalized, accessible, and effective skill development platform that addresses critical gaps in existing solutions.
-
----
-
-## 5. Problem Statement
-
-### 5.1 Primary Problem
-
-**"How can professionals and students effectively identify, assess, and bridge their technical skill gaps in a rapidly evolving technology landscape where learning resources are abundant but personalized guidance is scarce?"**
-
-### 5.2 Problem Decomposition
-
-#### **5.2.1 Skill Identification Challenge**
-- Professionals lack clear understanding of their current skill proficiency levels
-- No standardized method to measure technical competencies across multiple domains
-- Difficulty in identifying which skills are most relevant for target career roles
-- Absence of comprehensive assessment tools covering modern technology stacks
-
-#### **5.2.2 Learning Resource Overload**
-- Thousands of courses, tutorials, and documentation available across platforms
-- No intelligent filtering based on individual proficiency levels
-- Generic recommendations ignore learner's current knowledge and goals
-- Time wasted exploring irrelevant or inappropriate-level resources
-
-#### **5.2.3 Gap Analysis Deficiency**
-- No clear methodology to compare current skills against target job requirements
-- Lack of visual representation of skill gaps
-- Missing priority indicators for skill acquisition
-- Absence of actionable roadmaps for skill development
-
-#### **5.2.4 Progress Tracking Limitations**
-- Difficulty in visualizing long-term skill development trends
-- No centralized platform for tracking multiple skill competencies
-- Limited tools for measuring assessment performance over time
-- Absence of comprehensive analytics and reporting
-
-#### **5.2.5 Personalization Gap**
-- Existing platforms provide one-size-fits-all solutions
-- No AI-driven personalized learning path generation
-- Recommendations don't adapt to individual learning pace
-- Missing integration between assessment results and learning recommendations
-
-### 5.3 Problem Impact
-
-**For Individuals:**
-- Career stagnation due to unidentified skill gaps
-- Inefficient learning with mismatched resources
-- Increased time-to-competency for new skills
-- Lack of confidence in skill levels for job applications
-
-**For Organizations:**
-- Difficulty in accurate talent assessment
-- Ineffective training program allocation
-- Increased hiring risks due to skill mismatches
-- Higher onboarding costs and time
-
-**For Educational Institutions:**
-- Curriculum-industry alignment challenges
-- Inability to track student skill development
-- Limited placement success due to skill gaps
-- Lack of data-driven program improvements
-
-### 5.4 Problem Validation
-
-**Industry Statistics:**
-- 87% of companies report skill gaps in their workforce (McKinsey, 2023)
-- 50% of tech professionals feel uncertain about their skill levels (Stack Overflow Survey, 2024)
-- 73% of learners struggle to find appropriate-level resources (EdTech Report, 2023)
-- Average professional spends 15+ hours researching learning paths (Industry Survey)
-
-### 5.5 Problem Scope
-
-**Within Scope:**
-- Technical skill assessment across 10 major domains
-- AI-powered personalized learning recommendations
-- Visual skill gap analysis for defined job roles
-- Progress tracking and comprehensive reporting
-- Curated resource recommendations
-
-**Outside Scope:**
-- Soft skills assessment (communication, leadership)
-- Live instructor-led training
-- Job placement services
-- Payment processing for premium content
-- Mobile native applications (Phase 1)
-
----
-
-## 6. Objective
-
-### 6.1 Primary Objective
-
-**To develop an intelligent, AI-powered web platform that enables users to accurately assess technical skills, identify gaps against target roles, receive personalized learning recommendations, and track skill development progress through comprehensive analytics.**
-
-### 6.2 Specific Objectives
-
-#### **6.2.1 Assessment & Measurement**
-- ✅ Create comprehensive question bank with 600+ curated technical questions
-- ✅ Cover 10 major technology domains (Full Stack, AI/ML, DevOps, Cloud, etc.)
-- ✅ Implement real-time scoring with instant feedback
-- ✅ Provide detailed explanations for correct/incorrect answers
-- ✅ Support multiple difficulty levels (easy, medium, hard)
-
-#### **6.2.2 AI Integration & Personalization**
-- ✅ Integrate advanced AI model (LLaMA 3.3-70B) for learning path generation
-- ✅ Generate personalized recommendations based on user skills and goals
-- ✅ Extract and organize curated resources from AI responses
-- ✅ Provide structured learning roadmaps with timelines
-- ✅ Enable saving and retrieving personalized paths
-
-#### **6.2.3 Gap Analysis & Career Guidance**
-- ✅ Define skill requirements for 10 target job roles
-- ✅ Compare user skills against role requirements algorithmically
-- ✅ Visualize skill gaps with color-coded indicators
-- ✅ Provide priority recommendations for skill acquisition
-- ✅ Generate estimated timelines for closing gaps
-
-#### **6.2.4 Resource Curation & Learning**
-- ✅ Curate 100+ learning resources from reputable platforms
-- ✅ Implement proficiency-based resource filtering (Beginner/Intermediate/Advanced)
-- ✅ Organize resources by skill and category
-- ✅ Include courses, documentation, and project ideas
-- ✅ Provide direct links to external learning platforms
-
-#### **6.2.5 Progress Tracking & Analytics**
-- ✅ Implement visual charts for skill distribution (pie, bar, radar)
-- ✅ Track monthly assessment trends over 6-month period
-- ✅ Calculate average proficiency across all skills
-- ✅ Display expert-level skills count and progress
-- ✅ Provide timeline view of recent activities
-
-#### **6.2.6 Reporting & Communication**
-- ✅ Generate comprehensive PDF reports with charts and insights
-- ✅ Implement email report delivery functionality
-- ✅ Include assessment history and skill summaries
-- ✅ Provide AI-generated recommendations in reports
-- ✅ Enable downloadable reports for external use
-
-#### **6.2.7 User Experience & Accessibility**
-- ✅ Design responsive UI compatible with desktop, tablet, mobile
-- ✅ Implement intuitive navigation with Material-UI components
-- ✅ Provide real-time feedback (toast notifications, loading states)
-- ✅ Ensure accessibility standards (ARIA labels, keyboard navigation)
-- ✅ Achieve Lighthouse score of 90+ for performance
-
-#### **6.2.8 Security & Scalability**
-- ✅ Implement JWT-based authentication with 24h token expiry
-- ✅ Use bcrypt for secure password hashing (10 salt rounds)
-- ✅ Configure CORS for secure cross-origin requests
-- ✅ Deploy on scalable cloud infrastructure (Vercel, Render, MongoDB Atlas)
-- ✅ Support 100+ concurrent users with <2s load times
-
-### 6.3 Success Metrics
-
-| Metric | Target | Achieved |
-|--------|--------|----------|
-| Question Bank Size | 500+ | ✅ 600+ |
-| Assessment Domains | 8+ | ✅ 10 |
-| AI Response Time | <5s | ✅ 3-5s |
-| Initial Load Time | <2s | ✅ 1.2s |
-| API Response Time | <200ms | ✅ 120ms |
-| Lighthouse Score | 90+ | ✅ 92 |
-| Concurrent Users | 100+ | ✅ 100+ |
-| Mobile Responsive | 100% | ✅ 100% |
-| Learning Resources | 80+ | ✅ 100+ |
-| Target Roles | 8+ | ✅ 10 |
-
-### 6.4 Measurable Outcomes
-
-**Technical Outcomes:**
-- Fully functional MERN stack application with 15,000+ lines of code
-- 45+ RESTful API endpoints with 98% success rate
-- 11 MongoDB collections with optimized indexing
-- 25+ React components with reusability
-- Production deployment on 3 cloud platforms
-
-**Functional Outcomes:**
-- Complete user authentication and authorization system
-- End-to-end assessment workflow (start → submit → results)
-- AI learning path generation with structured output
-- Comprehensive skill gap analysis for multiple roles
-- Visual analytics dashboard with 5+ chart types
-- PDF report generation and email delivery
-
-**User Experience Outcomes:**
-- Intuitive interface requiring zero training
-- Consistent design language across all pages
-- Real-time feedback for all user actions
-- Accessible on devices of all screen sizes
-- Sub-2-second page transitions
-
----
-
-## 7. Proposed Solution
-
-### 7.1 Solution Overview
-
-SkillOrbit proposes a comprehensive, cloud-based web platform that integrates assessment, artificial intelligence, analytics, and curated learning resources into a unified ecosystem. The solution addresses identified problems through four core pillars: **Intelligent Assessment**, **AI-Powered Personalization**, **Visual Gap Analysis**, and **Comprehensive Progress Tracking**.
-
-### 7.2 Solution Architecture
-
-```
-┌─────────────────────────────────────────────────────────┐
-│                    USER INTERFACE LAYER                  │
-│         React 18 + Material-UI + Vite                   │
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐  │
-│  │Dashboard │ │Assessment│ │  AI Path │ │ Reports  │  │
-│  └──────────┘ └──────────┘ └──────────┘ └──────────┘  │
-└─────────────────────┬───────────────────────────────────┘
-                      │ REST API (Axios)
-┌─────────────────────▼───────────────────────────────────┐
-│                APPLICATION LOGIC LAYER                   │
-│           Express.js + Middleware                       │
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐  │
-│  │  Auth    │ │Assessment│ │   AI     │ │ Analysis │  │
-│  │Controller│ │Controller│ │ Service  │ │Controller│  │
-│  └──────────┘ └──────────┘ └──────────┘ └──────────┘  │
-└─────────────────────┬───────────────────────────────────┘
-                      │ Mongoose ODM
-┌─────────────────────▼───────────────────────────────────┐
-│                   DATA PERSISTENCE LAYER                 │
-│              MongoDB Atlas (Cloud)                      │
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐  │
-│  │  Users   │ │  Skills  │ │Assessmnt │ │ Analysis │  │
-│  │Collection│ │Collection│ │Collection│ │Collection│  │
-│  └──────────┘ └──────────┘ └──────────┘ └──────────┘  │
-└──────────────────────────────────────────────────────────┘
-
-External Services:
-├─ Groq Cloud API → LLaMA 3.3-70B (AI Learning Paths)
-├─ SMTP Server → Email Notifications
-└─ PDFKit → Report Generation
-```
-
-### 7.3 Core Solution Components
-
-#### **7.3.1 Intelligent Assessment Module**
-**Problem Addressed**: Skill identification and measurement
-
-**Solution Features:**
-- Dynamic question bank with 600+ questions across 10 domains
-- Randomized question selection for unique assessments
-- Multiple difficulty levels (easy, medium, hard)
-- Real-time scoring algorithm: `score = (correct / total) × 100`
-- Instant feedback with correct answer explanations
-- Assessment history tracking with timestamps
-
-#### **7.3.2 AI-Powered Learning Path Generator**
-**Problem Addressed**: Personalized learning resource discovery
-
-**Solution Features:**
-- Integration with Groq Cloud's LLaMA 3.3-70B model
-- Context-aware prompt engineering with user skills and goals
-- Structured response parsing (gap analysis, roadmap, resources, timeline)
-- Automatic resource extraction with URLs
-- Save/retrieve personalized paths functionality
-
-#### **7.3.3 Visual Skill Gap Analysis**
-**Problem Addressed**: Gap identification and career guidance
-
-**Solution Features:**
-- Predefined skill requirements for 10 job roles
-- Algorithmic comparison: `gap = required - current`
-- Color-coded indicators (red >30%, yellow 10-30%, green <10%)
-- Priority recommendations based on gap severity
-- Estimated timeline for skill acquisition
-
-#### **7.3.4 Proficiency-Based Resource Curation**
-**Problem Addressed**: Resource overload and mismatch
-
-**Solution Features:**
-- Database of 100+ curated resources
-- Proficiency range filtering: Beginner (0-40%), Intermediate (40-70%), Advanced (70-100%)
-- Multi-platform integration (Udemy, Coursera, freeCodeCamp, YouTube)
-- Resource types: Courses, Documentation, Projects
-- Dynamic filtering based on user's current proficiency
-
-#### **7.3.5 Comprehensive Analytics Dashboard**
-**Problem Addressed**: Progress tracking and visualization
-
-**Solution Features:**
-- Multiple chart types: Radar, Pie, Line, Bar charts
-- Recharts library for interactive visualizations
-- Real-time data updates from MongoDB
-- Historical trend analysis (6-month view)
-- Key metrics: Total skills, average proficiency, expert skills count
-
-#### **7.3.6 Automated Report Generation**
-**Problem Addressed**: Comprehensive reporting and sharing
-
-**Solution Features:**
-- PDF generation with PDFKit library
-- Multi-page reports with charts and tables
-- AI-generated insights and recommendations
-- Email delivery via Nodemailer
-- Downloadable format for external use
-
-### 7.4 Solution Workflow
-
-**User Journey Flow:**
-```
-Registration → Profile Setup → Add Skills → 
-Take Assessment → View Results → Generate AI Path → 
-Analyze Gaps → Access Resources → Track Progress → 
-Generate Report → Iterate
-```
-
-### 7.5 Key Differentiators
-
-1. **AI Integration**: First platform using LLaMA 3.3-70B for educational recommendations
-2. **Holistic Approach**: Seamless integration of assessment, learning, and tracking
-3. **Proficiency Intelligence**: Dynamic resource filtering based on actual skill levels
-4. **Visual Analytics**: Comprehensive charts and graphs for progress visualization
-5. **Open Source**: Transparent codebase enabling community contributions
-6. **Zero Cost**: Full access to core features without subscription fees
-
-### 7.6 Solution Benefits
-
-**For Users:**
-- Save 15+ hours on learning path research
-- Increase learning efficiency by 35% with appropriate resources
-- Gain clear visibility into skill gaps and priorities
-
-**For Organizations:**
-- Reduce talent assessment time by 60%
-- Identify training needs accurately
-- Make data-driven hiring decisions
-
-**For Educators:**
-- Align curriculum with industry requirements
-- Monitor student progress continuously
-- Improve placement outcomes
-
----
-
-## 8. Software Requirement Specification
-
-### 8.1 Functional Requirements
-
-#### **FR-1: User Management**
-- **FR-1.1**: System shall allow new users to register with name, email, password
-- **FR-1.2**: System shall validate email format and password strength (min 8 chars)
-- **FR-1.3**: System shall hash passwords using bcrypt with 10 salt rounds
-- **FR-1.4**: System shall generate JWT tokens with 24-hour expiry upon login
-- **FR-1.5**: System shall allow users to update profile information
-- **FR-1.6**: System shall support social links (LinkedIn, GitHub, Portfolio)
-
-#### **FR-2: Skills Management**
-- **FR-2.1**: System shall allow users to add skills with proficiency (0-100%)
-- **FR-2.2**: System shall auto-categorize skills into 10 predefined categories
-- **FR-2.3**: System shall provide autocomplete from 300+ skill database
-- **FR-2.4**: System shall allow editing and deleting skills
-- **FR-2.5**: System shall display skills grouped by category
-- **FR-2.6**: System shall calculate average proficiency across all skills
-
-#### **FR-3: Assessment System**
-- **FR-3.1**: System shall provide 10 technical domains for assessment
-- **FR-3.2**: System shall randomly select 20 questions per assessment
-- **FR-3.3**: System shall support multiple-choice questions with 4 options
-- **FR-3.4**: System shall calculate score as (correct/total) × 100
-- **FR-3.5**: System shall display instant results with explanations
-- **FR-3.6**: System shall store assessment history with timestamps
-- **FR-3.7**: System shall support retaking assessments unlimited times
-
-#### **FR-4: AI Learning Path**
-- **FR-4.1**: System shall integrate with Groq Cloud API (LLaMA 3.3-70B)
-- **FR-4.2**: System shall generate personalized paths based on skills and goals
-- **FR-4.3**: System shall parse AI responses into structured sections
-- **FR-4.4**: System shall extract resources with titles and URLs
-- **FR-4.5**: System shall allow saving learning paths with custom titles
-- **FR-4.6**: System shall retrieve saved paths for future reference
-- **FR-4.7**: System shall generate AI paths within 5 seconds
-
-#### **FR-5: Gap Analysis**
-- **FR-5.1**: System shall define skill requirements for 10 job roles
-- **FR-5.2**: System shall compare user skills against selected role
-- **FR-5.3**: System shall calculate gap percentage for each skill
-- **FR-5.4**: System shall display gaps with color-coded indicators
-- **FR-5.5**: System shall provide priority recommendations (high/medium/low)
-- **FR-5.6**: System shall estimate timeline for closing gaps
-- **FR-5.7**: System shall save analysis history with target role
-
-#### **FR-6: Resource Curation**
-- **FR-6.1**: System shall provide 100+ curated learning resources
-- **FR-6.2**: System shall filter resources by proficiency level
-- **FR-6.3**: System shall categorize resources (courses, docs, projects)
-- **FR-6.4**: System shall include resource metadata (duration, level, rating)
-- **FR-6.5**: System shall provide direct links to external platforms
-- **FR-6.6**: System shall show recommended proficiency level for each resource
-
-#### **FR-7: Progress Tracking**
-- **FR-7.1**: System shall display total skills count
-- **FR-7.2**: System shall calculate average proficiency percentage
-- **FR-7.3**: System shall count expert-level skills (≥80% proficiency)
-- **FR-7.4**: System shall track monthly assessment trends (6 months)
-- **FR-7.5**: System shall generate category-wise breakdown charts
-- **FR-7.6**: System shall display recent activity timeline
-
-#### **FR-8: Reports & Analytics**
-- **FR-8.1**: System shall generate PDF reports with user data
-- **FR-8.2**: System shall include multiple chart types in reports
-- **FR-8.3**: System shall provide AI-generated insights in reports
-- **FR-8.4**: System shall allow downloading PDF reports
-- **FR-8.5**: System shall send reports via email using Nodemailer
-- **FR-8.6**: System shall display comprehensive analytics dashboard
-
-#### **FR-9: Trending Insights**
-- **FR-9.1**: System shall display trending technology domains
-- **FR-9.2**: System shall show active user count from database
-- **FR-9.3**: System shall display total skills in database
-- **FR-9.4**: System shall highlight hot skills with demand indicators
-
-### 8.2 Non-Functional Requirements
-
-#### **NFR-1: Performance**
-- **NFR-1.1**: Initial page load time shall be ≤2 seconds
-- **NFR-1.2**: API response time shall be ≤200 milliseconds
-- **NFR-1.3**: AI path generation shall complete within 5 seconds
-- **NFR-1.4**: System shall support 100+ concurrent users
-- **NFR-1.5**: Database queries shall execute within 100ms
-- **NFR-1.6**: Lighthouse performance score shall be ≥90
-
-#### **NFR-2: Security**
-- **NFR-2.1**: Passwords shall be hashed using bcrypt (10 rounds)
-- **NFR-2.2**: Authentication shall use JWT with 24h expiry
-- **NFR-2.3**: CORS shall be configured with allowed origins
-- **NFR-2.4**: API endpoints shall verify JWT tokens via middleware
-- **NFR-2.5**: Environment variables shall store sensitive data
-- **NFR-2.6**: HTTPS shall be enforced in production
-
-#### **NFR-3: Scalability**
-- **NFR-3.1**: Architecture shall support horizontal scaling
-- **NFR-3.2**: Database shall use indexes for frequent queries
-- **NFR-3.3**: API shall be stateless for load balancing
-- **NFR-3.4**: Cloud infrastructure shall auto-scale with demand
-- **NFR-3.5**: Frontend assets shall be CDN-delivered
-
-#### **NFR-4: Usability**
-- **NFR-4.1**: UI shall be responsive (mobile, tablet, desktop)
-- **NFR-4.2**: Navigation shall be intuitive requiring zero training
-- **NFR-4.3**: Forms shall provide real-time validation
-- **NFR-4.4**: System shall provide feedback for all user actions
-- **NFR-4.5**: Loading states shall indicate ongoing processes
-- **NFR-4.6**: Error messages shall be clear and actionable
-
-#### **NFR-5: Reliability**
-- **NFR-5.1**: System uptime shall be ≥99.5%
-- **NFR-5.2**: All errors shall be logged for debugging
-- **NFR-5.3**: Failed API calls shall be handled gracefully
-- **NFR-5.4**: Data shall be backed up daily (MongoDB Atlas)
-- **NFR-5.5**: System shall recover from crashes automatically
-
-#### **NFR-6: Maintainability**
-- **NFR-6.1**: Code shall follow ES6+ standards
-- **NFR-6.2**: Components shall be reusable and modular
-- **NFR-6.3**: API endpoints shall follow RESTful conventions
-- **NFR-6.4**: Documentation shall be comprehensive and updated
-- **NFR-6.5**: Code shall be version-controlled via Git
-
-### 8.3 System Requirements
-
-#### **8.3.1 Hardware Requirements**
-
-**Development Environment:**
-- Processor: Intel Core i5 or equivalent (2.0 GHz+)
-- RAM: 8 GB minimum (16 GB recommended)
-- Storage: 10 GB available space
-- Internet: Broadband connection (10 Mbps+)
-
-**Production Environment (Cloud):**
-- Vercel Frontend: Auto-scaled serverless functions
-- Render Backend: 512 MB RAM, 0.5 CPU (minimum)
-- MongoDB Atlas: M0 Free Tier (512 MB storage, shared cluster)
-
-**Client Requirements:**
-- Any modern device (desktop, laptop, tablet, smartphone)
-- Screen resolution: 320px+ width
-- Internet connection: 2 Mbps+ recommended
-
-#### **8.3.2 Software Requirements**
-
-**Development Tools:**
-- Node.js: v18.0.0 or higher
-- npm: v9.0.0 or higher
-- Git: v2.30.0 or higher
-- VS Code: Latest version (recommended)
-- MongoDB Compass: Latest version (optional)
-- Postman: Latest version (for API testing)
-
-**Frontend Dependencies:**
-```json
-{
-  "react": "^18.2.0",
-  "vite": "^5.0.8",
-  "@mui/material": "^5.14.20",
-  "react-router-dom": "^6.20.0",
-  "axios": "^1.6.2",
-  "recharts": "^2.15.4"
-}
-```
-
-**Backend Dependencies:**
-```json
-{
-  "express": "^5.1.0",
-  "mongoose": "^8.0.0",
-  "jsonwebtoken": "^9.0.2",
-  "bcrypt": "^6.0.0",
-  "nodemailer": "^7.0.10",
-  "pdfkit": "^0.15.2",
-  "cors": "^2.8.5"
-}
-```
-
-**Browser Support:**
-- Chrome/Edge: Version 90+
-- Firefox: Version 88+
-- Safari: Version 14+
-- Mobile browsers: iOS Safari 14+, Chrome Android 90+
-
-**Operating System:**
-- Windows 10/11
-- macOS 10.15+
-- Linux (Ubuntu 20.04+, Fedora, etc.)
-
-#### **8.3.3 Network Requirements**
-- Stable internet connection for API calls
-- HTTPS support for secure communication
-- Minimum bandwidth: 2 Mbps download, 1 Mbps upload
-
-### 8.4 Interface Requirements
-
-#### **8.4.1 User Interface**
-- Material-UI components for consistency
-- Responsive grid system (12-column)
-- Toast notifications for feedback
-- Loading spinners for async operations
-- Modal dialogs for confirmations
-- Form validation with error messages
-
-#### **8.4.2 API Interface**
-- RESTful endpoints with JSON payloads
-- Standard HTTP methods (GET, POST, PUT, DELETE)
-- Authorization header with Bearer token
-- Consistent response structure:
-```json
-{
-  "success": true/false,
-  "data": {...},
-  "message": "..."
-}
-```
-
-#### **8.4.3 External Service Interfaces**
-- **Groq Cloud API**: HTTPS POST requests
-- **SMTP Server**: Email delivery via Nodemailer
-- **MongoDB Atlas**: Mongoose ODM connection
-
-### 8.5 Data Requirements
-
-#### **8.5.1 Data Volume**
-- User records: 1,000+ (scalable to millions)
-- Skill records: 5,000+ (avg 5 skills per user)
-- Assessment records: 10,000+ (avg 10 assessments per user)
-- Question bank: 600+ questions
-- Learning resources: 100+ curated resources
-
-#### **8.5.2 Data Retention**
-- User data: Indefinite (until account deletion)
-- Assessment history: 12 months minimum
-- Analysis records: 6 months minimum
-- Learning paths: Until user deletion
-- Logs: 30 days
-
-#### **8.5.3 Data Backup**
-- Automated daily backups (MongoDB Atlas)
-- Point-in-time recovery available
-- Geo-redundant storage
-
-### 8.6 Constraints
-
-#### **8.6.1 Technical Constraints**
-- AI API rate limits: 10 requests/minute (Groq Cloud free tier)
-- MongoDB storage: 512 MB (free tier)
-- Render free tier: Sleeps after 15 minutes inactivity
-- Email sending: 500 emails/day (free SMTP)
-
-#### **8.6.2 Business Constraints**
-- No payment processing in v1.0
-- English language only (v1.0)
-- Self-hosted deployment only (no SaaS offering initially)
-
-#### **8.6.3 Regulatory Constraints**
-- GDPR compliance for EU users
-- Data encryption in transit (HTTPS)
-- User consent for data collection
-- Privacy policy and terms of service
-
-### 8.7 Assumptions and Dependencies
-
-#### **8.7.1 Assumptions**
-- Users have basic computer literacy
-- Users understand technology terminology
-- Stable internet connection available
-- Modern browser with JavaScript enabled
-
-#### **8.7.2 Dependencies**
-- MongoDB Atlas availability
-- Groq Cloud API uptime
-- Vercel/Render platform stability
-- Third-party learning platform links remain valid
-- NPM package availability
-
----
-
-## 9. Project Overview
+*Last Updated: January 2025*. Project Overview
 
 ### 1.1 Project Title
 **SkillOrbit - AI-Powered Skill Assessment & Learning Platform**

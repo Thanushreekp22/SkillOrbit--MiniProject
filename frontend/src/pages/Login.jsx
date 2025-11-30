@@ -59,7 +59,12 @@ const Login = () => {
       toast.success('Login successful!');
       navigate('/app/dashboard');
     } else {
-      setError(result.error);
+      if (result.error?.includes('verify your email')) {
+        toast.error('Please verify your email before logging in. Check your inbox for the verification OTP.');
+        setError('Email verification required. Please check your inbox for the OTP and complete the verification process.');
+      } else {
+        setError(result.error);
+      }
     }
     
     setLoading(false);

@@ -7,6 +7,7 @@ import Role from "./Role.js";
 import RoleSkill from "./RoleSkill.js";
 import Analysis from "./Analysis.js";
 import LearningPath from "./LearningPath.js";
+import AILearningPath from "./AILearningPath.js";
 import Progress from "./Progress.js";
 import Report from "./Report.js";
 import QuestionBank from "./QuestionBank.js";
@@ -21,7 +22,8 @@ export {
   Role, 
   RoleSkill,
   Analysis, 
-  LearningPath, 
+  LearningPath,
+  AILearningPath,
   Progress, 
   Report,
   QuestionBank,

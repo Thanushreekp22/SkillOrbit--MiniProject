@@ -433,10 +433,10 @@ export const downloadReportPDF = async (req, res) => {
     const startX = 40;
     
     const summaryStats = [
-      { label: 'Total Skills', value: skills.length, color: '#3B82F6', icon: '📚' },
-      { label: 'Avg Proficiency', value: `${avgProficiency}%`, color: '#10B981', icon: '📊' },
-      { label: 'Expert Level', value: expertSkills, color: '#F59E0B', icon: '⭐' },
-      { label: 'Assessments', value: assessments.length, color: '#8B5CF6', icon: '✅' }
+      { label: 'Total Skills', value: skills.length, color: '#3B82F6' },
+      { label: 'Avg Proficiency', value: `${avgProficiency}%`, color: '#10B981' },
+      { label: 'Expert Level', value: expertSkills, color: '#F59E0B' },
+      { label: 'Assessments', value: assessments.length, color: '#8B5CF6' }
     ];
     
     summaryStats.forEach((stat, index) => {
@@ -449,18 +449,11 @@ export const downloadReportPDF = async (req, res) => {
          .strokeColor('#E5E7EB')
          .stroke();
       
-      // Icon
-      doc.fontSize(24)
-         .text(stat.icon, x, yPos + 15, { 
-           width: boxWidth, 
-           align: 'center' 
-         });
-      
-      // Value
-      doc.fontSize(28)
+      // Value (larger and centered)
+      doc.fontSize(32)
          .font('Helvetica-Bold')
          .fillColor(stat.color)
-         .text(stat.value.toString(), x, yPos + 42, { 
+         .text(stat.value.toString(), x, yPos + 25, { 
            width: boxWidth, 
            align: 'center' 
          });
@@ -836,37 +829,37 @@ export const downloadReportPDF = async (req, res) => {
     const insights = [];
     
     if (avgProficiency >= 80) {
-      insights.push('✓ Outstanding proficiency level! You demonstrate expertise across your skill set.');
+      insights.push('+ Outstanding proficiency level! You demonstrate expertise across your skill set.');
     } else if (avgProficiency >= 60) {
-      insights.push('✓ Solid foundation established. Focus on advancing skills to expert level.');
+      insights.push('+ Solid foundation established. Focus on advancing skills to expert level.');
     } else if (avgProficiency >= 40) {
-      insights.push('⚠ Developing proficiency. Consistent practice will accelerate growth.');
+      insights.push('* Developing proficiency. Consistent practice will accelerate growth.');
     } else {
-      insights.push('⚠ Beginning stage. Dedicate focused time to skill development.');
+      insights.push('* Beginning stage. Dedicate focused time to skill development.');
     }
 
     if (expertSkills > 5) {
-      insights.push(`✓ Impressive! ${expertSkills} expert-level skills demonstrate strong capability.`);
+      insights.push(`+ Impressive! ${expertSkills} expert-level skills demonstrate strong capability.`);
     } else if (expertSkills > 0) {
-      insights.push(`✓ ${expertSkills} expert skill${expertSkills > 1 ? 's' : ''} achieved. Great progress!`);
+      insights.push(`+ ${expertSkills} expert skill${expertSkills > 1 ? 's' : ''} achieved. Great progress!`);
     } else {
-      insights.push('⚠ Work towards achieving expert level (80%+) in key skills.');
+      insights.push('* Work towards achieving expert level (80%+) in key skills.');
     }
 
     if (assessments.length >= 10) {
-      insights.push(`✓ ${assessments.length} assessments completed! Regular testing validates learning.`);
+      insights.push(`+ ${assessments.length} assessments completed! Regular testing validates learning.`);
     } else if (assessments.length > 0) {
-      insights.push(`✓ ${assessments.length} assessment${assessments.length > 1 ? 's' : ''} taken. Continue testing knowledge regularly.`);
+      insights.push(`+ ${assessments.length} assessment${assessments.length > 1 ? 's' : ''} taken. Continue testing knowledge regularly.`);
     } else {
-      insights.push('⚠ Begin taking assessments to benchmark your skill proficiency.');
+      insights.push('* Begin taking assessments to benchmark your skill proficiency.');
     }
 
     if (avgScore >= 80) {
-      insights.push(`✓ Excellent assessment average (${avgScore}%). Strong conceptual understanding.`);
+      insights.push(`+ Excellent assessment average (${avgScore}%). Strong conceptual understanding.`);
     } else if (avgScore >= 60) {
-      insights.push(`✓ Good assessment average (${avgScore}%). Review challenging topics for improvement.`);
+      insights.push(`+ Good assessment average (${avgScore}%). Review challenging topics for improvement.`);
     } else if (avgScore > 0) {
-      insights.push(`⚠ Assessment average: ${avgScore}%. Additional study and practice recommended.`);
+      insights.push(`* Assessment average: ${avgScore}%. Additional study and practice recommended.`);
     }
 
     doc.fontSize(10)

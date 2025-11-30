@@ -59,6 +59,52 @@ const AILearningPathDisplay = ({ learningPath, onSave, isSaved = false }) => {
   const handleDownloadPDF = async () => {
     setDownloading(true);
     try {
+      // Helper function to clean markdown formatting
+      const cleanMarkdown = (text) => {
+        if (!text) return '';
+        return text
+          // Remove code blocks (must be first)
+          .replace(/```[\s\S]*?```/g, '[Code Block]')
+          // Remove inline code
+          .replace(/`([^`]+)`/g, '$1')
+          // Remove bold markers (both ** and __)
+          .replace(/\*\*([^*]+)\*\*/g, '$1')
+          .replace(/__([^_]+)__/g, '$1')
+          // Remove italic markers (both * and _)
+          .replace(/\*([^*]+)\*/g, '$1')
+          .replace(/_([^_]+)_/g, '$1')
+          // Remove strikethrough
+          .replace(/~~(.+?)~~/g, '$1')
+          // Remove headers (# ## ### etc)
+          .replace(/^#{1,6}\s+/gm, '')
+          // Remove links but keep text [text](url)
+          .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
+          // Remove reference links [text][ref]
+          .replace(/\[([^\]]+)\]\[[^\]]+\]/g, '$1')
+          // Remove images ![alt](url)
+          .replace(/!\[([^\]]*)\]\([^\)]+\)/g, '$1')
+          // Remove HTML tags
+          .replace(/<[^>]+>/g, '')
+          // Remove blockquotes
+          .replace(/^>\s+/gm, '')
+          // Convert bullet points to simple bullet
+          .replace(/^[\*\-\+]\s+/gm, '• ')
+          // Keep numbered lists but remove extra spaces
+          .replace(/^\d+\.\s+/gm, (match) => match.trim() + ' ')
+          // Remove horizontal rules
+          .replace(/^[-*_]{3,}$/gm, '')
+          // Remove table formatting
+          .replace(/\|/g, ' ')
+          // Clean up multiple spaces
+          .replace(/[ \t]+/g, ' ')
+          // Clean up multiple newlines
+          .replace(/\n{3,}/g, '\n\n')
+          // Trim each line
+          .split('\n').map(line => line.trim()).join('\n')
+          // Final trim
+          .trim();
+      };
+
       // Create a simple text-based PDF
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pageWidth = pdf.internal.pageSize.getWidth();
@@ -69,10 +115,13 @@ const AILearningPathDisplay = ({ learningPath, onSave, isSaved = false }) => {
 
       // Helper function to add text with word wrap
       const addText = (text, fontSize = 10, isBold = false) => {
+        // Clean markdown before adding to PDF
+        const cleanedText = cleanMarkdown(text);
+        
         pdf.setFontSize(fontSize);
         pdf.setFont('helvetica', isBold ? 'bold' : 'normal');
         
-        const lines = pdf.splitTextToSize(text, maxWidth);
+        const lines = pdf.splitTextToSize(cleanedText, maxWidth);
         lines.forEach(line => {
           if (yPosition > pageHeight - margin) {
             pdf.addPage();
@@ -85,16 +134,17 @@ const AILearningPathDisplay = ({ learningPath, onSave, isSaved = false }) => {
       };
 
       // Title
-      addText('🎯 Your Personalized Learning Path', 18, true);
+      addText('Your Personalized Learning Path', 18, true);
       addText(`Generated on: ${new Date(learningPath.generatedAt).toLocaleString()}`, 10);
       yPosition += 5;
 
       // Add sections
       const sections = parseSections();
       Object.entries(sections).forEach(([key, value]) => {
-        addText(key.replace(/_/g, ' ').toUpperCase(), 14, true);
+        const sectionTitle = key.replace(/_/g, ' ').toUpperCase();
+        addText(sectionTitle, 14, true);
         addText(value, 10);
-        yPosition += 3;
+        yPosition += 5;
       });
 
       // Add full response if sections not available
@@ -105,12 +155,22 @@ const AILearningPathDisplay = ({ learningPath, onSave, isSaved = false }) => {
 
       // Add resources
       if (learningPath.resources && learningPath.resources.length > 0) {
-        pdf.addPage();
-        yPosition = margin;
-        addText('📚 RECOMMENDED RESOURCES', 14, true);
+        if (yPosition > pageHeight - 50) {
+          pdf.addPage();
+          yPosition = margin;
+        } else {
+          yPosition += 5;
+        }
+        addText('RECOMMENDED RESOURCES', 14, true);
+        yPosition += 2;
         learningPath.resources.forEach((resource, index) => {
-          addText(`${index + 1}. ${resource.title} (${resource.type})`, 10, true);
-          addText(`   ${resource.url}`, 9);
+          const resourceTitle = cleanMarkdown(resource.title);
+          const resourceType = resource.type || 'Resource';
+          addText(`${index + 1}. ${resourceTitle} (${resourceType})`, 10, true);
+          if (resource.url) {
+            addText(`   URL: ${resource.url}`, 9);
+          }
+          yPosition += 2;
         });
       }
 

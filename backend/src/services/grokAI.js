@@ -633,3 +633,55 @@ Make questions diverse, challenging, and relevant to current industry standards 
 
 const grokAIService = new GrokAIService();
 export default grokAIService;
+
+/**
+ * Generic function to get AI response for any prompt
+ * @param {string} prompt - The prompt to send to AI
+ * @param {Object} options - Optional configuration (temperature, max_tokens, etc.)
+ * @returns {Promise<string>} AI-generated response
+ */
+export async function generateAIResponse(prompt, options = {}) {
+  try {
+    const apiKey = process.env.GROQ_API_KEY || process.env.GROK_API_KEY;
+    const apiUrl = process.env.GROQ_API_KEY 
+      ? 'https://api.groq.com/openai/v1/chat/completions'
+      : 'https://api.x.ai/v1/chat/completions';
+    const model = process.env.GROQ_API_KEY 
+      ? 'llama-3.3-70b-versatile'
+      : 'grok-beta';
+
+    if (!apiKey) {
+      console.error('❌ No API key found for AI service');
+      return null;
+    }
+
+    const response = await axios.post(
+      apiUrl,
+      {
+        messages: [
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        model: model,
+        temperature: options.temperature || 0.7,
+        max_tokens: options.max_tokens || 2000,
+        stream: false
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        timeout: options.timeout || 30000 // 30 seconds timeout
+      }
+    );
+
+    return response.data.choices[0].message.content;
+
+  } catch (error) {
+    console.error('❌ AI Response Error:', error.response?.data || error.message);
+    return null;
+  }
+}

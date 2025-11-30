@@ -1,4 +1,10 @@
 import { Skill, User } from "../models/index.js";
+import { generateAIResponse } from "../services/grokAI.js";
+
+// AI-powered trending data with caching
+let cachedTrendingData = null;
+let cacheTimestamp = null;
+const CACHE_DURATION = 1 * 60 * 60 * 1000; // 1 hour (real-time updates)
 
 // Get trending domains and skills data
 export const getTrendingData = async (req, res) => {
@@ -39,7 +45,46 @@ export const getTrendingData = async (req, res) => {
     const userCount = await User.countDocuments();
     const skillCount = await Skill.countDocuments();
 
-    // Static trending domains data (can be made dynamic later)
+    // Check if cached data is still valid
+    const now = Date.now();
+    if (cachedTrendingData && cacheTimestamp && (now - cacheTimestamp) < CACHE_DURATION) {
+      console.log('✅ Using cached AI trending data');
+      return res.json({
+        stats: {
+          users: userCount,
+          skills: skillCount,
+          domains: cachedTrendingData.trendingDomains.length
+        },
+        ...cachedTrendingData,
+        skillStats: skillStats.slice(0, 6),
+        popularSkills: popularSkills.slice(0, 8),
+        cached: true
+      });
+    }
+
+    // Generate AI-powered trending data
+    console.log('🤖 Generating AI-powered trending data...');
+    const aiTrendingData = await generateAITrendingData();
+    
+    if (aiTrendingData) {
+      // Cache the AI-generated data
+      cachedTrendingData = aiTrendingData;
+      cacheTimestamp = now;
+      
+      return res.json({
+        stats: {
+          users: userCount,
+          skills: skillCount,
+          domains: aiTrendingData.trendingDomains.length
+        },
+        ...aiTrendingData,
+        skillStats: skillStats.slice(0, 6),
+        popularSkills: popularSkills.slice(0, 8),
+        cached: false
+      });
+    }
+
+    // Fallback to static data if AI fails
     const trendingDomains = [
       {
         name: 'Artificial Intelligence & Machine Learning',
@@ -171,3 +216,88 @@ export const getDomainInsights = async (req, res) => {
     });
   }
 };
+
+// Generate AI-powered trending data
+async function generateAITrendingData() {
+  try {
+    const currentMonth = new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
+    
+    const prompt = `As a technology industry analyst, provide the latest trending data for ${currentMonth}. 
+
+Generate a JSON response with exactly this structure:
+{
+  "trendingDomains": [
+    {
+      "name": "Domain name",
+      "growth": "Growth percentage (e.g., +45%)",
+      "skills": ["skill1", "skill2", "skill3", "skill4"],
+      "jobs": "Number of jobs (e.g., 12.5k+ jobs)",
+      "category": "Short category name"
+    }
+  ],
+  "hotSkills": [
+    {
+      "name": "Skill name",
+      "demand": 95,
+      "salary": "$120k+"
+    }
+  ]
+}
+
+Requirements:
+- Provide exactly 6 trending domains covering: AI/ML, Cloud/DevOps, Full Stack Development, Cybersecurity, Data Science, Mobile Development
+- Provide exactly 8 hot skills with demand scores (70-100) and realistic US market salaries
+- Use real 2025 market data and current technology trends
+- Growth percentages should be realistic (+20% to +50%)
+- Job numbers should reflect actual market demand
+- Skills should be currently in-demand technologies
+- Return ONLY valid JSON, no markdown formatting`;
+
+    const aiResponse = await generateAIResponse(prompt);
+    
+    if (!aiResponse) {
+      console.error('❌ AI response is empty');
+      return null;
+    }
+
+    // Clean and parse AI response
+    let cleanedResponse = aiResponse.trim();
+    
+    // Remove markdown code blocks if present
+    if (cleanedResponse.startsWith('```json')) {
+      cleanedResponse = cleanedResponse.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+    } else if (cleanedResponse.startsWith('```')) {
+      cleanedResponse = cleanedResponse.replace(/```\n?/g, '');
+    }
+    
+    cleanedResponse = cleanedResponse.trim();
+
+    try {
+      const parsedData = JSON.parse(cleanedResponse);
+      
+      // Validate structure
+      if (!parsedData.trendingDomains || !parsedData.hotSkills) {
+        console.error('❌ Invalid AI response structure');
+        return null;
+      }
+
+      // Validate data
+      if (parsedData.trendingDomains.length < 6 || parsedData.hotSkills.length < 8) {
+        console.error('❌ Insufficient trending data from AI');
+        return null;
+      }
+
+      console.log('✅ AI trending data generated successfully');
+      return parsedData;
+      
+    } catch (parseError) {
+      console.error('❌ Failed to parse AI JSON response:', parseError);
+      console.log('Raw AI response:', cleanedResponse.substring(0, 500));
+      return null;
+    }
+    
+  } catch (error) {
+    console.error('❌ Error generating AI trending data:', error);
+    return null;
+  }
+}

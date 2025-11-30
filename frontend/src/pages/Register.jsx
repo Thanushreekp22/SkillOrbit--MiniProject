@@ -14,6 +14,9 @@ import {
   Divider,
   Fade,
   Slide,
+  Stepper,
+  Step,
+  StepLabel,
 } from '@mui/material';
 import {
   Person,
@@ -24,24 +27,31 @@ import {
   HowToReg,
   ArrowBack,
   Login as LoginIcon,
+  MarkEmailRead,
+  CheckCircle,
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
+import api from '../api/axios';
 import SkillOrbitLogo from '../components/SkillOrbitLogo';
 
 const Register = () => {
+  const [step, setStep] = useState(0); // 0: Registration form, 1: OTP verification, 2: Success
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
     confirmPassword: '',
   });
+  const [otp, setOtp] = useState('');
+  const [userId, setUserId] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
   
-  const { register } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -63,17 +73,76 @@ const Register = () => {
       return;
     }
 
-    const result = await register(formData.name, formData.email, formData.password);
-    
-    if (result.success) {
-      toast.success('Registration successful! Please login with your credentials.');
-      // Redirect to login page instead of dashboard
-      navigate('/login');
-    } else {
-      setError(result.error);
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await api.post('/users/register', {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+      });
+
+      if (response.data.requiresVerification) {
+        setUserId(response.data.userId);
+        toast.success('OTP sent to your email! Please check your inbox.');
+        setStep(1); // Move to OTP verification step
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Registration failed');
+      toast.error(err.response?.data?.message || 'Registration failed');
     }
     
     setLoading(false);
+  };
+
+  const handleVerifyOTP = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    if (!otp || otp.length !== 6) {
+      setError('Please enter a valid 6-digit OTP');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await api.post('/users/verify-otp', {
+        userId,
+        otp,
+      });
+
+      toast.success('Email verified successfully! Your account is now active.');
+      setStep(2); // Show success message
+      
+      // Redirect to login page after 2 seconds
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
+    } catch (err) {
+      setError(err.response?.data?.message || 'OTP verification failed');
+      toast.error(err.response?.data?.message || 'Invalid OTP');
+    }
+    
+    setLoading(false);
+  };
+
+  const handleResendOTP = async () => {
+    setResendLoading(true);
+    setError('');
+
+    try {
+      await api.post('/users/resend-otp', { userId });
+      toast.success('New OTP sent to your email! Please check your inbox.');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to resend OTP');
+    }
+    
+    setResendLoading(false);
   };
 
   return (
@@ -187,6 +256,21 @@ const Register = () => {
                 </Typography>
               </Box>
 
+              {/* Stepper */}
+              <Box sx={{ mb: 3 }}>
+                <Stepper activeStep={step} alternativeLabel>
+                  <Step>
+                    <StepLabel>Create Account</StepLabel>
+                  </Step>
+                  <Step>
+                    <StepLabel>Verify Email</StepLabel>
+                  </Step>
+                  <Step>
+                    <StepLabel>Complete</StepLabel>
+                  </Step>
+                </Stepper>
+              </Box>
+
               {error && (
                 <Fade in>
                   <Alert
@@ -207,7 +291,9 @@ const Register = () => {
                 </Fade>
               )}
 
-              <Box component="form" onSubmit={handleSubmit}>
+              {/* Step 0: Registration Form */}
+              {step === 0 && (
+                <Box component="form" onSubmit={handleSubmit}>
                 <TextField
                   margin="normal"
                   required
@@ -426,6 +512,122 @@ const Register = () => {
                   </Button>
                 </Box>
               </Box>
+              )}
+
+              {/* Step 1: OTP Verification */}
+              {step === 1 && (
+                <Box component="form" onSubmit={handleVerifyOTP}>
+                  <Box textAlign="center" mb={3}>
+                    <MarkEmailRead sx={{ fontSize: 60, color: '#667eea', mb: 2 }} />
+                    <Typography variant="h5" fontWeight={600} gutterBottom>
+                      Verify Your Email
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      We've sent a 6-digit OTP to
+                    </Typography>
+                    <Typography variant="body1" color="primary" fontWeight={600}>
+                      {formData.email}
+                    </Typography>
+                  </Box>
+
+                  <TextField
+                    margin="normal"
+                    required
+                    fullWidth
+                    id="otp"
+                    label="Enter OTP"
+                    name="otp"
+                    value={otp}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, '');
+                      if (value.length <= 6) setOtp(value);
+                    }}
+                    placeholder="000000"
+                    inputProps={{
+                      maxLength: 6,
+                      style: { textAlign: 'center', fontSize: '24px', letterSpacing: '8px' }
+                    }}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: '12px',
+                      },
+                    }}
+                  />
+
+                  <Button
+                    type="submit"
+                    fullWidth
+                    variant="contained"
+                    size="large"
+                    disabled={loading || otp.length !== 6}
+                    endIcon={loading ? null : <CheckCircle />}
+                    sx={{
+                      mt: 2.5,
+                      mb: 1.5,
+                      py: 1.3,
+                      borderRadius: '12px',
+                      fontSize: '1rem',
+                      fontWeight: 600,
+                      background: '#667eea',
+                      boxShadow: '0 4px 15px 0 rgba(102, 126, 234, 0.4)',
+                      '&:hover': {
+                        transform: 'translateY(-2px)',
+                        boxShadow: '0 6px 20px 0 rgba(102, 126, 234, 0.5)',
+                      },
+                    }}
+                  >
+                    {loading ? <CircularProgress size={24} color="inherit" /> : 'Verify Email'}
+                  </Button>
+
+                  <Box textAlign="center" mt={2}>
+                    <Typography variant="body2" color="text.secondary" mb={1}>
+                      Didn't receive the OTP?
+                    </Typography>
+                    <Button
+                      onClick={handleResendOTP}
+                      disabled={resendLoading}
+                      sx={{
+                        textTransform: 'none',
+                        color: '#667eea',
+                        fontWeight: 600,
+                      }}
+                    >
+                      {resendLoading ? 'Sending...' : 'Resend OTP'}
+                    </Button>
+                  </Box>
+
+                  <Divider sx={{ my: 2 }} />
+
+                  <Button
+                    fullWidth
+                    onClick={() => setStep(0)}
+                    disabled={loading}
+                    sx={{
+                      textTransform: 'none',
+                      color: 'text.secondary',
+                    }}
+                  >
+                    ← Back to Registration
+                  </Button>
+                </Box>
+              )}
+
+              {/* Step 2: Success */}
+              {step === 2 && (
+                <Box textAlign="center" py={4}>
+                  <CheckCircle sx={{ fontSize: 80, color: '#10b981', mb: 2 }} />
+                  <Typography variant="h4" fontWeight={700} color="#10b981" gutterBottom>
+                    Account Created!
+                  </Typography>
+                  <Typography variant="h6" color="text.secondary" mb={1}>
+                    Your email has been verified successfully
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" mb={3}>
+                    Redirecting to login page...
+                  </Typography>
+                  <CircularProgress />
+                </Box>
+              )}
             </Paper>
           </Slide>
         </Box>

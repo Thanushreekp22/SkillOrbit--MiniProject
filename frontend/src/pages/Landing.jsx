@@ -203,25 +203,6 @@ const Landing = () => {
             <Box sx={{ display: 'flex', gap: 1 }}>
               <Button 
                 color="inherit" 
-                onClick={() => navigate('/admin/login')}
-                sx={{
-                  fontSize: '0.875rem',
-                  fontWeight: 600,
-                  px: 2,
-                  py: 0.75,
-                  textTransform: 'none',
-                  border: '1px solid rgba(255,255,255,0.3)',
-                  borderRadius: '8px',
-                  '&:hover': {
-                    backgroundColor: 'rgba(255,255,255,0.1)',
-                    border: '1px solid rgba(255,255,255,0.5)',
-                  },
-                }}
-              >
-                Admin
-              </Button>
-              <Button 
-                color="inherit" 
                 onClick={() => navigate('/login')}
                 sx={{
                   fontSize: '0.875rem',
@@ -403,9 +384,28 @@ const Landing = () => {
                 Trending Domains 2025
               </Typography>
             </Box>
-            <Typography variant="h6" color="text.secondary" sx={{ maxWidth: '700px', mx: 'auto' }}>
-              Explore the most in-demand career paths and master the skills that matter
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, mb: 2 }}>
+              <Typography variant="h6" color="text.secondary" sx={{ maxWidth: '700px' }}>
+                Explore the most in-demand career paths and master the skills that matter
+              </Typography>
+              {!trendingData.loading && trendingData.trendingDomains.length > 0 && (
+                <Chip 
+                  icon={<Psychology />}
+                  label="AI-Powered Insights"
+                  size="small"
+                  sx={{ 
+                    bgcolor: '#6366F1',
+                    color: 'white',
+                    fontWeight: 600,
+                    animation: 'pulse 2s ease-in-out infinite',
+                    '@keyframes pulse': {
+                      '0%, 100%': { opacity: 1 },
+                      '50%': { opacity: 0.7 },
+                    },
+                  }}
+                />
+              )}
+            </Box>
           </Box>
           <Grid container spacing={3}>
             {(trendingData.trendingDomains.length > 0 ? trendingData.trendingDomains : trendingDomains).map((domain, index) => {
