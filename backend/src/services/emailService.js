@@ -211,25 +211,39 @@ const createTransporter = () => {
 // Send OTP email
 export const sendOTPEmail = async (email, otp, name) => {
   try {
+    console.log('\n🔍 EMAIL DEBUG - sendOTPEmail called');
+    console.log('   Service:', EMAIL_SERVICE);
+    console.log('   ResendClient exists:', !!resendClient);
+    console.log('   Recipient:', email);
+    console.log('   OTP:', otp);
+    console.log('   Name:', name);
+    
     // Use Resend if configured
     if (EMAIL_SERVICE === 'resend' && resendClient) {
       console.log('📤 Sending OTP via Resend to:', email);
+      console.log('   From:', process.env.EMAIL_FROM || 'SkillOrbit <onboarding@resend.dev>');
       
       const htmlContent = generateOTPEmailHTML(email, otp, name);
       
-      const data = await resendClient.emails.send({
-        from: process.env.EMAIL_FROM || 'SkillOrbit <onboarding@resend.dev>',
-        to: email,
-        subject: 'Verify Your Email - SkillOrbit',
-        html: htmlContent
-      });
-      
-      console.log('✅ Email sent via Resend. Response:', JSON.stringify(data, null, 2));
-      return { 
-        success: true, 
-        message: 'OTP sent successfully via Resend',
-        messageId: data?.id || data?.data?.id || 'sent'
-      };
+      try {
+        const data = await resendClient.emails.send({
+          from: process.env.EMAIL_FROM || 'SkillOrbit <onboarding@resend.dev>',
+          to: email,
+          subject: 'Verify Your Email - SkillOrbit',
+          html: htmlContent
+        });
+        
+        console.log('✅ Email sent via Resend. Response:', JSON.stringify(data, null, 2));
+        return { 
+          success: true, 
+          message: 'OTP sent successfully via Resend',
+          messageId: data?.id || data?.data?.id || 'sent'
+        };
+      } catch (resendError) {
+        console.error('❌ Resend API Error:', resendError.message);
+        console.error('   Full error:', JSON.stringify(resendError, null, 2));
+        throw resendError;
+      }
     }
     
     // Use SMTP transporter (Gmail, etc.)
@@ -392,7 +406,8 @@ export const sendOTPEmail = async (email, otp, name) => {
     console.error('Error:', error.message);
     console.error('Code:', error.code);
     console.error('Command:', error.command);
-    console.error('Full error:', error);
+    console.error('Stack:', error.stack);
+    console.error('Full error:', JSON.stringify(error, null, 2));
     console.error('❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌\n');
     
     // Fallback to console logging if email fails
