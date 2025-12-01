@@ -15,6 +15,7 @@ const allowedOrigins = [
 ].filter(Boolean);
 
 console.log('🌐 CORS Allowed Origins:', allowedOrigins);
+console.log('🚀 App initialized - Version: 2.0 (Auto-verify enabled)');
 
 app.use(cors({
   origin: function (origin, callback) {
