@@ -50,7 +50,9 @@ export const registerUser = async (req, res) => {
     // Check if email verification should be enforced
     const isProduction = process.env.NODE_ENV === 'production';
     const emailConfigured = !!(process.env.EMAIL_USER && process.env.EMAIL_PASS) || !!(process.env.RESEND_API_KEY);
-    const requireEmailVerification = !isProduction || (isProduction && emailConfigured);
+    // In production: SKIP email verification (auto-verify)
+    // In development: Use email verification if configured
+    const requireEmailVerification = !isProduction && emailConfigured;
     
     console.log('📧 Email Verification Check:');
     console.log('   NODE_ENV:', process.env.NODE_ENV);
