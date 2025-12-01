@@ -47,12 +47,20 @@ export const registerUser = async (req, res) => {
     // Hash password
     const hashed = await bcrypt.hash(password, 10);
     
-    // Check if email service is configured
-    const emailConfigured = !!(process.env.EMAIL_USER && process.env.EMAIL_PASS);
+    // Check if email verification should be enforced
+    const isProduction = process.env.NODE_ENV === 'production';
+    const emailConfigured = !!(process.env.EMAIL_USER && process.env.EMAIL_PASS) || !!(process.env.RESEND_API_KEY);
+    const requireEmailVerification = !isProduction || (isProduction && emailConfigured);
+    
+    console.log('📧 Email Verification Check:');
+    console.log('   NODE_ENV:', process.env.NODE_ENV);
+    console.log('   Is Production:', isProduction);
+    console.log('   Email Configured:', emailConfigured);
+    console.log('   Require Verification:', requireEmailVerification);
     
     let user;
     
-    if (emailConfigured) {
+    if (requireEmailVerification && emailConfigured) {
       // Generate OTP
       const otp = generateOTP();
       const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
@@ -90,8 +98,12 @@ export const registerUser = async (req, res) => {
         requiresVerification: true
       });
     } else {
-      // Email service not configured - auto-verify user
-      console.log('⚠️ Email service not configured. Auto-verifying user...');
+      // Production mode without email service OR development without email - auto-verify user
+      const reason = isProduction 
+        ? 'Production mode - Email verification optional' 
+        : 'Email service not configured in development';
+      
+      console.log(`⚠️ Auto-verifying user: ${reason}`);
       
       user = await User.create({ 
         name, 
@@ -113,11 +125,12 @@ export const registerUser = async (req, res) => {
       delete userResponse.password;
 
       res.status(201).json({ 
-        message: "Registration successful! You can now login.", 
+        message: "Registration successful! You are now logged in.", 
         user: userResponse,
         token,
         requiresVerification: false,
-        note: "Email verification is disabled (email service not configured)"
+        autoVerified: true,
+        note: reason
       });
     }
   } catch (err) {

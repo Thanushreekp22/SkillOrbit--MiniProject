@@ -234,6 +234,18 @@ export const sendOTPEmail = async (email, otp, name) => {
         });
         
         console.log('✅ Email sent via Resend. Response:', JSON.stringify(data, null, 2));
+        
+        // Check for Resend validation errors (domain not verified)
+        if (data.error) {
+          console.error('❌ Resend returned an error:', data.error.message);
+          if (data.error.message.includes('verify a domain')) {
+            console.error('⚠️  DOMAIN NOT VERIFIED: Resend free tier only allows sending to your registered email.');
+            console.error('   Register with: thanushreekp22@gmail.com to receive OTP');
+            console.error('   Or verify a domain at: https://resend.com/domains');
+          }
+          throw new Error(data.error.message);
+        }
+        
         return { 
           success: true, 
           message: 'OTP sent successfully via Resend',
