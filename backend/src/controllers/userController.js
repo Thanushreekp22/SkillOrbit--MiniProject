@@ -24,7 +24,16 @@ export const registerUser = async (req, res) => {
         existing.otpExpiresAt = otpExpiresAt;
         await existing.save();
 
-        await sendOTPEmail(email, otp, existing.name);
+        console.log('🔔 [RESEND OTP] About to resend OTP email...');
+        console.log('   Email:', email);
+        console.log('   OTP:', otp);
+        
+        try {
+          const emailResult = await sendOTPEmail(email, otp, existing.name);
+          console.log('✅ [RESEND OTP] Email send result:', emailResult);
+        } catch (emailError) {
+          console.error('❌ [RESEND OTP] Email sending failed:', emailError.message);
+        }
 
         return res.status(200).json({ 
           message: "OTP resent to your email. Please verify to complete registration.",
@@ -60,7 +69,19 @@ export const registerUser = async (req, res) => {
       });
 
       // Send OTP email
-      await sendOTPEmail(email, otp, name);
+      console.log('🔔 [REGISTER] About to send OTP email...');
+      console.log('   Email:', email);
+      console.log('   OTP:', otp);
+      console.log('   Name:', name);
+      
+      try {
+        const emailResult = await sendOTPEmail(email, otp, name);
+        console.log('✅ [REGISTER] Email send result:', emailResult);
+      } catch (emailError) {
+        console.error('❌ [REGISTER] Email sending failed:', emailError.message);
+        console.error('   Full error:', emailError);
+        // Don't fail registration if email fails
+      }
 
       res.status(201).json({ 
         message: "Registration successful! Please check your email for OTP verification.", 
