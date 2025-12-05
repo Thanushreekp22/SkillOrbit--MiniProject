@@ -341,8 +341,8 @@ const AdminDashboard = () => {
                     </TableCell>
                     <TableCell>
                       <Chip
-                        label={user.isEmailVerified ? 'Verified' : 'Pending'}
-                        color={user.isEmailVerified ? 'success' : 'warning'}
+                        label={user.isVerified ? 'Verified' : 'Pending'}
+                        color={user.isVerified ? 'success' : 'warning'}
                         size="small"
                       />
                     </TableCell>

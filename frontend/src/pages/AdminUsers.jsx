@@ -213,8 +213,8 @@ const AdminUsers = () => {
                       </TableCell>
                       <TableCell>
                         <Chip
-                          label={user.isEmailVerified ? 'Verified' : 'Pending'}
-                          color={user.isEmailVerified ? 'success' : 'warning'}
+                          label={user.isVerified ? 'Verified' : 'Pending'}
+                          color={user.isVerified ? 'success' : 'warning'}
                           size="small"
                         />
                       </TableCell>
@@ -293,8 +293,8 @@ const AdminUsers = () => {
               <Box>
                 <Typography variant="subtitle2" color="text.secondary">Email Status</Typography>
                 <Chip
-                  label={selectedUser.isEmailVerified ? 'Verified' : 'Not Verified'}
-                  color={selectedUser.isEmailVerified ? 'success' : 'warning'}
+                  label={selectedUser.isVerified ? 'Verified' : 'Not Verified'}
+                  color={selectedUser.isVerified ? 'success' : 'warning'}
                   size="small"
                 />
               </Box>
