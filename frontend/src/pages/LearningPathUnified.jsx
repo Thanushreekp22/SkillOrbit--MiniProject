@@ -46,8 +46,6 @@ import {
   Rocket,
   ExpandMore,
   Timeline,
-  Visibility,
-  Delete,
 } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import { useAuth } from '../context/AuthContext';
@@ -77,8 +75,6 @@ const LearningPathUnified = () => {
   const [targetRole, setTargetRole] = useState('');
   const [currentLevel, setCurrentLevel] = useState('Intermediate');
   const [learningPath, setLearningPath] = useState(null);
-  const [savedPaths, setSavedPaths] = useState([]);
-  const [loadingSavedPaths, setLoadingSavedPaths] = useState(false);
 
   const roles = [
     'Full Stack Developer',
@@ -100,7 +96,6 @@ const LearningPathUnified = () => {
   useEffect(() => {
     fetchUserSkills();
     checkAIStatus();
-    fetchSavedPaths();
   }, []);
 
   const fetchUserSkills = async () => {
@@ -159,17 +154,6 @@ const LearningPathUnified = () => {
       setAiLoading(false);
     }
   };
-  const fetchSavedPaths = async () => {
-    setLoadingSavedPaths(true);
-    try {
-      const response = await api.get('/learning-path/saved');
-      setSavedPaths(response.data.learningPaths || []);
-    } catch (error) {
-      console.error('Error fetching saved paths:', error);
-    } finally {
-      setLoadingSavedPaths(false);
-    }
-  };
 
   const handleSaveLearningPath = async (pathData) => {
     try {
@@ -185,42 +169,11 @@ const LearningPathUnified = () => {
       });
 
       toast.success('Learning path saved successfully!');
-      // Refresh saved paths
-      fetchSavedPaths();
+      // Refresh saved paths list to show the newly saved path
+      await fetchSavedPaths();
     } catch (error) {
       console.error('Error saving learning path:', error);
       toast.error('Failed to save learning path');
-    }
-  };
-
-  const handleDeletePath = async (pathId) => {
-    if (!window.confirm('Are you sure you want to delete this learning path?')) {
-      return;
-    }
-    
-    try {
-      await api.delete(`/learning-path/saved/${pathId}`);
-      toast.success('Learning path deleted successfully!');
-      fetchSavedPaths();
-    } catch (error) {
-      console.error('Error deleting path:', error);
-      toast.error('Failed to delete learning path');
-    }
-  };
-
-  const handleViewPath = async (pathId) => {
-    try {
-      const response = await api.get(`/learning-path/saved/${pathId}`);
-      setLearningPath({
-        rawResponse: response.data.learningPath.aiResponse,
-        sections: response.data.learningPath.sections,
-        resources: response.data.learningPath.resources,
-        generatedAt: response.data.learningPath.createdAt
-      });
-      toast.success('Learning path loaded!');
-    } catch (error) {
-      console.error('Error viewing path:', error);
-      toast.error('Failed to load learning path');
     }
   };
 
@@ -654,12 +607,72 @@ const LearningPathUnified = () => {
                 </FormControl>
               </Grid>
 
+              {/* Current Skills Summary */}
+              {userSkills.length > 0 && (
+                <Grid item xs={12}>
+                  <Box sx={{ p: 2, bgcolor: 'background.default', borderRadius: 2 }}>
+                    <Typography variant="subtitle2" gutterBottom>
+                      Your Current Skills ({userSkills.length}):
+                    </Typography>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+                      {userSkills.map((skill) => (
+                        <Chip
+                          key={skill._id}
+                          label={`${skill.name} (${skill.proficiency}%)`}
+                          size="small"
+                          color="secondary"
+                          variant="outlined"
+                        />
+                      ))}
+                    </Box>
+                  </Box>
+                </Grid>
+              )}
+
+              {/* Generate Button */}
+              <Grid item xs={12}>
+                <Button
+                  variant="contained"
+                  size="large"
+                  fullWidth
+                  onClick={handleGenerateAIPath}
+                  disabled={aiLoading || !aiEnabled || selectedSkillsAI.length === 0}
+                  startIcon={aiLoading ? <CircularProgress size={20} /> : <Rocket />}
+                  sx={{
+                    py: 1.5,
+                    background: '#667eea',
+                    '&:hover': {
+                      background: '#764ba2',
+                    },
+                  }}
+                >
+                  {aiLoading ? 'Generating AI Learning Path...' : 'Generate AI Learning Path'}
+                </Button>
+              </Grid>
+            </Grid>
+          </Paper>
+
           {/* Saved Learning Paths */}
-          {savedPaths.length > 0 && (
-            <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
-              <Typography variant="h6" gutterBottom fontWeight="bold">
-                💾 Your Saved Learning Paths ({savedPaths.length})
-              </Typography>
+          <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
+            <Typography variant="h6" gutterBottom fontWeight="bold">
+              💾 Your Saved Learning Paths {savedPaths.length > 0 && `(${savedPaths.length})`}
+            </Typography>
+            
+            {loadingSavedPaths ? (
+              <Box display="flex" justifyContent="center" alignItems="center" py={4}>
+                <CircularProgress />
+              </Box>
+            ) : savedPaths.length === 0 ? (
+              <Box sx={{ textAlign: 'center', py: 4 }}>
+                <BookmarkBorder sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
+                <Typography variant="body1" color="text.secondary" gutterBottom>
+                  No saved learning paths yet
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Generate and save AI learning paths to see them here
+                </Typography>
+              </Box>
+            ) : (
               <Grid container spacing={2} sx={{ mt: 1 }}>
                 {savedPaths.map((path) => (
                   <Grid item xs={12} md={6} key={path._id}>
@@ -735,52 +748,7 @@ const LearningPathUnified = () => {
                   </Grid>
                 ))}
               </Grid>
-            </Paper>
-          )}
-
-          {/* Learning Path Results */}
-          {learningPath && (
-            <AILearningPathDisplay 
-              learningPath={learningPath}
-              onSave={handleSaveLearningPath}
-              isSaved={false}
-            />
-          )}        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
-                      {userSkills.map((skill) => (
-                        <Chip
-                          key={skill._id}
-                          label={`${skill.name} (${skill.proficiency}%)`}
-                          size="small"
-                          color="secondary"
-                          variant="outlined"
-                        />
-                      ))}
-                    </Box>
-                  </Box>
-                </Grid>
-              )}
-
-              {/* Generate Button */}
-              <Grid item xs={12}>
-                <Button
-                  variant="contained"
-                  size="large"
-                  fullWidth
-                  onClick={handleGenerateAIPath}
-                  disabled={aiLoading || !aiEnabled || selectedSkillsAI.length === 0}
-                  startIcon={aiLoading ? <CircularProgress size={20} /> : <Rocket />}
-                  sx={{
-                    py: 1.5,
-                    background: '#667eea',
-                    '&:hover': {
-                      background: '#764ba2',
-                    },
-                  }}
-                >
-                  {aiLoading ? 'Generating AI Learning Path...' : 'Generate AI Learning Path'}
-                </Button>
-              </Grid>
-            </Grid>
+            )}
           </Paper>
 
           {/* Learning Path Results */}
