@@ -26,6 +26,13 @@ import Progress from './pages/ProgressEnhanced';
 import Reports from './pages/ReportsEnhanced';
 import Profile from './pages/Profile';
 
+// Admin Pages
+import AdminLogin from './pages/AdminLogin';
+import AdminDashboard from './pages/AdminDashboard';
+import AdminQuestions from './pages/AdminQuestions';
+import AdminUsers from './pages/AdminUsers';
+import AdminProtectedRoute from './components/AdminProtectedRoute';
+
 function App() {
   return (
     <ThemeProvider>
@@ -38,6 +45,12 @@ function App() {
               <Route path="/domain/:domainName" element={<DomainDetails />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              
+              {/* Admin Routes */}
+              <Route path="/admin/login" element={<AdminLogin />} />
+              <Route path="/admin/dashboard" element={<AdminProtectedRoute><AdminDashboard /></AdminProtectedRoute>} />
+              <Route path="/admin/questions" element={<AdminProtectedRoute><AdminQuestions /></AdminProtectedRoute>} />
+              <Route path="/admin/users" element={<AdminProtectedRoute><AdminUsers /></AdminProtectedRoute>} />
               
               {/* Protected Routes */}
               <Route path="/app" element={<ProtectedRoute><Navbar /></ProtectedRoute>}>
