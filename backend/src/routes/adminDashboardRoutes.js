@@ -11,12 +11,28 @@ import {
   getUserManagementData,
   exportQuestions
 } from "../controllers/adminQuestionController.js";
+import {
+  getDashboardStats,
+  getRecentUsers,
+  getAllUsers,
+  getUserDetails,
+  deleteUser
+} from "../controllers/adminController.js";
 import { verifyAdminToken, checkPermission } from "../middleware/adminAuthMiddleware.js";
 
 const router = express.Router();
 
 // All routes require admin authentication
 router.use(verifyAdminToken);
+
+// Dashboard Stats Routes
+router.get("/stats", getDashboardStats);
+router.get("/recent-users", getRecentUsers);
+
+// User Management Routes
+router.get("/users", getAllUsers);
+router.get("/users/:userId", getUserDetails);
+router.delete("/users/:userId", deleteUser);
 
 // Question Management Routes (require manageQuestions permission)
 router.get("/questions", checkPermission('manageQuestions'), getAllQuestions);
@@ -30,8 +46,5 @@ router.delete("/questions/:id", checkPermission('manageQuestions'), deleteQuesti
 
 // Analytics Routes (require viewAnalytics permission)
 router.get("/analytics", checkPermission('viewAnalytics'), getPlatformAnalytics);
-
-// User Management Routes (require manageUsers permission)
-router.get("/users", checkPermission('manageUsers'), getUserManagementData);
 
 export default router;
