@@ -222,7 +222,6 @@ const LearningPathUnified = () => {
       console.error('Error viewing path:', error);
       toast.error('Failed to load learning path');
     }
-  };}
   };
 
   const toggleBookmark = (resourceId) => {
