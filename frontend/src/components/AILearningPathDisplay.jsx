@@ -534,34 +534,8 @@ const AILearningPathDisplay = ({ learningPath, onSave, isSaved = false }) => {
               bgcolor: 'background.default',
               borderRadius: '8px',
               p: 2.5,
-              maxHeight: '400px',
+              maxHeight: '600px',
               overflowY: 'auto',
-              '& p': { 
-                mb: 1.5, 
-                lineHeight: 1.7,
-                fontSize: '0.9rem'
-              },
-              '& strong': { 
-                fontWeight: 700, 
-                color: 'primary.main',
-                fontSize: '0.95rem'
-              },
-              '& ul, & ol': { 
-                pl: 2.5,
-                mb: 1.5
-              },
-              '& li': { 
-                mb: 0.75,
-                lineHeight: 1.6,
-                fontSize: '0.875rem'
-              },
-              '& h1, & h2, & h3': { 
-                color: 'text.primary', 
-                fontWeight: 600,
-                mt: 2, 
-                mb: 1.5,
-                fontSize: '1rem'
-              },
               '&::-webkit-scrollbar': {
                 width: '8px'
               },
@@ -579,39 +553,264 @@ const AILearningPathDisplay = ({ learningPath, onSave, isSaved = false }) => {
             }}
           >
             {learningPath.rawResponse.split('\n').map((line, index) => {
-              // Format headers
-              if (line.startsWith('**') && line.endsWith('**')) {
+              const trimmedLine = line.trim();
+              
+              // Skip empty lines
+              if (!trimmedLine) {
+                return <Box key={index} sx={{ height: '12px' }} />;
+              }
+
+              // Main section headers (### or **Section Name:**)
+              if (trimmedLine.startsWith('###') || (trimmedLine.startsWith('**') && trimmedLine.includes(':**'))) {
+                const headerText = trimmedLine.replace(/^#+\s*/, '').replace(/\*\*/g, '').replace(/:/g, '');
                 return (
-                  <Typography key={index} variant="h6" sx={{ fontWeight: 600, color: 'primary.main', mt: 2, mb: 1 }}>
-                    {line.replace(/\*\*/g, '')}
+                  <Box key={index} sx={{ mt: 3, mb: 2 }}>
+                    <Typography 
+                      variant="h6" 
+                      sx={{ 
+                        fontWeight: 700, 
+                        color: '#667eea',
+                        borderBottom: '3px solid #667eea',
+                        pb: 0.5,
+                        display: 'inline-block',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px',
+                        fontSize: '1.1rem'
+                      }}
+                    >
+                      {headerText}
+                    </Typography>
+                  </Box>
+                );
+              }
+
+              // Sub-headers (## or bold text with **)
+              if (trimmedLine.startsWith('##') || (trimmedLine.startsWith('**') && trimmedLine.endsWith('**') && !trimmedLine.includes(':'))) {
+                const headerText = trimmedLine.replace(/^#+\s*/, '').replace(/\*\*/g, '');
+                return (
+                  <Typography 
+                    key={index} 
+                    variant="subtitle1" 
+                    sx={{ 
+                      fontWeight: 700, 
+                      color: 'primary.dark',
+                      mt: 2.5, 
+                      mb: 1,
+                      fontSize: '1.05rem',
+                      borderLeft: '4px solid #667eea',
+                      pl: 1.5,
+                      bgcolor: 'rgba(102, 126, 234, 0.05)',
+                      py: 0.5,
+                      borderRadius: '4px'
+                    }}
+                  >
+                    {headerText}
                   </Typography>
                 );
               }
-              // Format list items
-              if (line.trim().startsWith('-') || line.trim().startsWith('*')) {
+
+              // Bullet points with special formatting
+              if (trimmedLine.startsWith('-') || trimmedLine.startsWith('*') || trimmedLine.startsWith('•')) {
+                const text = trimmedLine.replace(/^[-*•]\s*/, '');
+                const parts = [];
+                let lastIndex = 0;
+                
+                // Parse bold text (**text**)
+                const boldRegex = /\*\*([^*]+)\*\*/g;
+                let match;
+                
+                while ((match = boldRegex.exec(text)) !== null) {
+                  if (match.index > lastIndex) {
+                    parts.push({ text: text.substring(lastIndex, match.index), bold: false });
+                  }
+                  parts.push({ text: match[1], bold: true });
+                  lastIndex = match.index + match[0].length;
+                }
+                
+                if (lastIndex < text.length) {
+                  parts.push({ text: text.substring(lastIndex), bold: false });
+                }
+
                 return (
-                  <Typography key={index} variant="body2" sx={{ pl: 2, mb: 0.5 }}>
-                    • {line.replace(/^[-*]\s*/, '')}
-                  </Typography>
+                  <Box key={index} sx={{ display: 'flex', gap: 1.5, mb: 1, pl: 2 }}>
+                    <Box 
+                      sx={{ 
+                        width: '8px', 
+                        height: '8px', 
+                        borderRadius: '50%', 
+                        bgcolor: '#667eea',
+                        mt: 1,
+                        flexShrink: 0
+                      }} 
+                    />
+                    <Typography 
+                      variant="body2" 
+                      sx={{ 
+                        lineHeight: 1.8,
+                        color: 'text.primary',
+                        fontSize: '0.95rem'
+                      }}
+                    >
+                      {parts.length > 0 ? (
+                        parts.map((part, i) => (
+                          part.bold ? (
+                            <Box 
+                              key={i} 
+                              component="span" 
+                              sx={{ 
+                                fontWeight: 700, 
+                                color: '#667eea',
+                                textDecoration: 'underline',
+                                textDecorationColor: 'rgba(102, 126, 234, 0.3)',
+                                textDecorationThickness: '2px',
+                                textUnderlineOffset: '2px'
+                              }}
+                            >
+                              {part.text}
+                            </Box>
+                          ) : (
+                            <Box key={i} component="span">{part.text}</Box>
+                          )
+                        ))
+                      ) : text}
+                    </Typography>
+                  </Box>
                 );
               }
-              // Format numbered lists
-              if (/^\d+\./.test(line.trim())) {
-                return (
-                  <Typography key={index} variant="body2" sx={{ pl: 2, mb: 0.5 }}>
-                    {line}
-                  </Typography>
-                );
+
+              // Numbered lists with enhanced styling
+              if (/^\d+\./.test(trimmedLine)) {
+                const match = trimmedLine.match(/^(\d+)\.\s*(.+)$/);
+                if (match) {
+                  const [, number, text] = match;
+                  const parts = [];
+                  let lastIndex = 0;
+                  
+                  const boldRegex = /\*\*([^*]+)\*\*/g;
+                  let boldMatch;
+                  
+                  while ((boldMatch = boldRegex.exec(text)) !== null) {
+                    if (boldMatch.index > lastIndex) {
+                      parts.push({ text: text.substring(lastIndex, boldMatch.index), bold: false });
+                    }
+                    parts.push({ text: boldMatch[1], bold: true });
+                    lastIndex = boldMatch.index + boldMatch[0].length;
+                  }
+                  
+                  if (lastIndex < text.length) {
+                    parts.push({ text: text.substring(lastIndex), bold: false });
+                  }
+
+                  return (
+                    <Box key={index} sx={{ display: 'flex', gap: 1.5, mb: 1.5, pl: 2 }}>
+                      <Box 
+                        sx={{ 
+                          width: '28px', 
+                          height: '28px', 
+                          borderRadius: '50%', 
+                          bgcolor: '#667eea',
+                          color: 'white',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontWeight: 700,
+                          fontSize: '0.85rem',
+                          flexShrink: 0,
+                          boxShadow: '0 2px 4px rgba(102, 126, 234, 0.3)'
+                        }}
+                      >
+                        {number}
+                      </Box>
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          lineHeight: 1.8,
+                          color: 'text.primary',
+                          fontSize: '0.95rem',
+                          flex: 1
+                        }}
+                      >
+                        {parts.length > 0 ? (
+                          parts.map((part, i) => (
+                            part.bold ? (
+                              <Box 
+                                key={i} 
+                                component="span" 
+                                sx={{ 
+                                  fontWeight: 700, 
+                                  color: '#667eea',
+                                  textDecoration: 'underline',
+                                  textDecorationColor: 'rgba(102, 126, 234, 0.3)',
+                                  textDecorationThickness: '2px',
+                                  textUnderlineOffset: '2px'
+                                }}
+                              >
+                                {part.text}
+                              </Box>
+                            ) : (
+                              <Box key={i} component="span">{part.text}</Box>
+                            )
+                          ))
+                        ) : text}
+                      </Typography>
+                    </Box>
+                  );
+                }
               }
-              // Regular text
-              if (line.trim()) {
-                return (
-                  <Typography key={index} variant="body2" sx={{ mb: 1 }}>
-                    {line}
-                  </Typography>
-                );
+
+              // Regular paragraph text with bold formatting
+              const parts = [];
+              let lastIndex = 0;
+              const boldRegex = /\*\*([^*]+)\*\*/g;
+              let match;
+              
+              while ((match = boldRegex.exec(trimmedLine)) !== null) {
+                if (match.index > lastIndex) {
+                  parts.push({ text: trimmedLine.substring(lastIndex, match.index), bold: false });
+                }
+                parts.push({ text: match[1], bold: true });
+                lastIndex = match.index + match[0].length;
               }
-              return <Box key={index} sx={{ height: '8px' }} />;
+              
+              if (lastIndex < trimmedLine.length) {
+                parts.push({ text: trimmedLine.substring(lastIndex), bold: false });
+              }
+
+              return (
+                <Typography 
+                  key={index} 
+                  variant="body2" 
+                  sx={{ 
+                    mb: 1.5, 
+                    lineHeight: 1.8,
+                    color: 'text.primary',
+                    fontSize: '0.95rem'
+                  }}
+                >
+                  {parts.length > 0 ? (
+                    parts.map((part, i) => (
+                      part.bold ? (
+                        <Box 
+                          key={i} 
+                          component="span" 
+                          sx={{ 
+                            fontWeight: 700, 
+                            color: '#667eea',
+                            bgcolor: 'rgba(102, 126, 234, 0.08)',
+                            px: 0.5,
+                            py: 0.2,
+                            borderRadius: '3px'
+                          }}
+                        >
+                          {part.text}
+                        </Box>
+                      ) : (
+                        <Box key={i} component="span">{part.text}</Box>
+                      )
+                    ))
+                  ) : trimmedLine}
+                </Typography>
+              );
             })}
           </Box>
         </CardContent>

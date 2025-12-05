@@ -1,4 +1,5 @@
 import Admin from "../models/Admin.js";
+import { User, Assessment, QuestionBank, Skill } from "../models/index.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
@@ -515,5 +516,178 @@ export const unlockAdminAccount = async (req, res) => {
   } catch (error) {
     console.error("Unlock admin account error:", error);
     res.status(500).json({ message: "Failed to unlock account", error: error.message });
+  }
+};
+
+// Get Dashboard Stats
+export const getDashboardStats = async (req, res) => {
+  try {
+    const [
+      totalUsers,
+      totalQuestions,
+      totalAssessments,
+      totalSkills,
+      activeUsers,
+      recentAssessments
+    ] = await Promise.all([
+      User.countDocuments(),
+      QuestionBank.countDocuments(),
+      Assessment.countDocuments(),
+      Skill.countDocuments(),
+      User.countDocuments({ isVerified: true }),
+      Assessment.countDocuments({ 
+        createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } 
+      })
+    ]);
+
+    // Get questions by difficulty
+    const questionsByDifficulty = await QuestionBank.aggregate([
+      {
+        $group: {
+          _id: '$difficulty',
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    // Get assessments trend (last 7 days)
+    const assessmentsTrend = await Assessment.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
+        }
+      },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]);
+
+    res.json({
+      totalUsers,
+      totalQuestions,
+      totalAssessments,
+      totalSkills,
+      activeUsers,
+      recentAssessments,
+      questionsByDifficulty,
+      assessmentsTrend
+    });
+  } catch (error) {
+    console.error("Get dashboard stats error:", error);
+    res.status(500).json({ message: "Failed to get dashboard stats", error: error.message });
+  }
+};
+
+// Get Recent Users
+export const getRecentUsers = async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 10;
+
+    const recentUsers = await User.find()
+      .select('name email isVerified createdAt')
+      .sort({ createdAt: -1 })
+      .limit(limit);
+
+    res.json({
+      users: recentUsers,
+      total: recentUsers.length
+    });
+  } catch (error) {
+    console.error("Get recent users error:", error);
+    res.status(500).json({ message: "Failed to get recent users", error: error.message });
+  }
+};
+
+// Get All Users for Admin Management
+export const getAllUsers = async (req, res) => {
+  try {
+    const { page = 1, limit = 20, search } = req.query;
+
+    const filter = {};
+    if (search) {
+      filter.$or = [
+        { name: new RegExp(search, 'i') },
+        { email: new RegExp(search, 'i') }
+      ];
+    }
+
+    const users = await User.find(filter)
+      .select('name email isVerified createdAt')
+      .sort({ createdAt: -1 })
+      .limit(limit * 1)
+      .skip((page - 1) * limit);
+
+    const total = await User.countDocuments(filter);
+
+    res.json({
+      users,
+      totalPages: Math.ceil(total / limit),
+      currentPage: Number(page),
+      total
+    });
+  } catch (error) {
+    console.error("Get all users error:", error);
+    res.status(500).json({ message: "Failed to get users", error: error.message });
+  }
+};
+
+// Get User Details
+export const getUserDetails = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const user = await User.findById(userId).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Get user's assessment count
+    const assessmentCount = await Assessment.countDocuments({ userId });
+
+    res.json({
+      user,
+      assessmentCount
+    });
+  } catch (error) {
+    console.error("Get user details error:", error);
+    res.status(500).json({ message: "Failed to get user details", error: error.message });
+  }
+};
+
+// Delete User
+export const deleteUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const ipAddress = req.ip || req.connection.remoteAddress;
+    const adminId = req.user.id;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Delete user's assessments
+    await Assessment.deleteMany({ userId });
+
+    // Delete the user
+    await User.findByIdAndDelete(userId);
+
+    // Log activity
+    const admin = await Admin.findById(adminId);
+    if (admin) {
+      await admin.logActivity('USER_DELETED', 
+        `Deleted user: ${user.email}`, 
+        ipAddress
+      );
+    }
+
+    res.json({ message: "User and associated data deleted successfully" });
+  } catch (error) {
+    console.error("Delete user error:", error);
+    res.status(500).json({ message: "Failed to delete user", error: error.message });
   }
 };

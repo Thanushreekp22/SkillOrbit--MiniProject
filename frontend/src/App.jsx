@@ -22,6 +22,7 @@ import Assessment from './pages/Assessment';
 import Roles from './pages/RolesEnhanced';
 import Analysis from './pages/AnalysisEnhanced';
 import LearningPath from './pages/LearningPathUnified';
+import AILearningPath from './pages/AILearningPath';
 import Progress from './pages/ProgressEnhanced';
 import Reports from './pages/ReportsEnhanced';
 import Profile from './pages/Profile';
@@ -61,6 +62,7 @@ function App() {
                 <Route path="roles" element={<Roles />} />
                 <Route path="analysis" element={<Analysis />} />
                 <Route path="learning-path" element={<LearningPath />} />
+                <Route path="ai-learning-path" element={<AILearningPath />} />
                 <Route path="progress" element={<Progress />} />
                 <Route path="reports" element={<Reports />} />
                 <Route path="profile" element={<Profile />} />

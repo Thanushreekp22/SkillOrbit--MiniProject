@@ -10,7 +10,12 @@ import {
   getAdminActivity,
   getMyActivity,
   getAdminStatistics,
-  unlockAdminAccount
+  unlockAdminAccount,
+  getDashboardStats,
+  getRecentUsers,
+  getAllUsers,
+  getUserDetails,
+  deleteUser
 } from "../controllers/adminController.js";
 import { verifyAdminToken, checkSuperAdmin } from "../middleware/adminAuthMiddleware.js";
 
@@ -32,6 +37,13 @@ router.get("/check-token", verifyAdminToken, (req, res) => {
     message: "Token is valid"
   });
 });
+
+// Dashboard routes (all authenticated admins)
+router.get("/dashboard/stats", verifyAdminToken, getDashboardStats);
+router.get("/dashboard/recent-users", verifyAdminToken, getRecentUsers);
+router.get("/dashboard/users", verifyAdminToken, getAllUsers);
+router.get("/dashboard/users/:userId", verifyAdminToken, getUserDetails);
+router.delete("/dashboard/users/:userId", verifyAdminToken, deleteUser);
 
 // Super admin only routes
 router.post("/create", verifyAdminToken, checkSuperAdmin, createAdmin);
