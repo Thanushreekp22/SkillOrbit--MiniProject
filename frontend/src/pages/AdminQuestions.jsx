@@ -188,7 +188,7 @@ const AdminQuestions = () => {
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: '#f5f5f5' }}>
       {/* Admin Navigation Bar */}
-      <AppBar position="static" sx={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+      <AppBar position="static" sx={{ bgcolor: '#667eea' }}>
         <Toolbar>
           <IconButton color="inherit" onClick={() => navigate('/admin/dashboard')}>
             <ArrowBack />
@@ -226,7 +226,10 @@ const AdminQuestions = () => {
             startIcon={<Add />}
             onClick={handleAddQuestion}
             sx={{
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              bgcolor: '#667eea',
+              '&:hover': {
+                bgcolor: '#5568d3',
+              },
             }}
           >
             Add Question

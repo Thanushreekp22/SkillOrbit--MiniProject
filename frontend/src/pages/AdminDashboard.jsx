@@ -111,7 +111,7 @@ const AdminDashboard = () => {
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: '#f5f5f5' }}>
       {/* Admin Navigation Bar */}
-      <AppBar position="static" sx={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+      <AppBar position="static" sx={{ bgcolor: '#667eea' }}>
         <Toolbar>
           <AdminPanelSettings sx={{ mr: 2, fontSize: 32 }} />
           <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 700 }}>
@@ -168,7 +168,7 @@ const AdminDashboard = () => {
         {/* Stats Cards */}
         <Grid container spacing={3} mb={4}>
           <Grid item xs={12} sm={6} md={3}>
-            <Card sx={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white' }}>
+            <Card sx={{ bgcolor: '#667eea', color: 'white' }}>
               <CardContent>
                 <Box display="flex" alignItems="center" justifyContent="space-between">
                   <Box>
@@ -186,7 +186,7 @@ const AdminDashboard = () => {
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <Card sx={{ background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', color: 'white' }}>
+            <Card sx={{ bgcolor: '#f5576c', color: 'white' }}>
               <CardContent>
                 <Box display="flex" alignItems="center" justifyContent="space-between">
                   <Box>
@@ -204,7 +204,7 @@ const AdminDashboard = () => {
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <Card sx={{ background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', color: 'white' }}>
+            <Card sx={{ bgcolor: '#00bcd4', color: 'white' }}>
               <CardContent>
                 <Box display="flex" alignItems="center" justifyContent="space-between">
                   <Box>
@@ -222,7 +222,7 @@ const AdminDashboard = () => {
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <Card sx={{ background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)', color: 'white' }}>
+            <Card sx={{ bgcolor: '#4caf50', color: 'white' }}>
               <CardContent>
                 <Box display="flex" alignItems="center" justifyContent="space-between">
                   <Box>
@@ -251,9 +251,9 @@ const AdminDashboard = () => {
               onClick={() => navigate('/admin/questions')}
               sx={{
                 py: 2,
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                bgcolor: '#667eea',
                 '&:hover': {
-                  background: 'linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%)',
+                  bgcolor: '#5568d3',
                 },
               }}
             >
@@ -269,9 +269,9 @@ const AdminDashboard = () => {
               onClick={() => navigate('/admin/users')}
               sx={{
                 py: 2,
-                background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                bgcolor: '#f5576c',
                 '&:hover': {
-                  background: 'linear-gradient(135deg, #e082ea 0%, #e4465b 100%)',
+                  bgcolor: '#e4465b',
                 },
               }}
             >
@@ -287,9 +287,9 @@ const AdminDashboard = () => {
               onClick={() => navigate('/admin/activity')}
               sx={{
                 py: 2,
-                background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+                bgcolor: '#4caf50',
                 '&:hover': {
-                  background: 'linear-gradient(135deg, #32d86a 0%, #27e8c6 100%)',
+                  bgcolor: '#45a049',
                 },
               }}
             >
@@ -305,9 +305,9 @@ const AdminDashboard = () => {
               onClick={() => navigate('/admin/management')}
               sx={{
                 py: 2,
-                background: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+                bgcolor: '#ff9800',
                 '&:hover': {
-                  background: 'linear-gradient(135deg, #e95f89 0%, #edd02f 100%)',
+                  bgcolor: '#f57c00',
                 },
               }}
             >

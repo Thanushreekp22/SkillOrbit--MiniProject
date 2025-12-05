@@ -70,7 +70,7 @@ const AdminLogin = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        bgcolor: '#667eea',
         padding: 2,
       }}
     >
@@ -97,9 +97,7 @@ const AdminLogin = () => {
               gutterBottom
               sx={{
                 fontWeight: 700,
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
+                color: '#667eea',
               }}
             >
               Admin Login
@@ -169,7 +167,7 @@ const AdminLogin = () => {
               size="large"
               disabled={loading}
               sx={{
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                bgcolor: '#667eea',
                 color: 'white',
                 py: 1.5,
                 fontSize: '1rem',
@@ -177,7 +175,7 @@ const AdminLogin = () => {
                 textTransform: 'none',
                 borderRadius: 2,
                 '&:hover': {
-                  background: 'linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%)',
+                  bgcolor: '#5568d3',
                 },
               }}
             >
