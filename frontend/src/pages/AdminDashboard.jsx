@@ -242,7 +242,7 @@ const AdminDashboard = () => {
 
         {/* Action Buttons */}
         <Grid container spacing={3} mb={4}>
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} sm={6} md={3}>
             <Button
               fullWidth
               variant="contained"
@@ -257,10 +257,10 @@ const AdminDashboard = () => {
                 },
               }}
             >
-              Manage Questions
+              Questions
             </Button>
           </Grid>
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} sm={6} md={3}>
             <Button
               fullWidth
               variant="contained"
@@ -275,7 +275,43 @@ const AdminDashboard = () => {
                 },
               }}
             >
-              Manage Users
+              Users
+            </Button>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <Button
+              fullWidth
+              variant="contained"
+              size="large"
+              startIcon={<TrendingUp />}
+              onClick={() => navigate('/admin/activity')}
+              sx={{
+                py: 2,
+                background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #32d86a 0%, #27e8c6 100%)',
+                },
+              }}
+            >
+              My Activity
+            </Button>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <Button
+              fullWidth
+              variant="contained"
+              size="large"
+              startIcon={<Settings />}
+              onClick={() => navigate('/admin/management')}
+              sx={{
+                py: 2,
+                background: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #e95f89 0%, #edd02f 100%)',
+                },
+              }}
+            >
+              Admin Mgmt
             </Button>
           </Grid>
         </Grid>

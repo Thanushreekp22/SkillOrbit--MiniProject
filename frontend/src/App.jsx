@@ -32,6 +32,8 @@ import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminQuestions from './pages/AdminQuestions';
 import AdminUsers from './pages/AdminUsers';
+import ActivityLog from './pages/ActivityLog';
+import AdminManagement from './pages/AdminManagement';
 import AdminProtectedRoute from './components/AdminProtectedRoute';
 
 function App() {
@@ -52,6 +54,8 @@ function App() {
               <Route path="/admin/dashboard" element={<AdminProtectedRoute><AdminDashboard /></AdminProtectedRoute>} />
               <Route path="/admin/questions" element={<AdminProtectedRoute><AdminQuestions /></AdminProtectedRoute>} />
               <Route path="/admin/users" element={<AdminProtectedRoute><AdminUsers /></AdminProtectedRoute>} />
+              <Route path="/admin/activity" element={<AdminProtectedRoute><ActivityLog /></AdminProtectedRoute>} />
+              <Route path="/admin/management" element={<AdminProtectedRoute><AdminManagement /></AdminProtectedRoute>} />
               
               {/* Protected Routes */}
               <Route path="/app" element={<ProtectedRoute><Navbar /></ProtectedRoute>}>
