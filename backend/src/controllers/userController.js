@@ -47,27 +47,24 @@ export const registerUser = async (req, res) => {
     // Hash password
     const hashed = await bcrypt.hash(password, 10);
     
-    // Check if email verification should be enforced
-    const isProduction = process.env.NODE_ENV === 'production';
-    const emailConfigured = !!(process.env.EMAIL_USER && process.env.EMAIL_PASS) || !!(process.env.RESEND_API_KEY);
-    // In production: SKIP email verification (auto-verify)
-    // In development: Use email verification if configured
-    const requireEmailVerification = !isProduction && emailConfigured;
+    // Check if email verification service is configured
+    const emailConfigured = !!(process.env.BREVO_API_KEY) || 
+                           !!(process.env.RESEND_API_KEY) || 
+                           (!!(process.env.EMAIL_USER && process.env.EMAIL_PASS));
     
     console.log('📧 Email Verification Check:');
     console.log('   NODE_ENV:', process.env.NODE_ENV);
-    console.log('   Is Production:', isProduction);
     console.log('   Email Configured:', emailConfigured);
-    console.log('   Require Verification:', requireEmailVerification);
+    console.log('   ALWAYS Require Verification: true');
     
     let user;
     
-    if (requireEmailVerification && emailConfigured) {
+    if (emailConfigured) {
       // Generate OTP
       const otp = generateOTP();
       const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
 
-      // Create user with unverified email
+      // Create user with unverified email - ALWAYS require verification
       user = await User.create({ 
         name, 
         email, 
@@ -100,39 +97,11 @@ export const registerUser = async (req, res) => {
         requiresVerification: true
       });
     } else {
-      // Production mode without email service OR development without email - auto-verify user
-      const reason = isProduction 
-        ? 'Production mode - Email verification optional' 
-        : 'Email service not configured in development';
-      
-      console.log(`⚠️ Auto-verifying user: ${reason}`);
-      
-      user = await User.create({ 
-        name, 
-        email, 
-        password: hashed, 
-        role,
-        isEmailVerified: true // Auto-verify
-      });
-
-      // Generate token for immediate login
-      const token = jwt.sign(
-        { id: user._id, email: user.email },
-        process.env.JWT_SECRET || "fallback_secret",
-        { expiresIn: process.env.JWT_EXPIRES || "24h" }
-      );
-
-      // Remove password from response
-      const userResponse = user.toObject();
-      delete userResponse.password;
-
-      res.status(201).json({ 
-        message: "Registration successful! You are now logged in.", 
-        user: userResponse,
-        token,
-        requiresVerification: false,
-        autoVerified: true,
-        note: reason
+      // Email service not configured - cannot register without verification
+      console.error('❌ Email service not configured - cannot register users');
+      return res.status(503).json({ 
+        message: "Registration is currently unavailable. Email verification service is not configured.",
+        error: "Email service unavailable"
       });
     }
   } catch (err) {
@@ -247,15 +216,13 @@ export const loginUser = async (req, res) => {
     const user = await User.findOne({ email });
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    // Check if email service is configured
-    const emailConfigured = !!(process.env.EMAIL_USER && process.env.EMAIL_PASS);
-
-    // Only require email verification if email service is configured
-    if (emailConfigured && !user.isEmailVerified) {
+    // ALWAYS require email verification - no exceptions
+    if (!user.isEmailVerified) {
       return res.status(403).json({ 
-        message: "Please verify your email before logging in",
+        message: "Please verify your email before logging in. Check your inbox for the OTP.",
         requiresVerification: true,
-        userId: user._id
+        userId: user._id,
+        email: user.email
       });
     }
 
