@@ -534,7 +534,7 @@ export const getDashboardStats = async (req, res) => {
       QuestionBank.countDocuments(),
       Assessment.countDocuments(),
       Skill.countDocuments(),
-      User.countDocuments({ isVerified: true }),
+      User.countDocuments({ isEmailVerified: true }),
       Assessment.countDocuments({ 
         createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } 
       })
@@ -588,13 +588,22 @@ export const getRecentUsers = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
 
     const recentUsers = await User.find()
-      .select('name email isVerified createdAt')
+      .select('name email isEmailVerified createdAt')
       .sort({ createdAt: -1 })
       .limit(limit);
 
+    // Map to use consistent field name in response
+    const usersWithVerifiedStatus = recentUsers.map(user => ({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      isVerified: user.isEmailVerified || false,
+      createdAt: user.createdAt
+    }));
+
     res.json({
-      users: recentUsers,
-      total: recentUsers.length
+      users: usersWithVerifiedStatus,
+      total: usersWithVerifiedStatus.length
     });
   } catch (error) {
     console.error("Get recent users error:", error);
@@ -616,7 +625,7 @@ export const getAllUsers = async (req, res) => {
     }
 
     const users = await User.find(filter)
-      .select('name email isVerified createdAt skills')
+      .select('name email isEmailVerified createdAt skills')
       .sort({ createdAt: -1 })
       .limit(limit * 1)
       .skip((page - 1) * limit);
@@ -626,7 +635,7 @@ export const getAllUsers = async (req, res) => {
       _id: user._id,
       name: user.name,
       email: user.email,
-      isVerified: user.isVerified || false,
+      isVerified: user.isEmailVerified || false,
       createdAt: user.createdAt,
       skillsCount: user.skills ? user.skills.length : 0
     }));
