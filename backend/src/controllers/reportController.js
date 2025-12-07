@@ -2,6 +2,7 @@ import { Skill, Assessment, Analysis, User } from "../models/index.js";
 import mongoose from "mongoose";
 import PDFDocument from "pdfkit";
 import nodemailer from "nodemailer";
+import * as brevo from '@getbrevo/brevo';
 
 // Generate report data for a user
 export const generateReportData = async (req, res) => {
@@ -1295,55 +1296,57 @@ export const emailReport = async (req, res) => {
       </html>
     `;
 
-    // Configure email transporter
-    // For development, we'll use Ethereal (fake SMTP service)
-    // For production, use Gmail, SendGrid, or other SMTP service
-    let transporter;
-    
-    if (process.env.EMAIL_HOST && process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-      // Production: Use configured SMTP server
-      console.log('📧 Configuring email with Gmail SMTP...');
-      console.log('   Host:', process.env.EMAIL_HOST);
-      console.log('   User:', process.env.EMAIL_USER);
-      console.log('   Port:', process.env.EMAIL_PORT || 587);
-      
-      transporter = nodemailer.createTransport({
-        service: 'gmail', // Use Gmail service directly
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS
-        },
-        connectionTimeout: 10000, // 10 seconds is enough for Gmail service
-        greetingTimeout: 10000,
-        socketTimeout: 10000
-      });
-      
-      console.log('✅ Email transporter configured with Gmail service');
-    } else {
-      // Missing email configuration
-      console.error('❌ Email configuration missing!');
-      console.error('   Required environment variables:');
-      console.error('   - EMAIL_HOST:', process.env.EMAIL_HOST ? '✓' : '✗');
-      console.error('   - EMAIL_USER:', process.env.EMAIL_USER ? '✓' : '✗');
-      console.error('   - EMAIL_PASS:', process.env.EMAIL_PASS ? '✓' : '✗');
-      
-      return res.status(500).json({
-        message: 'Email service is not configured. Please contact administrator.',
-        error: 'Missing email configuration on server'
-      });
-    }
-
-    // Send email
+    // Send email using Brevo API or fallback to SMTP
     try {
-      const info = await transporter.sendMail({
-        from: process.env.EMAIL_FROM || '"SkillOrbit" <noreply@skillorbit.com>',
-        to: emailTo,
-        subject: '📊 Your SkillOrbit Progress Report',
-        html: emailContent
-      });
-
-      console.log('✅ Email sent successfully!');
-      console.log('Message ID:', info.messageId);
+      let info;
+      
+      if (process.env.EMAIL_SERVICE === 'brevo' && process.env.BREVO_API_KEY) {
+        // Use Brevo API
+        console.log('📧 Sending report via Brevo API to:', emailTo);
+        
+        const brevoClient = new brevo.TransactionalEmailsApi();
+        brevoClient.setApiKey(brevo.TransactionalEmailsApiApiKeys.apiKey, process.env.BREVO_API_KEY);
+        
+        const sendSmtpEmail = new brevo.SendSmtpEmail();
+        sendSmtpEmail.sender = { 
+          name: 'SkillOrbit', 
+          email: process.env.EMAIL_USER || 'noreply@skillorbit.com' 
+        };
+        sendSmtpEmail.to = [{ email: emailTo, name: req.user.name }];
+        sendSmtpEmail.subject = '📊 Your SkillOrbit Progress Report';
+        sendSmtpEmail.htmlContent = emailContent;
+        
+        const data = await brevoClient.sendTransacEmail(sendSmtpEmail);
+        console.log('✅ Email sent via Brevo. Message ID:', data.messageId);
+        
+        info = { messageId: data.messageId };
+      } else if (process.env.EMAIL_HOST && process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+        // Fallback to SMTP (for local development)
+        console.log('📧 Sending email via SMTP...');
+        
+        const transporter = nodemailer.createTransport({
+          service: 'gmail',
+          auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS
+          }
+        });
+        
+        info = await transporter.sendMail({
+          from: process.env.EMAIL_FROM || '"SkillOrbit" <noreply@skillorbit.com>',
+          to: emailTo,
+          subject: '📊 Your SkillOrbit Progress Report',
+          html: emailContent
+        });
+        
+        console.log('✅ Email sent via SMTP. Message ID:', info.messageId);
+      } else {
+        console.error('❌ No email service configured!');
+        return res.status(500).json({
+          message: 'Email service is not configured',
+          error: 'Missing BREVO_API_KEY or SMTP configuration'
+        });
+      }
       
       // Preview URL for Ethereal (development only)
       if (info.messageId && !process.env.EMAIL_HOST) {
