@@ -260,6 +260,36 @@ const AdminUsers = () => {
                 <Typography variant="body1">{selectedUser.company || 'Not provided'}</Typography>
               </Box>
               <Box>
+                <Typography variant="subtitle2" color="text.secondary">LinkedIn</Typography>
+                <Typography variant="body1">
+                  {selectedUser.linkedIn ? (
+                    <a href={selectedUser.linkedIn} target="_blank" rel="noopener noreferrer" style={{ color: '#0077b5' }}>
+                      {selectedUser.linkedIn}
+                    </a>
+                  ) : 'Not provided'}
+                </Typography>
+              </Box>
+              <Box>
+                <Typography variant="subtitle2" color="text.secondary">GitHub</Typography>
+                <Typography variant="body1">
+                  {selectedUser.github ? (
+                    <a href={selectedUser.github} target="_blank" rel="noopener noreferrer" style={{ color: '#333' }}>
+                      {selectedUser.github}
+                    </a>
+                  ) : 'Not provided'}
+                </Typography>
+              </Box>
+              <Box>
+                <Typography variant="subtitle2" color="text.secondary">Portfolio</Typography>
+                <Typography variant="body1">
+                  {selectedUser.portfolio ? (
+                    <a href={selectedUser.portfolio} target="_blank" rel="noopener noreferrer" style={{ color: '#667eea' }}>
+                      {selectedUser.portfolio}
+                    </a>
+                  ) : 'Not provided'}
+                </Typography>
+              </Box>
+              <Box>
                 <Typography variant="subtitle2" color="text.secondary">Joined</Typography>
                 <Typography variant="body1">
                   {new Date(selectedUser.createdAt).toLocaleString()}
