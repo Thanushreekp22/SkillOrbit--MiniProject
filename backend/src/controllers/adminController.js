@@ -625,20 +625,25 @@ export const getAllUsers = async (req, res) => {
     }
 
     const users = await User.find(filter)
-      .select('name email isEmailVerified createdAt skills')
+      .select('name email isEmailVerified createdAt')
       .sort({ createdAt: -1 })
       .limit(limit * 1)
       .skip((page - 1) * limit);
 
-    // Add skills count for each user
-    const usersWithSkillCount = users.map(user => ({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      isVerified: user.isEmailVerified || false,
-      createdAt: user.createdAt,
-      skillsCount: user.skills ? user.skills.length : 0
-    }));
+    // Get skills count for each user from Skill collection
+    const usersWithSkillCount = await Promise.all(
+      users.map(async (user) => {
+        const skillsCount = await Skill.countDocuments({ userId: user._id });
+        return {
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          isVerified: user.isEmailVerified || false,
+          createdAt: user.createdAt,
+          skillsCount: skillsCount
+        };
+      })
+    );
 
     const total = await User.countDocuments(filter);
 
