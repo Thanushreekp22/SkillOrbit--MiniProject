@@ -37,6 +37,7 @@ import {
 } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import api from '../api/axios';
+import AdminNavbar from '../components/AdminNavbar';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -110,49 +111,7 @@ const AdminDashboard = () => {
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: '#f5f5f5' }}>
-      {/* Admin Navigation Bar */}
-      <AppBar position="static" sx={{ bgcolor: '#667eea' }}>
-        <Toolbar>
-          <AdminPanelSettings sx={{ mr: 2, fontSize: 32 }} />
-          <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 700 }}>
-            SkillOrbit Admin Panel
-          </Typography>
-          
-          <Chip
-            label={adminData?.role?.toUpperCase()}
-            color="warning"
-            size="small"
-            sx={{ mr: 2 }}
-          />
-
-          <IconButton color="inherit" onClick={handleMenuOpen}>
-            <Avatar sx={{ bgcolor: 'rgba(255,255,255,0.2)' }}>
-              {adminData?.name?.charAt(0).toUpperCase()}
-            </Avatar>
-          </IconButton>
-
-          <Menu
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={handleMenuClose}
-          >
-            <MenuItem disabled>
-              <Typography variant="body2" fontWeight={600}>
-                {adminData?.name}
-              </Typography>
-            </MenuItem>
-            <MenuItem disabled>
-              <Typography variant="caption" color="text.secondary">
-                {adminData?.email}
-              </Typography>
-            </MenuItem>
-            <MenuItem onClick={handleLogout}>
-              <ExitToApp sx={{ mr: 1 }} fontSize="small" />
-              Logout
-            </MenuItem>
-          </Menu>
-        </Toolbar>
-      </AppBar>
+      <AdminNavbar title="SkillOrbit Admin Panel" adminData={adminData} />
 
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         {/* Welcome Section */}

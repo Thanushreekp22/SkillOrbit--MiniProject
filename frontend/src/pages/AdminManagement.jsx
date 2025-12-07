@@ -1,4 +1,6 @@
 ﻿import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import AdminNavbar from '../components/AdminNavbar';
 import {
   Box,
   Card,
@@ -43,6 +45,8 @@ import {
 import { format } from 'date-fns';
 
 const AdminManagement = () => {
+  const navigate = useNavigate();
+  const [adminData, setAdminData] = useState(null);
   const [admins, setAdmins] = useState([]);
   const [statistics, setStatistics] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -56,6 +60,16 @@ const AdminManagement = () => {
     password: '',
     role: 'admin'
   });
+
+  useEffect(() => {
+    const token = localStorage.getItem('adminToken');
+    const admin = localStorage.getItem('adminData');
+    if (!token || !admin) {
+      navigate('/admin/login');
+      return;
+    }
+    setAdminData(JSON.parse(admin));
+  }, [navigate]);
 
   const fetchData = async () => {
     try {
@@ -156,11 +170,14 @@ const AdminManagement = () => {
   }
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Card sx={{ mb: 3 }}>
-        <CardContent>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-            <Typography variant="h5">Admin Management</Typography>
+    <Box sx={{ minHeight: '100vh', bgcolor: '#f5f5f5' }}>
+      <AdminNavbar title="Admin Management" adminData={adminData} />
+      
+      <Box sx={{ p: 3 }}>
+        <Card sx={{ mb: 3 }}>
+          <CardContent>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+              <Typography variant="h5">Admin Management</Typography>
             <Button
               variant="contained"
               startIcon={<AddIcon />}
@@ -413,6 +430,7 @@ const AdminManagement = () => {
           <Button onClick={() => setOpenActivityDialog(false)}>Close</Button>
         </DialogActions>
       </Dialog>
+      </Box>
     </Box>
   );
 };

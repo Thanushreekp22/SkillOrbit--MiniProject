@@ -1,4 +1,6 @@
 ﻿import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import AdminNavbar from '../components/AdminNavbar';
 import {
   Box,
   Card,
@@ -23,12 +25,24 @@ import { getMyActivity } from '../api/adminApi';
 import { format } from 'date-fns';
 
 const ActivityLog = () => {
+  const navigate = useNavigate();
+  const [adminData, setAdminData] = useState(null);
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(25);
   const [filterAction, setFilterAction] = useState('');
+
+  useEffect(() => {
+    const token = localStorage.getItem('adminToken');
+    const admin = localStorage.getItem('adminData');
+    if (!token || !admin) {
+      navigate('/admin/login');
+      return;
+    }
+    setAdminData(JSON.parse(admin));
+  }, [navigate]);
 
   const activityTypes = [
     { value: '', label: 'All Activities' },
@@ -103,17 +117,20 @@ const ActivityLog = () => {
   }
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Card>
-        <CardContent>
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="h5" gutterBottom>
-              My Activity Log
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Track all your actions and activities in the admin panel
-            </Typography>
-          </Box>
+    <Box sx={{ minHeight: '100vh', bgcolor: '#f5f5f5' }}>
+      <AdminNavbar title="Activity Log" adminData={adminData} />
+      
+      <Box sx={{ p: 3 }}>
+        <Card>
+          <CardContent>
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="h5" gutterBottom>
+                My Activity Log
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Track all your actions and activities in the admin panel
+              </Typography>
+            </Box>
 
           {error && (
             <Alert severity="error" sx={{ mb: 2 }}>
@@ -199,6 +216,7 @@ const ActivityLog = () => {
           />
         </CardContent>
       </Card>
+      </Box>
     </Box>
   );
 };

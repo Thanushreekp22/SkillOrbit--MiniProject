@@ -38,6 +38,7 @@ import {
 } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import api from '../api/axios';
+import AdminNavbar from '../components/AdminNavbar';
 
 const AdminUsers = () => {
   const navigate = useNavigate();
@@ -125,33 +126,7 @@ const AdminUsers = () => {
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: '#f5f5f5' }}>
-      {/* Admin Navigation Bar */}
-      <AppBar position="static" sx={{ bgcolor: '#667eea' }}>
-        <Toolbar>
-          <IconButton color="inherit" onClick={() => navigate('/admin/dashboard')}>
-            <ArrowBack />
-          </IconButton>
-          <AdminPanelSettings sx={{ mr: 2, ml: 2, fontSize: 32 }} />
-          <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 700 }}>
-            User Management
-          </Typography>
-          <IconButton color="inherit" onClick={(e) => setAnchorEl(e.currentTarget)}>
-            <Avatar sx={{ bgcolor: 'rgba(255,255,255,0.2)' }}>
-              {adminData?.name?.charAt(0).toUpperCase()}
-            </Avatar>
-          </IconButton>
-          <Menu
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={() => setAnchorEl(null)}
-          >
-            <MenuItemMui onClick={handleLogout}>
-              <ExitToApp sx={{ mr: 1 }} fontSize="small" />
-              Logout
-            </MenuItemMui>
-          </Menu>
-        </Toolbar>
-      </AppBar>
+      <AdminNavbar title="User Management" adminData={adminData} />
 
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         {/* Header */}
