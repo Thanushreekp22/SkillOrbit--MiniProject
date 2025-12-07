@@ -616,15 +616,25 @@ export const getAllUsers = async (req, res) => {
     }
 
     const users = await User.find(filter)
-      .select('name email isVerified createdAt')
+      .select('name email isVerified createdAt skills')
       .sort({ createdAt: -1 })
       .limit(limit * 1)
       .skip((page - 1) * limit);
 
+    // Add skills count for each user
+    const usersWithSkillCount = users.map(user => ({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      isVerified: user.isVerified || false,
+      createdAt: user.createdAt,
+      skillsCount: user.skills ? user.skills.length : 0
+    }));
+
     const total = await User.countDocuments(filter);
 
     res.json({
-      users,
+      users: usersWithSkillCount,
       totalPages: Math.ceil(total / limit),
       currentPage: Number(page),
       total
