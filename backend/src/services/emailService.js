@@ -1,6 +1,7 @@
 import pkg from 'nodemailer';
 const { createTransport } = pkg;
 import { Resend } from 'resend';
+import * as brevo from '@getbrevo/brevo';
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -8,13 +9,17 @@ dotenv.config();
 const EMAIL_USER = process.env.EMAIL_USER;
 const EMAIL_PASS = process.env.EMAIL_PASS || process.env.EMAIL_PASSWORD;
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
-const EMAIL_SERVICE = process.env.EMAIL_SERVICE || 'smtp'; // smtp, resend
+const BREVO_API_KEY = process.env.BREVO_API_KEY;
+const EMAIL_SERVICE = process.env.EMAIL_SERVICE || 'smtp'; // smtp, resend, brevo
 
 console.log('\n📧 Email Service Configuration:');
 console.log('   EMAIL_SERVICE:', EMAIL_SERVICE);
 if (EMAIL_SERVICE === 'resend') {
   console.log('   RESEND_API_KEY:', RESEND_API_KEY ? '✅ Found' : '❌ Not Found');
   console.log('   Status:', RESEND_API_KEY ? '✅ Resend Email Service ACTIVE (3,000/month free)' : '⚠️ Resend API Key Missing');
+} else if (EMAIL_SERVICE === 'brevo') {
+  console.log('   BREVO_API_KEY:', BREVO_API_KEY ? '✅ Found' : '❌ Not Found');
+  console.log('   Status:', BREVO_API_KEY ? '✅ Brevo Email Service ACTIVE (300 emails/day free)' : '⚠️ Brevo API Key Missing');
 } else {
   console.log('   EMAIL_USER:', EMAIL_USER ? '✅ Found' : '❌ Not Found');
   console.log('   EMAIL_PASS:', EMAIL_PASS ? '✅ Found' : '❌ Not Found');
@@ -29,6 +34,14 @@ let resendClient = null;
 if (EMAIL_SERVICE === 'resend' && RESEND_API_KEY) {
   resendClient = new Resend(RESEND_API_KEY);
   console.log('✅ Resend client initialized');
+}
+
+// Initialize Brevo client
+let brevoClient = null;
+if (EMAIL_SERVICE === 'brevo' && BREVO_API_KEY) {
+  brevoClient = new brevo.TransactionalEmailsApi();
+  brevoClient.setApiKey(brevo.TransactionalEmailsApiApiKeys.apiKey, BREVO_API_KEY);
+  console.log('✅ Brevo client initialized');
 }
 
 // Generate 6-digit OTP
@@ -217,6 +230,31 @@ export const sendOTPEmail = async (email, otp, name) => {
     console.log('   Recipient:', email);
     console.log('   OTP:', otp);
     console.log('   Name:', name);
+    
+    // Use Brevo API if configured
+    if (EMAIL_SERVICE === 'brevo' && brevoClient) {
+      console.log('📤 Sending OTP via Brevo API to:', email);
+      const htmlContent = generateOTPEmailHTML(email, otp, name);
+      
+      const sendSmtpEmail = new brevo.SendSmtpEmail();
+      sendSmtpEmail.sender = { name: 'SkillOrbit', email: process.env.EMAIL_USER || 'noreply@skillorbit.com' };
+      sendSmtpEmail.to = [{ email: email, name: name }];
+      sendSmtpEmail.subject = 'Verify Your Email - SkillOrbit';
+      sendSmtpEmail.htmlContent = htmlContent;
+      
+      try {
+        const data = await brevoClient.sendTransacEmail(sendSmtpEmail);
+        console.log('✅ Email sent via Brevo. Message ID:', data.messageId);
+        return { 
+          success: true, 
+          message: 'OTP sent successfully via Brevo',
+          messageId: data.messageId
+        };
+      } catch (brevoError) {
+        console.error('❌ Brevo API Error:', brevoError.message);
+        throw brevoError;
+      }
+    }
     
     // Use Resend if configured
     if (EMAIL_SERVICE === 'resend' && resendClient) {
