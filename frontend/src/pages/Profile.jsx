@@ -44,7 +44,7 @@ import {
   Warning,
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../api/axios';
 import { toast } from 'react-toastify';
 import PageHeader from '../components/PageHeader';
@@ -52,6 +52,7 @@ import PageHeader from '../components/PageHeader';
 const Profile = () => {
   const { user, updateUser, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [editMode, setEditMode] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
@@ -62,6 +63,7 @@ const Profile = () => {
   const [deleting, setDeleting] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [profilePhoto, setProfilePhoto] = useState(null);
+  const [showWelcome, setShowWelcome] = useState(false);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -107,8 +109,15 @@ const Profile = () => {
         interests: user.interests || [],
       });
       setProfilePhoto(user.profilePhoto || null);
+      
+      // Check if this is first login after registration
+      if (location.state?.firstLogin) {
+        setShowWelcome(true);
+        setEditMode(true); // Auto-enable edit mode for new users
+        toast.info('👋 Welcome! Please complete your profile to get personalized recommendations.');
+      }
     }
-  }, [user]);
+  }, [user, location]);
 
   const handlePhotoUpload = async (event) => {
     const file = event.target.files[0];
@@ -240,6 +249,29 @@ const Profile = () => {
         subtitle="Manage your personal information, professional details, and social links"
         icon={<AccountCircle sx={{ fontSize: '2rem' }} />}
       />
+
+      {/* Welcome Banner for New Users */}
+      {showWelcome && (
+        <Alert 
+          severity="info" 
+          onClose={() => setShowWelcome(false)}
+          sx={{ 
+            mb: 3, 
+            borderRadius: '12px',
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            color: 'white',
+            '& .MuiAlert-icon': { color: 'white' }
+          }}
+        >
+          <Typography variant="h6" gutterBottom>
+            🎉 Welcome to SkillOrbit!
+          </Typography>
+          <Typography variant="body2">
+            Complete your profile to unlock personalized skill assessments, AI-powered learning paths, and career insights. 
+            Add your phone, location, current role, and social links to get started!
+          </Typography>
+        </Alert>
+      )}
 
       {/* Success/Error Messages */}
       {success && (

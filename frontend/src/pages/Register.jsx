@@ -156,13 +156,25 @@ const Register = () => {
         otp,
       });
 
-      toast.success('Email verified successfully! Your account is now active.');
-      setStep(2); // Show success message
-      
-      // Redirect to login page after 2 seconds
-      setTimeout(() => {
-        navigate('/login');
-      }, 2000);
+      // Store token and user data for auto-login
+      if (response.data.token) {
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+        toast.success('Email verified successfully! Let\'s complete your profile.');
+        
+        // Redirect to profile page to complete information
+        setTimeout(() => {
+          navigate('/app/profile', { state: { firstLogin: true } });
+        }, 1500);
+      } else {
+        toast.success('Email verified successfully! Your account is now active.');
+        setStep(2); // Show success message
+        
+        // Redirect to login page after 2 seconds
+        setTimeout(() => {
+          navigate('/login');
+        }, 2000);
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'OTP verification failed');
       toast.error(err.response?.data?.message || 'Invalid OTP');
