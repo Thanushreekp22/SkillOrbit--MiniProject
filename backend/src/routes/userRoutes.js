@@ -10,7 +10,8 @@ import {
   deleteUserAccount,
   verifyOTP,
   resendOTP,
-  uploadProfilePhoto
+  uploadProfilePhoto,
+  checkEmailExists
 } from "../controllers/userController.js";
 import { verifyToken } from "../middleware/authMiddleware.js";
 
@@ -33,6 +34,7 @@ const upload = multer({
 const router = express.Router();
 
 // Public routes
+router.post("/check-email", checkEmailExists);
 router.post("/register", registerUser);
 router.post("/verify-otp", verifyOTP);
 router.post("/resend-otp", resendOTP);

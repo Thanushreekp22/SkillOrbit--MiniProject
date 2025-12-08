@@ -80,6 +80,20 @@ const Register = () => {
     }
 
     try {
+      // First, check if email exists
+      const emailCheckResponse = await api.post('/users/check-email', {
+        email: formData.email
+      });
+
+      if (emailCheckResponse.data.exists && emailCheckResponse.data.verified) {
+        // Email already registered and verified
+        setError('This email is already registered. Please login instead.');
+        toast.error('This email is already registered. Please login instead.');
+        setLoading(false);
+        return;
+      }
+
+      // Proceed with registration
       const response = await api.post('/users/register', {
         name: formData.name,
         email: formData.email,
@@ -88,7 +102,7 @@ const Register = () => {
 
       if (response.data.requiresVerification) {
         setUserId(response.data.userId);
-        toast.success('OTP sent to your email! Please check your inbox.');
+        toast.success('✅ OTP sent to your email! Please check your inbox.');
         setStep(1); // Move to OTP verification step
       } else {
         // Auto-verified (email service disabled)

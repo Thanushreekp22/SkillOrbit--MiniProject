@@ -5,6 +5,42 @@ import dotenv from "dotenv";
 import { generateOTP, sendOTPEmail, sendWelcomeEmail } from "../services/emailService.js";
 dotenv.config();
 
+// ✅ Check if email exists (for registration validation)
+export const checkEmailExists = async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    const existingUser = await User.findOne({ email });
+    
+    if (existingUser && existingUser.isEmailVerified) {
+      return res.status(200).json({ 
+        exists: true, 
+        verified: true,
+        message: "This email is already registered. Please login instead." 
+      });
+    } else if (existingUser && !existingUser.isEmailVerified) {
+      return res.status(200).json({ 
+        exists: true, 
+        verified: false,
+        message: "Email exists but not verified. You can continue with registration." 
+      });
+    } else {
+      return res.status(200).json({ 
+        exists: false, 
+        verified: false,
+        message: "Email is available for registration." 
+      });
+    }
+  } catch (err) {
+    console.error("Check email error:", err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
 // ✅ Register - Send OTP for email verification
 export const registerUser = async (req, res) => {
   try {
