@@ -14,6 +14,12 @@ export const checkEmailExists = async (req, res) => {
       return res.status(400).json({ message: "Email is required" });
     }
 
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: "Please enter a valid email address" });
+    }
+
     const existingUser = await User.findOne({ email });
     
     if (existingUser && existingUser.isEmailVerified) {
@@ -45,6 +51,12 @@ export const checkEmailExists = async (req, res) => {
 export const registerUser = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
+    
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: "Please enter a valid email address" });
+    }
     
     // Check if user already exists
     const existing = await User.findOne({ email });
