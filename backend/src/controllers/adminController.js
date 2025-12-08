@@ -625,7 +625,7 @@ export const getAllUsers = async (req, res) => {
     }
 
     const users = await User.find(filter)
-      .select('name email isEmailVerified createdAt')
+      .select('-password -emailVerificationOTP -otpExpiresAt')
       .sort({ createdAt: -1 })
       .limit(limit * 1)
       .skip((page - 1) * limit);
@@ -638,6 +638,16 @@ export const getAllUsers = async (req, res) => {
           _id: user._id,
           name: user.name,
           email: user.email,
+          phone: user.phone,
+          location: user.location,
+          bio: user.bio,
+          education: user.education,
+          currentRole: user.currentRole,
+          company: user.company,
+          linkedIn: user.linkedIn,
+          github: user.github,
+          portfolio: user.portfolio,
+          profilePhoto: user.profilePhoto,
           isVerified: user.isEmailVerified || false,
           createdAt: user.createdAt,
           skillsCount: skillsCount
