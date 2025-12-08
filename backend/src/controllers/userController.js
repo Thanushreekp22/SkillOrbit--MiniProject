@@ -2,8 +2,23 @@ import { User, Skill, Assessment, Progress, LearningPath, AILearningPath, Analys
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import dns from "dns";
+import { promisify } from "util";
 import { generateOTP, sendOTPEmail, sendWelcomeEmail } from "../services/emailService.js";
 dotenv.config();
+
+const resolveMx = promisify(dns.resolveMx);
+
+// Helper function to verify email domain
+async function verifyEmailDomain(email) {
+  try {
+    const domain = email.split('@')[1];
+    const addresses = await resolveMx(domain);
+    return addresses && addresses.length > 0;
+  } catch (error) {
+    return false;
+  }
+}
 
 // ✅ Check if email exists (for registration validation)
 export const checkEmailExists = async (req, res) => {
@@ -18,6 +33,14 @@ export const checkEmailExists = async (req, res) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return res.status(400).json({ message: "Please enter a valid email address" });
+    }
+
+    // Verify email domain can receive emails
+    const isDomainValid = await verifyEmailDomain(email);
+    if (!isDomainValid) {
+      return res.status(400).json({ 
+        message: "This email domain does not exist or cannot receive emails. Please enter a valid email address." 
+      });
     }
 
     const existingUser = await User.findOne({ email });
@@ -56,6 +79,14 @@ export const registerUser = async (req, res) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return res.status(400).json({ message: "Please enter a valid email address" });
+    }
+
+    // Verify email domain can receive emails
+    const isDomainValid = await verifyEmailDomain(email);
+    if (!isDomainValid) {
+      return res.status(400).json({ 
+        message: "This email domain does not exist or cannot receive emails. Please enter a valid email address." 
+      });
     }
     
     // Check if user already exists
