@@ -30,6 +30,25 @@ SkillOrbit is an AI-powered skill assessment and personalized learning platform 
 
 ---
 
+## 📸 Screenshots
+
+### Landing Page
+![Landing Page](snapshots/landingPage.png)
+
+### Dashboard
+![Dashboard](snapshots/Dashboard.png)
+
+### Skill Assessment
+![Skill Assessment](snapshots/SkillAsessment.png)
+
+### Gap Analysis
+![Gap Analysis](snapshots/GapAnalysis.png)
+
+### Role Matching
+![Role Matching](snapshots/RoleMatching.png)
+
+---
+
 ## 📂 GitHub Repository
 👉 https://github.com/Thanushreekp22/SkillOrbit--MiniProject
 
