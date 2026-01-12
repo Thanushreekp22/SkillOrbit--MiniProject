@@ -1,8 +1,25 @@
 import express from "express";
 import cors from "cors";
+import session from "express-session";
+import passport from "./config/passport.js";
 
 // ✅ Create Express app FIRST
 const app = express();
+
+// ✅ Session middleware (required for Passport)
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'your-session-secret',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }
+}));
+
+// ✅ Initialize Passport
+app.use(passport.initialize());
+app.use(passport.session());
 
 // ✅ Middleware setup - CORS configuration
 const allowedOrigins = [
@@ -56,8 +73,10 @@ import analysisRoutes from "./routes/analysisRoutes.js";
 import reportRoutes from "./routes/reportRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import adminDashboardRoutes from "./routes/adminDashboardRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
 
 // ✅ Attach routes
+app.use("/api/auth", authRoutes);
 app.use("/api/test", testRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/skills", skillRoutes);

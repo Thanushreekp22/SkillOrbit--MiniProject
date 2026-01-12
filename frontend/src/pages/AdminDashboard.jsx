@@ -201,13 +201,13 @@ const AdminDashboard = () => {
 
         {/* Action Buttons */}
         <Grid container spacing={3} mb={4}>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={12} sm={6} md={4}>
             <Button
               fullWidth
               variant="contained"
               size="large"
-              startIcon={<QuestionAnswer />}
-              onClick={() => navigate('/admin/questions')}
+              startIcon={<Dashboard />}
+              onClick={() => navigate('/admin/dashboard')}
               sx={{
                 py: 2,
                 bgcolor: '#667eea',
@@ -216,16 +216,16 @@ const AdminDashboard = () => {
                 },
               }}
             >
-              Questions
+              Dashboard
             </Button>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={12} sm={6} md={4}>
             <Button
               fullWidth
               variant="contained"
               size="large"
-              startIcon={<People />}
-              onClick={() => navigate('/admin/users')}
+              startIcon={<QuestionAnswer />}
+              onClick={() => navigate('/admin/questions')}
               sx={{
                 py: 2,
                 bgcolor: '#f5576c',
@@ -234,16 +234,16 @@ const AdminDashboard = () => {
                 },
               }}
             >
-              Users
+              Questions
             </Button>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={12} sm={6} md={4}>
             <Button
               fullWidth
               variant="contained"
               size="large"
-              startIcon={<TrendingUp />}
-              onClick={() => navigate('/admin/activity')}
+              startIcon={<People />}
+              onClick={() => navigate('/admin/users')}
               sx={{
                 py: 2,
                 bgcolor: '#4caf50',
@@ -252,25 +252,7 @@ const AdminDashboard = () => {
                 },
               }}
             >
-              My Activity
-            </Button>
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <Button
-              fullWidth
-              variant="contained"
-              size="large"
-              startIcon={<Settings />}
-              onClick={() => navigate('/admin/management')}
-              sx={{
-                py: 2,
-                bgcolor: '#ff9800',
-                '&:hover': {
-                  bgcolor: '#f57c00',
-                },
-              }}
-            >
-              Admin Mgmt
+              Users
             </Button>
           </Grid>
         </Grid>

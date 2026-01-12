@@ -17,8 +17,6 @@ import {
   QuestionAnswer,
   AdminPanelSettings,
   ExitToApp,
-  History,
-  SupervisorAccount,
 } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 
@@ -35,10 +33,8 @@ const AdminNavbar = ({ title, adminData }) => {
 
   const menuItems = [
     { label: 'Dashboard', path: '/admin/dashboard', icon: <Dashboard /> },
-    { label: 'Users', path: '/admin/users', icon: <People /> },
     { label: 'Questions', path: '/admin/questions', icon: <QuestionAnswer /> },
-    { label: 'Activity Log', path: '/admin/activity', icon: <History /> },
-    { label: 'Admin Management', path: '/admin/management', icon: <SupervisorAccount /> },
+    { label: 'Users', path: '/admin/users', icon: <People /> },
   ];
 
   return (

@@ -29,6 +29,7 @@ import {
   Login as LoginIcon,
   MarkEmailRead,
   CheckCircle,
+  Google,
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
@@ -534,6 +535,38 @@ const Register = () => {
                     OR
                   </Typography>
                 </Divider>
+
+                {/* Google Sign Up Button */}
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  size="large"
+                  startIcon={<Google />}
+                  onClick={() => {
+                    toast.info('Google Sign-Up coming soon!');
+                  }}
+                  sx={{
+                    mb: 2,
+                    py: 1.3,
+                    borderRadius: '12px',
+                    fontSize: '1rem',
+                    fontWeight: 600,
+                    borderColor: '#4285f4',
+                    color: '#4285f4',
+                    borderWidth: '2px',
+                    textTransform: 'none',
+                    transition: 'all 0.3s',
+                    '&:hover': {
+                      borderWidth: '2px',
+                      borderColor: '#4285f4',
+                      backgroundColor: 'rgba(66, 133, 244, 0.04)',
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 4px 12px rgba(66, 133, 244, 0.2)',
+                    },
+                  }}
+                >
+                  Continue with Google
+                </Button>
 
                 <Box textAlign="center">
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>

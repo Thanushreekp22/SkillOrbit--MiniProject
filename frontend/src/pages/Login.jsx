@@ -23,6 +23,7 @@ import {
   Login as LoginIcon,
   ArrowBack,
   Rocket,
+  Google,
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
@@ -314,6 +315,36 @@ const Login = () => {
                     OR
                   </Typography>
                 </Divider>
+
+                {/* Google Sign In Button */}
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  size="large"
+                  startIcon={<Google />}
+                  onClick={() => {
+                    toast.info('Google Sign-In coming soon!');
+                  }}
+                  sx={{
+                    mb: 3,
+                    py: 1.5,
+                    borderRadius: '12px',
+                    fontSize: '1rem',
+                    fontWeight: 600,
+                    borderColor: '#4285f4',
+                    color: '#4285f4',
+                    textTransform: 'none',
+                    transition: 'all 0.3s',
+                    '&:hover': {
+                      borderColor: '#4285f4',
+                      backgroundColor: 'rgba(66, 133, 244, 0.04)',
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 4px 12px rgba(66, 133, 244, 0.2)',
+                    },
+                  }}
+                >
+                  Continue with Google
+                </Button>
 
                 <Box textAlign="center">
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>

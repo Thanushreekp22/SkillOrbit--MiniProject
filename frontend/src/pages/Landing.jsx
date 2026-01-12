@@ -28,7 +28,6 @@ import {
   ArrowForward,
   School,
   Language,
-  AdminPanelSettings,
 } from '@mui/icons-material';
 import SkillOrbitLogo from '../components/SkillOrbitLogo';
 
@@ -216,23 +215,6 @@ const Landing = () => {
               <SkillOrbitLogo variant="light" size="small" withText={true} />
             </Box>
             <Box sx={{ display: 'flex', gap: 1 }}>
-              <Button 
-                color="inherit" 
-                startIcon={<AdminPanelSettings />}
-                onClick={() => navigate('/admin/login')}
-                sx={{
-                  fontSize: '0.875rem',
-                  fontWeight: 600,
-                  px: 2,
-                  py: 0.75,
-                  textTransform: 'none',
-                  '&:hover': {
-                    backgroundColor: 'rgba(255,255,255,0.1)',
-                  },
-                }}
-              >
-                Admin
-              </Button>
               <Button 
                 color="inherit" 
                 onClick={() => navigate('/login')}

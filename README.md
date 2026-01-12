@@ -10,7 +10,7 @@ An intelligent AI-powered skill assessment and learning platform designed to hel
 - **Skill Gap Analysis**: Compare your skills against target job roles
 - **Progress Tracking**: Visual analytics and progress monitoring
 - **Report Generation**: Comprehensive PDF reports with skill insights
-- **Admin Dashboard**: Manage questions, users, and view activity logs
+- **Simplified Admin Panel**: Essential tools for managing questions, users, and viewing analytics
 - **Delete Account**: Users can delete their account with feedback
 
 ## 🚀 Tech Stack

@@ -1,18 +1,10 @@
 import express from "express";
 import {
   adminLogin,
-  createAdmin,
   getAdminProfile,
-  updateAdminProfile,
-  changeAdminPassword,
-  getAllAdmins,
-  toggleAdminStatus,
-  getAdminActivity,
-  getMyActivity,
-  getAdminStatistics,
-  unlockAdminAccount
+  changeAdminPassword
 } from "../controllers/adminController.js";
-import { verifyAdminToken, checkSuperAdmin } from "../middleware/adminAuthMiddleware.js";
+import { verifyAdminToken } from "../middleware/adminAuthMiddleware.js";
 
 const router = express.Router();
 
@@ -21,24 +13,6 @@ router.post("/login", adminLogin);
 
 // Protected routes (require admin authentication)
 router.get("/profile", verifyAdminToken, getAdminProfile);
-router.put("/profile", verifyAdminToken, updateAdminProfile);
 router.put("/change-password", verifyAdminToken, changeAdminPassword);
-router.get("/my-activity", verifyAdminToken, getMyActivity);
-
-// Debug endpoint to check token permissions
-router.get("/check-token", verifyAdminToken, (req, res) => {
-  res.json({
-    tokenData: req.user,
-    message: "Token is valid"
-  });
-});
-
-// Super admin only routes
-router.post("/create", verifyAdminToken, checkSuperAdmin, createAdmin);
-router.get("/all", verifyAdminToken, checkSuperAdmin, getAllAdmins);
-router.get("/statistics", verifyAdminToken, checkSuperAdmin, getAdminStatistics);
-router.get("/activity/:adminId", verifyAdminToken, checkSuperAdmin, getAdminActivity);
-router.put("/toggle-status/:adminId", verifyAdminToken, checkSuperAdmin, toggleAdminStatus);
-router.put("/unlock/:adminId", verifyAdminToken, checkSuperAdmin, unlockAdminAccount);
 
 export default router;
